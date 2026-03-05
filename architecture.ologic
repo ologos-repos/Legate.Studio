@@ -1,0 +1,487 @@
+# Legato Platform Architecture — Product-Level .ologic Model
+# REQ-LEGA-001: User State Integrity traced to auth, billing/webhook, and database nodes
+# Product-level: shows major subsystems and cross-cutting concerns
+
+name: Legato Platform Architecture
+version: "2.0"
+description: >
+  Legato is a voice-to-knowledge SaaS platform. Users speak, Legato transcribes
+  and stores structured notes. The killer feature is an MCP server that gives AI
+  agents persistent, categorized memory: notes, search, assets, categories, and
+  subfolders. Multi-tenant with tier system (trial, byok, managed). Deployed on Fly.io.
+
+logic:
+  mode: diagramming
+  version: '2.0'
+  networks:
+    - id: legato-platform
+      label: Legato Platform
+
+      factories:
+
+        # ═══════════════════════════════════════════════════════════
+        # FACTORY 1: Identity & Auth
+        # GitHub OAuth + session management + user state persistence
+        # REQ-LEGA-001 anchored here — user record is the source of truth
+        # ═══════════════════════════════════════════════════════════
+        - id: identity-factory
+          label: Identity & Auth
+
+          machines:
+            - id: auth-machine
+              label: Authentication Pipeline
+              nodes:
+                - id: github-oauth
+                  type: gateway
+                  title: GitHub OAuth
+                  description: >
+                    OAuth2 flow via GitHub. All users authenticate through GitHub SSO.
+                    No local passwords. Receives code, exchanges for access token,
+                    fetches user profile (login, id, email).
+                  requirements:
+                    - REQ-LEGA-001
+                  outputs: [user-lookup]
+
+                - id: user-lookup
+                  type: decision
+                  title: User Lookup & Recreation Guard
+                  description: >
+                    After OAuth success, looks up user by github_id or github_login.
+                    If not found: attempts recreation by searching alternate identifiers
+                    before creating a fresh record. NEVER resets tier, is_beta, or
+                    Stripe IDs during recreation — preserves all existing state fields.
+                    REQ-LEGA-001 guard lives here.
+                  requirements:
+                    - REQ-LEGA-001
+                  outputs: [session-issuer]
+
+                - id: session-issuer
+                  type: process
+                  title: Session Issuer
+                  description: >
+                    Issues server-side sessions after successful authentication.
+                    Session carries user_id; all tier/beta lookups go back to DB,
+                    never cached in the session cookie.
+                  outputs: [auth-cookie]
+
+                - id: auth-cookie
+                  type: cache
+                  title: Auth Cookie Store
+                  description: >
+                    Stores session tokens. Short-lived, references user_id only.
+                    Cold-start and pod restart safe — state lives in the DB, not here.
+
+            - id: user-state-machine
+              label: User State Store
+              nodes:
+                - id: user-db
+                  type: database
+                  title: User Database
+                  description: >
+                    SQLite user records: user_id, github_id, github_login, tier,
+                    is_beta, stripe_customer_id, stripe_subscription_id,
+                    trial_started_at, created_at, updated_at.
+                    This is the authoritative source of truth for all user state.
+                    Never populated with defaults that would silently overwrite
+                    existing tier or beta flags.
+                  requirements:
+                    - REQ-LEGA-001
+                  outputs: [tier-resolver]
+
+                - id: tier-resolver
+                  type: process
+                  title: Effective Tier Resolver
+                  description: >
+                    get_effective_tier() — resolves what tier a user actually has.
+                    Beta users always return 'managed' regardless of raw tier field.
+                    Trial users checked for expiry. Byok/managed tiers pass through.
+                    Always reads from DB; never infers from session.
+                  requirements:
+                    - REQ-LEGA-001
+                  outputs: [tier-gate]
+
+                - id: tier-gate
+                  type: firewall
+                  title: Tier Access Gate
+                  description: >
+                    Enforces feature access based on effective tier. Trial users get
+                    limited note/asset counts. Byok users supply own LLM key.
+                    Managed users get full platform access including MCP server.
+
+          # Cross-machine node: auth bridge connects auth pipeline to user state store
+          nodes:
+            - id: auth-bridge
+              type: process
+              title: Auth → State Bridge
+              description: >
+                After session issuance, reads user state from DB to populate
+                request context. All handlers receive effective_tier and is_beta
+                from this bridge — no stale session data used.
+              requirements:
+                - REQ-LEGA-001
+              inputs: [auth-machine, user-state-machine]
+
+        # ═══════════════════════════════════════════════════════════
+        # FACTORY 2: Billing & Subscription
+        # Stripe checkout, webhooks, subscription state management
+        # REQ-LEGA-001 anchored here — webhooks must not reset user state
+        # ═══════════════════════════════════════════════════════════
+        - id: billing-factory
+          label: Billing & Subscription
+
+          machines:
+            - id: checkout-machine
+              label: Checkout Pipeline
+              nodes:
+                - id: stripe-checkout
+                  type: api
+                  title: Stripe Checkout Handler
+                  description: >
+                    Creates Stripe Checkout Sessions for plan upgrades.
+                    Associates stripe_customer_id with user record before
+                    redirecting. Never creates duplicate customers.
+                  outputs: [checkout-success]
+
+                - id: checkout-success
+                  type: process
+                  title: Checkout Success Handler
+                  description: >
+                    Processes successful checkout redirects. Upserts
+                    stripe_customer_id and stripe_subscription_id into the
+                    user record. Does NOT use session data — re-fetches from
+                    Stripe and DB to ensure accuracy.
+                  outputs: [billing-portal]
+
+                - id: billing-portal
+                  type: api
+                  title: Billing Portal
+                  description: >
+                    Stripe Customer Portal session creation. Allows users to
+                    manage their subscription, update payment, cancel, etc.
+
+            - id: webhook-machine
+              label: Stripe Webhook Engine
+              nodes:
+                - id: webhook-receiver
+                  type: api
+                  title: Webhook Receiver
+                  description: >
+                    Receives Stripe webhook events. Verifies HMAC signature
+                    before processing. Routes to event-specific handlers.
+                  requirements:
+                    - REQ-LEGA-001
+                  outputs: [webhook-router]
+
+                - id: webhook-router
+                  type: decision
+                  title: Webhook Event Router
+                  description: >
+                    Routes webhook events: checkout.session.completed,
+                    customer.subscription.updated, customer.subscription.deleted,
+                    invoice.payment_succeeded. Each path updates user state safely.
+                  requirements:
+                    - REQ-LEGA-001
+                  outputs: [subscription-updater]
+
+                - id: subscription-updater
+                  type: process
+                  title: Subscription State Updater
+                  description: >
+                    Updates user tier based on Stripe subscription events.
+                    CRITICAL guards enforced here per REQ-LEGA-001:
+                    (1) If price_id lookup fails (system_config not initialized),
+                        preserve existing tier — do NOT fall back to 'trial'.
+                    (2) If user is_beta=1, skip all tier changes unconditionally.
+                    (3) On subscription.deleted, beta users are never downgraded.
+                    Reads existing user record before any write to detect regressions.
+                  requirements:
+                    - REQ-LEGA-001
+                  outputs: [stripe-product-config]
+
+                - id: stripe-product-config
+                  type: database
+                  title: Stripe Product Config
+                  description: >
+                    system_config table: maps Stripe price_ids to tier names.
+                    Canonical schema has both created_at and updated_at columns.
+                    Populated by init_stripe_products_on_startup() at app boot.
+                    If missing, webhook handlers preserve user tier rather than
+                    silently defaulting to 'trial'.
+                  requirements:
+                    - REQ-LEGA-001
+
+          # Cross-machine node: billing bridge connects checkout and webhook engines
+          nodes:
+            - id: billing-bridge
+              type: process
+              title: Billing Coordination Bridge
+              description: >
+                Coordinates between checkout flow and webhook handlers.
+                Ensures stripe_customer_id is consistent across both paths.
+                Prevents race conditions between checkout callback and webhook.
+              requirements:
+                - REQ-LEGA-001
+              inputs: [checkout-machine, webhook-machine]
+
+        # ═══════════════════════════════════════════════════════════
+        # FACTORY 3: Voice Pipeline
+        # Voice capture → transcription → note creation
+        # ═══════════════════════════════════════════════════════════
+        - id: voice-factory
+          label: Voice Pipeline
+
+          machines:
+            - id: capture-machine
+              label: Voice Capture
+              nodes:
+                - id: voice-input
+                  type: input
+                  title: Voice Input
+                  description: >
+                    Browser MediaRecorder API captures audio. Streams or sends
+                    chunks to the transcription endpoint. Supports WAV and WebM.
+                  outputs: [transcription-engine]
+
+                - id: transcription-engine
+                  type: ai
+                  title: Transcription Engine
+                  description: >
+                    Whisper-based transcription (or BYOK path for byok-tier users).
+                    Receives audio blob, returns raw transcript text.
+                    Managed-tier uses platform-hosted model; byok-tier uses user's key.
+                  outputs: [transcript-cleaner]
+
+                - id: transcript-cleaner
+                  type: process
+                  title: Transcript Cleaner
+                  description: >
+                    Post-processes raw transcript: strips filler words, normalizes
+                    punctuation, segments by natural pauses. Prepares clean text
+                    for note creation.
+
+            - id: note-creation-machine
+              label: Note Creation Pipeline
+              nodes:
+                - id: note-extractor
+                  type: ai
+                  title: Note Extractor
+                  description: >
+                    LLM-assisted extraction: turns clean transcript into structured
+                    note with title, body, tags, and suggested category. Uses user's
+                    BYOK key or platform key depending on tier.
+                  outputs: [note-writer]
+
+                - id: note-writer
+                  type: process
+                  title: Note Writer
+                  description: >
+                    Persists the extracted note to the notes table. Assigns category,
+                    embeds tags, links to user. Triggers embedding generation for RAG.
+                  outputs: [note-store]
+
+                - id: note-store
+                  type: database
+                  title: Note Store
+                  description: >
+                    SQLite notes table: id, user_id, title, body, category_id,
+                    subfolder_id, tags, created_at, updated_at. Central knowledge
+                    store for all user notes created via voice or direct input.
+
+          # Cross-machine node: pipeline bridge connects capture to note creation
+          nodes:
+            - id: voice-pipeline-bridge
+              type: process
+              title: Voice → Note Bridge
+              description: >
+                Passes cleaned transcript from capture machine to the note
+                extraction pipeline. Carries user context (tier, byok key) through
+                the full pipeline so each step uses the correct model path.
+              inputs: [capture-machine, note-creation-machine]
+
+        # ═══════════════════════════════════════════════════════════
+        # FACTORY 4: Knowledge Engine
+        # RAG engine + MCP server — the core value of Legato
+        # ═══════════════════════════════════════════════════════════
+        - id: knowledge-factory
+          label: Knowledge Engine
+
+          machines:
+            - id: rag-machine
+              label: RAG Engine
+              nodes:
+                - id: embedding-generator
+                  type: ai
+                  title: Embedding Generator
+                  description: >
+                    Generates vector embeddings for notes and assets on create/update.
+                    Uses sentence-transformers or BYOK embedding provider.
+                    Embeddings stored as binary BLOBs alongside note records.
+                  outputs: [embedding-store]
+
+                - id: embedding-store
+                  type: database
+                  title: Embedding Store
+                  description: >
+                    SQLite table storing vector embeddings per note.
+                    Paired with the note record. Pure SQLite — no external
+                    vector DB dependency. Cosine similarity done in Python.
+                  outputs: [semantic-search]
+
+                - id: semantic-search
+                  type: process
+                  title: Semantic Search Engine
+                  description: >
+                    Brute-force cosine similarity over all user embeddings.
+                    Returns top-K notes ranked by semantic relevance to query.
+                    Scoped strictly to the authenticated user's notes.
+
+            - id: mcp-machine
+              label: MCP Server
+              nodes:
+                - id: mcp-server
+                  type: server
+                  title: MCP Server
+                  description: >
+                    The killer feature. Exposes persistent, categorized memory
+                    to AI agents via the Model Context Protocol. Tools: create_note,
+                    get_note, get_notes, search_library, list_categories,
+                    list_subfolders, upload_asset, get_asset, delete_note, etc.
+                    Each tool is scoped to the authenticated user's data.
+                  outputs: [mcp-tool-router]
+
+                - id: mcp-tool-router
+                  type: process
+                  title: MCP Tool Router
+                  description: >
+                    Routes MCP tool calls to the appropriate handler. Validates
+                    user auth on every call. Dispatches to notes, assets, search,
+                    categories, or subfolder handlers.
+                  outputs: [asset-store]
+
+                - id: asset-store
+                  type: database
+                  title: Asset Store
+                  description: >
+                    Stores binary assets (images, PDFs, files) associated with
+                    user notes. Referenced via MCP get_asset/upload_asset tools.
+                    Per-user storage quotas enforced by tier.
+
+          # Cross-machine node: knowledge bridge connects RAG and MCP
+          nodes:
+            - id: knowledge-bridge
+              type: orchestrator
+              title: Knowledge Orchestrator
+              description: >
+                Connects the RAG engine and MCP server. MCP search_library tool
+                calls flow through here to the semantic search engine. Note writes
+                from MCP tools trigger embedding generation in the RAG engine.
+                Central coordination point for all knowledge operations.
+              inputs: [rag-machine, mcp-machine]
+
+        # ═══════════════════════════════════════════════════════════
+        # FACTORY 5: Platform Operations
+        # Admin panel, tier enforcement, Fly.io deployment
+        # ═══════════════════════════════════════════════════════════
+        - id: platform-factory
+          label: Platform Operations
+
+          machines:
+            - id: admin-machine
+              label: Admin Panel
+              nodes:
+                - id: admin-api
+                  type: api
+                  title: Admin API
+                  description: >
+                    Protected admin endpoints: user listing, tier overrides, beta
+                    flag grants, state audit. Requires admin session. All mutations
+                    log to audit trail.
+                  outputs: [admin-user-manager]
+
+                - id: admin-user-manager
+                  type: process
+                  title: Admin User Manager
+                  description: >
+                    Handles admin operations: grant/revoke beta status, manually set
+                    tier, force-recreate user, inspect raw user state. Beta grants
+                    via this path are authoritative — they survive webhook events.
+                  requirements:
+                    - REQ-LEGA-001
+                  outputs: [state-audit-api]
+
+                - id: state-audit-api
+                  type: api
+                  title: State Audit API
+                  description: >
+                    GET /admin/api/user/<id>/state — returns raw tier, effective_tier,
+                    is_beta, stripe_customer_id, stripe_subscription_id, trial status.
+                    GET /admin/api/users/state — same for all users.
+                    Used to verify REQ-LEGA-001 compliance after webhook events.
+                  requirements:
+                    - REQ-LEGA-001
+
+            - id: deployment-machine
+              label: Fly.io Deployment
+              nodes:
+                - id: fly-app
+                  type: cloud
+                  title: Fly.io Application Host
+                  description: >
+                    Deployed as a Fly.io app. Single container running the Flask
+                    application. Fly.io handles TLS, anycast routing, and cold starts.
+                    Volumes mounted for SQLite persistence across restarts.
+                  outputs: [fly-volume]
+
+                - id: fly-volume
+                  type: database
+                  title: Fly.io Persistent Volume
+                  description: >
+                    Fly.io volume mount at /data — hosts the SQLite database file.
+                    Survives pod restarts. Cold starts re-attach the same volume;
+                    user state persists across Fly machine cycling.
+                  requirements:
+                    - REQ-LEGA-001
+                  outputs: [startup-init]
+
+                - id: startup-init
+                  type: process
+                  title: App Startup Initializer
+                  description: >
+                    create_app() initialization sequence: DB schema init →
+                    init_stripe_products_on_startup() → register blueprints.
+                    Stripe product config must be populated before webhooks fire.
+                    Ensures system_config table is ready so webhook handlers
+                    never fall back to default tiers.
+                  requirements:
+                    - REQ-LEGA-001
+
+          # Cross-machine node: platform orchestrator bridges admin and deployment
+          nodes:
+            - id: platform-ops-bridge
+              type: monitor
+              title: Platform Ops Monitor
+              description: >
+                Monitors platform health — connects admin panel visibility to
+                the underlying deployment and database state. Surfaces Fly.io
+                volume status, startup init success, and user state integrity
+                metrics to the admin panel.
+              inputs: [admin-machine, deployment-machine]
+
+      # ═══════════════════════════════════════════════════════════
+      # NETWORK-LEVEL CROSS-FACTORY NODES
+      # Connect the five factories at the platform level
+      # ═══════════════════════════════════════════════════════════
+      nodes:
+        - id: platform-orchestrator
+          type: orchestrator
+          title: Legato Platform Orchestrator
+          description: >
+            Top-level coordination node. User authentication (identity-factory)
+            gates access to all other subsystems. Billing state (billing-factory)
+            determines tier, which gates voice pipeline (voice-factory) and
+            knowledge engine (knowledge-factory) feature access. Platform ops
+            (platform-factory) provides admin visibility and Fly.io hosting for all.
+          requirements:
+            - REQ-LEGA-001
+          inputs: [identity-factory, billing-factory]
+          outputs: [voice-factory, knowledge-factory, platform-factory]
