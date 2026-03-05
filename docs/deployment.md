@@ -1,4 +1,4 @@
-# Legato Deployment Guide
+# Legate Studio Deployment Guide
 
 ## Architecture Overview
 
@@ -44,7 +44,7 @@ graph TB
 
 **fly.toml:**
 ```toml
-app = "legato-pit"
+app = "legate-studio"
 primary_region = "iad"
 
 [build]
@@ -95,7 +95,7 @@ fly secrets set JWT_SECRET_KEY="$(openssl rand -hex 32)"
 fly auth login
 
 # Create app (first time)
-fly apps create legato-pit
+fly apps create legate-studio
 
 # Create persistent volume
 fly volumes create legato_data --size 1 --region iad
@@ -295,7 +295,7 @@ curl https://legate.studio/memory/api/health
 
 ```bash
 # Fly.io logs
-fly logs -a legato-pit
+fly logs -a legate-studio
 
 # GitHub Actions logs
 # View in GitHub → Legato.Conduct → Actions
@@ -318,7 +318,7 @@ Key metrics to monitor:
 
 ```bash
 # SSH into Fly machine
-fly ssh console -a legato-pit
+fly ssh console -a legate-studio
 
 # Backup databases
 sqlite3 /data/legato.db ".backup /data/legato-backup.db"
@@ -344,10 +344,10 @@ git clone git@github.com:username/Legate.Library.git
 
 ```bash
 # Check logs
-fly logs -a legato-pit
+fly logs -a legate-studio
 
 # SSH and check
-fly ssh console -a legato-pit
+fly ssh console -a legate-studio
 ls -la /data/
 python -c "import flask; print(flask.__version__)"
 ```

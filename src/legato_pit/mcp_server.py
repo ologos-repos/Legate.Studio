@@ -485,7 +485,7 @@ TOOLS = [
     },
     {
         "name": "spawn_agent",
-        "description": "Queue a chord project for human approval. Links 1-5 existing library notes to create a project that will be implemented by GitHub Copilot after approval. The project appears in the Legato agent queue for review.",
+        "description": "Queue a chord project for human approval. Links 1-5 existing library notes to create a project that will be implemented by GitHub Copilot after approval. The project appears in the Legate Studio agent queue for review.",
         "inputSchema": {
             "type": "object",
             "properties": {

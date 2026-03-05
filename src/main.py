@@ -1,5 +1,5 @@
 """
-Legato.Pit - Dashboard and Transcript Dropbox for LEGATO
+Legate Studio - Dashboard and Transcript Dropbox
 """
 from legato_pit.core import create_app
 from dotenv import load_dotenv
@@ -23,5 +23,5 @@ if __name__ == '__main__':
     port = int(os.getenv('PORT', 8000))
     debug = os.getenv('FLASK_ENV') == 'development'
 
-    logger.info(f"Starting Legato.Pit on port {port} (debug={debug})")
+    logger.info(f"Starting Legate Studio on port {port} (debug={debug})")
     app.run(host='0.0.0.0', port=port, debug=debug)

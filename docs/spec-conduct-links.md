@@ -259,7 +259,7 @@ CONDUCT_DETECT_LINKS=true
 CONDUCT_LINK_SIMILARITY_THRESHOLD=0.85
 
 # Pit API URL for correlation checks
-PIT_API_URL=https://legato-pit.fly.dev
+PIT_API_URL=https://legate.studio
 
 # Include links in spawned projects
 CONDUCT_INCLUDE_PROJECT_LINKS=true

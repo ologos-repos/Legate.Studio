@@ -1,1 +1,1 @@
-# Legato.Pit test suite
+# Legate Studio test suite

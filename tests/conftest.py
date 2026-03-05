@@ -1,5 +1,5 @@
 """
-Legato.Pit test fixtures.
+Legate Studio test fixtures.
 
 Creates a minimal Flask test client that works without any external services
 (no OPENAI_API_KEY, STRIPE_SECRET_KEY, SYSTEM_PAT, etc.).

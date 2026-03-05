@@ -853,7 +853,7 @@ def require_mcp_auth(f):
                 "token_endpoint": f"{base}/oauth/token",
                 "grant_types_supported": ["authorization_code", "refresh_token"]
             }), 401, {
-                'WWW-Authenticate': 'Bearer realm="legato-pit", error="invalid_token"'
+                'WWW-Authenticate': 'Bearer realm="legate-studio", error="invalid_token"'
             }
 
         logger.debug(f"MCP auth successful for user: {claims.get('sub')}")

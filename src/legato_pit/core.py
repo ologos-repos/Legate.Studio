@@ -529,7 +529,7 @@ def create_app():
     def ratelimit_error(error):
         return render_template('error.html', title="Rate Limited", message="Too many requests. Please wait."), 429
 
-    logger.info("Legato.Pit application initialized")
+    logger.info("Legate Studio application initialized")
     return app
 
 
