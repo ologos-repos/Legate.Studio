@@ -510,12 +510,12 @@ def create_app():
             "trial_expired": trial_expired,
         }
 
-    # Root redirect
+    # Root route — landing page for visitors, dashboard redirect for authenticated users
     @app.route("/")
     def index():
         if "user" in session:
             return redirect(url_for("dashboard.index"))
-        return redirect(url_for("auth.login"))
+        return render_template("landing.html")
 
     # Health check (no auth required)
     @app.route("/health")

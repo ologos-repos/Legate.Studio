@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Legate Studio — Record your thoughts. Build a knowledge graph. Chat with your second brain.">
+    <meta name="theme-color" content="#0d1117">
+    <title>Legate Studio — Your Personal Knowledge Base</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/favicon.png') }}" type="image/png">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+    <!-- Theme init: run before paint to avoid flash -->
+    <script>
+        (function() {
+            var saved = localStorage.getItem('theme');
+            if (saved === 'dark' || saved === 'light') {
+                document.documentElement.setAttribute('data-theme', saved);
+            } else {
+                var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+            }
+        })();
+    </script>
+
+    <style>
+        /* ===== Landing Page Reset & Base ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        /* ===== Fixed Nav ===== */
+        .landing-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            height: 56px;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            gap: 1.5rem;
+            transition: background 150ms ease, border-color 150ms ease;
+        }
+
+        .landing-nav.scrolled {
+            background: var(--bg-secondary);
+            border-bottom-color: var(--border-color);
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            flex-shrink: 0;
+        }
+
+        .nav-logo img {
+            height: 28px;
+            width: auto;
+        }
+
+        .nav-logo-name {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin: 0 auto;
+        }
+
+        .nav-links a {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            transition: color 150ms ease, background 150ms ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+            background: var(--hover-tint);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .btn-signin {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            padding: 0.375rem 0.875rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            transition: color 150ms ease, border-color 150ms ease, background 150ms ease;
+        }
+
+        .btn-signin:hover {
+            color: var(--text-primary);
+            border-color: var(--border-strong);
+            background: var(--hover-tint);
+        }
+
+        .nav-theme-toggle {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+            flex-shrink: 0;
+        }
+
+        .nav-theme-toggle:hover {
+            border-color: var(--border-strong);
+            color: var(--text-primary);
+            background: var(--hover-tint);
+        }
+
+        .nav-theme-toggle svg {
+            width: 15px;
+            height: 15px;
+        }
+
+        /* Mobile hamburger */
+        .nav-hamburger {
+            display: none;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+        }
+
+        /* Mobile nav drawer */
+        .mobile-nav-drawer {
+            display: none;
+            position: fixed;
+            top: 56px;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.75rem 1.5rem 1rem;
+            flex-direction: column;
+            gap: 0.25rem;
+            z-index: 99;
+        }
+
+        .mobile-nav-drawer.open {
+            display: flex;
+        }
+
+        .mobile-nav-drawer a {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            padding: 0.625rem 0.5rem;
+            border-radius: 6px;
+            transition: color 150ms ease, background 150ms ease;
+        }
+
+        .mobile-nav-drawer a:hover {
+            color: var(--text-primary);
+            background: var(--hover-tint);
+        }
+
+        /* ===== Page Layout ===== */
+        .landing-main {
+            padding-top: 56px; /* nav height */
+        }
+
+        .section {
+            padding: 5rem 1.5rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .section-sm {
+            padding: 4rem 1.5rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: clamp(1.5rem, 3vw, 2.25rem);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            margin-bottom: 0.875rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.0625rem;
+            color: var(--text-secondary);
+            line-height: 1.65;
+            max-width: 560px;
+        }
+
+        /* ===== Hero ===== */
+        .hero {
+            padding: 5rem 1.5rem 4.5rem;
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 2rem;
+        }
+
+        .hero-logo {
+            height: 72px;
+            width: auto;
+            opacity: 0.96;
+            border-radius: 16px;
+        }
+
+        [data-theme="light"] .hero-logo {
+            filter: invert(1);
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.3125rem 0.875rem;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+        }
+
+        .hero-badge-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            flex-shrink: 0;
+        }
+
+        .hero-headline {
+            font-size: clamp(2rem, 5vw, 3.25rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: var(--text-primary);
+            line-height: 1.15;
+            max-width: 760px;
+        }
+
+        .hero-subheadline {
+            font-size: clamp(1rem, 2vw, 1.1875rem);
+            color: var(--text-secondary);
+            max-width: 560px;
+            line-height: 1.65;
+        }
+
+        .hero-cta-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            font-size: 0.9375rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 150ms ease;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.88;
+        }
+
+        .btn-ghost {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: color 150ms ease, border-color 150ms ease, background 150ms ease;
+        }
+
+        .btn-ghost:hover {
+            color: var(--text-primary);
+            border-color: var(--border-strong);
+            background: var(--hover-tint);
+        }
+
+        .hero-trial-note {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        /* Hero separator */
+        .hero-divider {
+            width: 100%;
+            height: 1px;
+            background: var(--border-subtle);
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* ===== How It Works ===== */
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5px;
+            background: var(--border-subtle);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 3rem;
+        }
+
+        .step-card {
+            background: var(--bg-primary);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .step-num {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+        }
+
+        .step-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+        }
+
+        .step-desc {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            line-height: 1.65;
+        }
+
+        /* ===== Features ===== */
+        .features-header {
+            margin-bottom: 3rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1px;
+            background: var(--border-subtle);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .feature-card {
+            background: var(--bg-primary);
+            padding: 1.75rem 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.625rem;
+            transition: background 150ms ease;
+        }
+
+        .feature-card:hover {
+            background: var(--hover-tint);
+        }
+
+        .feature-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .feature-icon svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .feature-name {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+        }
+
+        .feature-tag {
+            display: inline-block;
+            font-size: 0.6875rem;
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            border: 1px solid var(--border-subtle);
+            border-radius: 3px;
+            padding: 0.125rem 0.375rem;
+            margin-bottom: 0.25rem;
+            align-self: flex-start;
+        }
+
+        .feature-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* ===== Pricing ===== */
+        .pricing-section {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-subtle);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+
+        .pricing-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            position: relative;
+            transition: border-color 150ms ease;
+        }
+
+        .pricing-card:hover {
+            border-color: var(--border-strong);
+        }
+
+        .pricing-card.featured {
+            border-color: var(--border-strong);
+        }
+
+        .pricing-featured-badge {
+            position: absolute;
+            top: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.6875rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--bg-primary);
+            background: var(--text-primary);
+            padding: 0.25rem 0.875rem;
+            border-radius: 0 0 6px 6px;
+        }
+
+        .pricing-tier-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .pricing-price {
+            display: flex;
+            align-items: baseline;
+            gap: 0.25rem;
+        }
+
+        .pricing-amount {
+            font-size: 2.25rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: var(--text-primary);
+        }
+
+        .pricing-period {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .pricing-tagline {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .pricing-divider {
+            height: 1px;
+            background: var(--border-subtle);
+        }
+
+        .pricing-features {
+            display: flex;
+            flex-direction: column;
+            gap: 0.625rem;
+            list-style: none;
+            flex: 1;
+        }
+
+        .pricing-features li {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.625rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .pricing-features li::before {
+            content: '';
+            width: 14px;
+            height: 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 2px;
+            background: radial-gradient(circle at center, var(--text-muted) 0%, var(--text-muted) 35%, transparent 35%);
+        }
+
+        .pricing-cta {
+            display: block;
+            text-align: center;
+            padding: 0.6875rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: color 150ms ease, border-color 150ms ease, background 150ms ease;
+        }
+
+        .pricing-cta:hover {
+            color: var(--text-primary);
+            border-color: var(--border-strong);
+            background: var(--hover-tint);
+        }
+
+        .pricing-card.featured .pricing-cta {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            border-color: transparent;
+        }
+
+        .pricing-card.featured .pricing-cta:hover {
+            opacity: 0.88;
+        }
+
+        /* ===== FAQ ===== */
+        .faq-list {
+            margin-top: 3rem;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+
+        .faq-question {
+            width: 100%;
+            text-align: left;
+            background: var(--bg-primary);
+            border: none;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            cursor: pointer;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            transition: background 150ms ease, color 150ms ease;
+        }
+
+        .faq-question:hover {
+            background: var(--hover-tint);
+        }
+
+        .faq-question[aria-expanded="true"] {
+            background: var(--hover-tint);
+        }
+
+        .faq-chevron {
+            width: 16px;
+            height: 16px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            transition: transform 200ms ease;
+        }
+
+        .faq-question[aria-expanded="true"] .faq-chevron {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            display: none;
+            padding: 0 1.5rem 1.25rem;
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            background: var(--hover-tint);
+        }
+
+        .faq-answer.open {
+            display: block;
+        }
+
+        /* ===== Final CTA ===== */
+        .final-cta-section {
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .final-cta-inner {
+            padding: 5rem 1.5rem;
+            max-width: 680px;
+            margin: 0 auto;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .final-cta-title {
+            font-size: clamp(1.75rem, 4vw, 2.5rem);
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        .final-cta-sub {
+            font-size: 1.0625rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* ===== Footer ===== */
+        .landing-footer {
+            border-top: 1px solid var(--border-subtle);
+            padding: 2rem 1.5rem;
+        }
+
+        .footer-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-logo img {
+            height: 20px;
+            width: auto;
+            opacity: 0.7;
+        }
+
+        [data-theme="light"] .footer-logo img {
+            filter: invert(1);
+        }
+
+        .footer-logo-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .footer-links {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .footer-links a {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            transition: color 150ms ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--text-secondary);
+        }
+
+        .footer-copy {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .nav-hamburger {
+                display: flex;
+            }
+
+            .steps-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero {
+                padding: 3.5rem 1.25rem 3rem;
+            }
+
+            .section {
+                padding: 3.5rem 1.25rem;
+            }
+
+            .section-sm {
+                padding: 3rem 1.25rem;
+            }
+
+            .footer-inner {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .footer-links {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-cta-group {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .btn-primary, .btn-ghost {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .nav-logo-name {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== Fixed Nav ===== -->
+<nav class="landing-nav" id="landingNav">
+    <a href="/" class="nav-logo">
+        <img src="{{ url_for('static', filename='img/logo-dark.png') }}"
+             alt="Legate Studio"
+             class="app-logo landing-nav-logo"
+             data-logo-dark="{{ url_for('static', filename='img/logo-dark.png') }}"
+             data-logo-light="{{ url_for('static', filename='img/logo-light.png') }}">
+        <span class="nav-logo-name">Legate Studio</span>
+    </a>
+
+    <div class="nav-links">
+        <a href="#features" onclick="smoothScroll(event,'features')">Features</a>
+        <a href="#pricing" onclick="smoothScroll(event,'pricing')">Pricing</a>
+        <a href="#faq" onclick="smoothScroll(event,'faq')">FAQ</a>
+    </div>
+
+    <div class="nav-actions">
+        <button class="nav-theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme" title="Toggle light/dark mode">
+            <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+            <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
+        <a href="{{ url_for('auth.login') }}" class="btn-signin">Sign In</a>
+    </div>
+
+    <button class="nav-hamburger" id="navHamburger" onclick="toggleMobileNav()" aria-label="Toggle navigation">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+    </button>
+</nav>
+
+<!-- Mobile nav drawer -->
+<div class="mobile-nav-drawer" id="mobileNavDrawer">
+    <a href="#features" onclick="smoothScroll(event,'features');closeMobileNav()">Features</a>
+    <a href="#pricing" onclick="smoothScroll(event,'pricing');closeMobileNav()">Pricing</a>
+    <a href="#faq" onclick="smoothScroll(event,'faq');closeMobileNav()">FAQ</a>
+    <a href="{{ url_for('auth.login') }}" style="margin-top:0.5rem;font-weight:500;color:var(--text-primary)">Sign In</a>
+</div>
+
+<main class="landing-main">
+
+    <!-- ===== Hero ===== -->
+    <section class="hero">
+        <img src="{{ url_for('static', filename='img/logo-dark.png') }}"
+             alt="Legate Studio"
+             class="hero-logo app-logo"
+             data-logo-dark="{{ url_for('static', filename='img/logo-dark.png') }}"
+             data-logo-light="{{ url_for('static', filename='img/logo-light.png') }}">
+
+        <div class="hero-badge">
+            <span class="hero-badge-dot"></span>
+            14-day free trial &mdash; no credit card required
+        </div>
+
+        <h1 class="hero-headline">Your thoughts, organized into a knowledge graph</h1>
+
+        <p class="hero-subheadline">
+            Record your thoughts. Build a knowledge graph. Chat with your second brain.
+        </p>
+
+        <div class="hero-cta-group">
+            <a href="{{ url_for('auth.login') }}" class="btn-primary">
+                Start Free Trial
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+            </a>
+            <a href="#how-it-works" onclick="smoothScroll(event,'how-it-works')" class="btn-ghost">See how it works</a>
+        </div>
+
+        <p class="hero-trial-note">Full access for 14 days. Then BYOK from $0.99/month or Managed at $5/month.</p>
+    </section>
+
+    <div class="hero-divider"></div>
+
+    <!-- ===== How It Works ===== -->
+    <section id="how-it-works">
+        <div class="section">
+            <div class="section-label">How it works</div>
+            <h2 class="section-title">From thought to insight in three steps</h2>
+            <p class="section-subtitle">Legate turns your raw thoughts into a living knowledge base that you can actually have a conversation with.</p>
+
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-num">01</div>
+                    <div class="step-title">Capture</div>
+                    <p class="step-desc">Record a voice memo (Motif) or upload text from anywhere. Legate's AI transcribes, categorizes, and extracts structured knowledge automatically. No organizing required.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">02</div>
+                    <div class="step-title">Connect</div>
+                    <p class="step-desc">Your knowledge automatically forms a graph. See how your ideas relate to each other in a force-directed, interactive knowledge map. New entries find their place in the graph instantly.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">03</div>
+                    <div class="step-title">Converse</div>
+                    <p class="step-desc">Chat with your knowledge base using AI. Ask questions and get answers grounded in your own thoughts &mdash; not hallucinations. Your knowledge, your words, retrieved in context.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== Features ===== -->
+    <section id="features">
+        <div class="section">
+            <div class="features-header">
+                <div class="section-label">Features</div>
+                <h2 class="section-title">Everything a second brain needs</h2>
+                <p class="section-subtitle">Purpose-built tools for capturing, connecting, and conversing with your personal knowledge.</p>
+            </div>
+
+            <div class="features-grid">
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Capture</span>
+                    <div class="feature-name">Motifs</div>
+                    <p class="feature-desc">Voice memos and thought captures. Record on your phone or upload text &mdash; Legate's AI transcribes, categorizes, and extracts structured notes automatically.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Organize</span>
+                    <div class="feature-name">Library</div>
+                    <p class="feature-desc">Your personal knowledge base. Notes organized by categories, fully searchable, browsable by date or project. A home for everything you've captured.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <circle cx="12" cy="12" r="2"/>
+                            <circle cx="4" cy="6" r="2"/><circle cx="20" cy="6" r="2"/>
+                            <circle cx="4" cy="18" r="2"/><circle cx="20" cy="18" r="2"/>
+                            <path d="M6 6h4M14 6h4M6 18h4M14 18h4M12 10V6M12 14v4"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Visualize</span>
+                    <div class="feature-name">Knowledge Graph</div>
+                    <p class="feature-desc">A visual map of how your ideas connect. Force-directed, interactive, explorable. See clusters form as your knowledge grows &mdash; patterns emerge that you'd never see in a list.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Converse</span>
+                    <div class="feature-name">Chat</div>
+                    <p class="feature-desc">RAG-powered conversations with your knowledge base. Ask questions, get answers sourced from your own notes. Not generic AI &mdash; your knowledge, retrieved in context.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <polyline points="16 3 21 3 21 8"/>
+                            <line x1="4" y1="20" x2="21" y2="3"/>
+                            <polyline points="21 16 21 21 16 21"/>
+                            <line x1="15" y1="15" x2="21" y2="21"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Automate</span>
+                    <div class="feature-name">Chords</div>
+                    <p class="feature-desc">Automated workflows powered by GitHub Copilot. Multi-step operations on your knowledge &mdash; bulk tagging, cross-referencing, structured extraction, and more.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                            <path d="M8 21h8M12 17v4"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Integrate</span>
+                    <div class="feature-name">MCP Integration</div>
+                    <p class="feature-desc">Connect Legate to Claude Desktop and other AI tools via the Model Context Protocol. Use your knowledge base directly inside your favorite AI assistant.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Own Your Data</span>
+                    <div class="feature-name">GitHub-Backed</div>
+                    <p class="feature-desc">Your knowledge lives in a GitHub repository you own. Full version history, portable, exportable. Clone it anytime. Your second brain is yours &mdash; forever.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Privacy</span>
+                    <div class="feature-name">Private by Design</div>
+                    <p class="feature-desc">Your notes live in your own GitHub repo. We don't read your data, train on it, or store it beyond what's needed to run the app. Your knowledge is yours, full stop.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== Pricing ===== -->
+    <section id="pricing" class="pricing-section">
+        <div class="section">
+            <div class="section-label">Pricing</div>
+            <h2 class="section-title">Simple, transparent pricing</h2>
+            <p class="section-subtitle">Start free. Upgrade when you're ready. No surprise fees, no lock-in.</p>
+
+            <div class="pricing-grid">
+
+                <div class="pricing-card">
+                    <div class="pricing-tier-label">Free Trial</div>
+                    <div class="pricing-price">
+                        <span class="pricing-amount">$0</span>
+                        <span class="pricing-period">/ 14 days</span>
+                    </div>
+                    <p class="pricing-tagline">Full access to every feature. No credit card required.</p>
+                    <div class="pricing-divider"></div>
+                    <ul class="pricing-features">
+                        <li>All features unlocked</li>
+                        <li>GitHub-backed knowledge repo</li>
+                        <li>Voice memos &amp; text capture</li>
+                        <li>Knowledge graph &amp; chat</li>
+                        <li>MCP integration</li>
+                        <li>14 days, no strings attached</li>
+                    </ul>
+                    <a href="{{ url_for('auth.login') }}" class="pricing-cta">Start Free Trial</a>
+                </div>
+
+                <div class="pricing-card featured">
+                    <div class="pricing-featured-badge">Most Popular</div>
+                    <div class="pricing-tier-label">BYOK</div>
+                    <div class="pricing-price">
+                        <span class="pricing-amount">$0.99</span>
+                        <span class="pricing-period">/ month</span>
+                    </div>
+                    <p class="pricing-tagline">Bring your own API keys. Full features at the lowest possible price.</p>
+                    <div class="pricing-divider"></div>
+                    <ul class="pricing-features">
+                        <li>Everything in Free Trial</li>
+                        <li>Use your own OpenAI key</li>
+                        <li>Use your own Anthropic key</li>
+                        <li>Use your own Gemini key</li>
+                        <li>Pay only for what the AI actually costs you</li>
+                        <li>No markup on AI usage</li>
+                    </ul>
+                    <a href="{{ url_for('auth.login') }}" class="pricing-cta">Get Started</a>
+                </div>
+
+                <div class="pricing-card">
+                    <div class="pricing-tier-label">Managed</div>
+                    <div class="pricing-price">
+                        <span class="pricing-amount">$5</span>
+                        <span class="pricing-period">/ month</span>
+                    </div>
+                    <p class="pricing-tagline">We handle the AI. No API key setup, no billing complexity.</p>
+                    <div class="pricing-divider"></div>
+                    <ul class="pricing-features">
+                        <li>Everything in BYOK</li>
+                        <li>AI provided &amp; managed by us</li>
+                        <li>No API keys to configure</li>
+                        <li>Works out of the box</li>
+                        <li>Includes Claude, GPT &amp; Gemini access</li>
+                        <li>Priority support</li>
+                    </ul>
+                    <a href="{{ url_for('auth.login') }}" class="pricing-cta">Get Started</a>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FAQ ===== -->
+    <section id="faq">
+        <div class="section">
+            <div class="section-label">FAQ</div>
+            <h2 class="section-title">Common questions</h2>
+            <p class="section-subtitle">Everything you need to know before getting started.</p>
+
+            <div class="faq-list" role="list">
+
+                <div class="faq-item" role="listitem">
+                    <button class="faq-question" aria-expanded="false" onclick="toggleFaq(this)">
+                        What is a Motif?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        A Motif is a voice memo or text note that you feed into Legate. Upload an audio recording from your phone, paste in some text, or type directly &mdash; Legate's AI transcribes it, categorizes it, and extracts structured knowledge. The result appears in your Library and gets added to your knowledge graph automatically.
+                    </div>
+                </div>
+
+                <div class="faq-item" role="listitem">
+                    <button class="faq-question" aria-expanded="false" onclick="toggleFaq(this)">
+                        Do I need a GitHub account?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        Yes. Legate uses GitHub for authentication and stores your knowledge in a repository you own. This is intentional &mdash; your data lives in your GitHub account, not ours. You get full version history, portability, and ownership baked in from the start.
+                    </div>
+                </div>
+
+                <div class="faq-item" role="listitem">
+                    <button class="faq-question" aria-expanded="false" onclick="toggleFaq(this)">
+                        What's the difference between BYOK and Managed?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        BYOK (Bring Your Own Keys) means you add your own API keys from OpenAI, Anthropic, or Google. You pay those providers directly at their rates &mdash; we just charge $0.99/month for the platform. Managed means we provide the AI infrastructure: no keys to configure, no per-token billing from AI providers. Everything is handled for $5/month.
+                    </div>
+                </div>
+
+                <div class="faq-item" role="listitem">
+                    <button class="faq-question" aria-expanded="false" onclick="toggleFaq(this)">
+                        Is my data private?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        Your knowledge lives in your own GitHub repository. We don't store your notes, read your content for training purposes, or have access to your data beyond what's technically required to run the application. The GitHub repo is yours &mdash; private or public, it's your call.
+                    </div>
+                </div>
+
+                <div class="faq-item" role="listitem">
+                    <button class="faq-question" aria-expanded="false" onclick="toggleFaq(this)">
+                        What AI models are supported?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        Legate supports Claude (Anthropic), GPT models (OpenAI), and Gemini (Google). On BYOK, you pick which provider to use and plug in your own key. On Managed, you get access to all three without any setup.
+                    </div>
+                </div>
+
+                <div class="faq-item" role="listitem">
+                    <button class="faq-question" aria-expanded="false" onclick="toggleFaq(this)">
+                        Can I export my data?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        Your knowledge is already in a GitHub repository you own. You can clone it, fork it, or download it at any time &mdash; no export process needed. Your notes are Markdown files, readable by any editor. There's no lock-in.
+                    </div>
+                </div>
+
+                <div class="faq-item" role="listitem">
+                    <button class="faq-question" aria-expanded="false" onclick="toggleFaq(this)">
+                        What is a Chord?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        A Chord is an automated workflow that runs multi-step operations on your knowledge base using GitHub Copilot. Think bulk-categorization, cross-referencing related notes, structured extraction from large documents, or automated tagging. Chords are how Legate scales your knowledge management without scaling your effort.
+                    </div>
+                </div>
+
+                <div class="faq-item" role="listitem">
+                    <button class="faq-question" aria-expanded="false" onclick="toggleFaq(this)">
+                        What is MCP integration?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        MCP (Model Context Protocol) lets you connect Legate to Claude Desktop and other compatible AI tools. Once connected, you can query your knowledge base, create notes, and search your library directly from inside your AI assistant &mdash; without switching tabs.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== Final CTA ===== -->
+    <section class="final-cta-section">
+        <div class="final-cta-inner">
+            <h2 class="final-cta-title">Ready to build your second brain?</h2>
+            <p class="final-cta-sub">Start your 14-day free trial today. No credit card required. Full access from day one.</p>
+            <div class="hero-cta-group">
+                <a href="{{ url_for('auth.login') }}" class="btn-primary">
+                    Start Free Trial
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+                </a>
+                <a href="#pricing" onclick="smoothScroll(event,'pricing')" class="btn-ghost">See pricing</a>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- ===== Footer ===== -->
+<footer class="landing-footer">
+    <div class="footer-inner">
+        <div class="footer-logo">
+            <img src="{{ url_for('static', filename='img/logo-dark.png') }}"
+                 alt="Legate Studio"
+                 class="app-logo"
+                 data-logo-dark="{{ url_for('static', filename='img/logo-dark.png') }}"
+                 data-logo-light="{{ url_for('static', filename='img/logo-light.png') }}">
+            <span class="footer-logo-name">Legate Studio</span>
+        </div>
+
+        <div class="footer-links">
+            <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
+            <a href="#pricing" onclick="smoothScroll(event,'pricing')">Pricing</a>
+            <a href="{{ url_for('auth.login') }}">Sign In</a>
+        </div>
+
+        <p class="footer-copy">&copy; 2026 Legate Studio</p>
+    </div>
+</footer>
+
+<script>
+    // ===== Theme Toggle =====
+    function updateThemeIcon(theme) {
+        document.querySelectorAll('.theme-icon-moon').forEach(function(el) {
+            el.style.display = (theme === 'light') ? 'block' : 'none';
+        });
+        document.querySelectorAll('.theme-icon-sun').forEach(function(el) {
+            el.style.display = (theme === 'dark') ? 'block' : 'none';
+        });
+    }
+
+    function updateLogos(theme) {
+        document.querySelectorAll('.app-logo').forEach(function(img) {
+            if (theme === 'light') {
+                img.src = img.dataset.logoLight || img.dataset.logoDark;
+            } else {
+                img.src = img.dataset.logoDark;
+            }
+        });
+    }
+
+    function toggleTheme() {
+        var current = document.documentElement.getAttribute('data-theme');
+        var next = (current === 'dark') ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        updateThemeIcon(next);
+        updateLogos(next);
+    }
+
+    // ===== Smooth Scroll =====
+    function smoothScroll(e, id) {
+        e.preventDefault();
+        var el = document.getElementById(id);
+        if (el) {
+            var offset = 64; // nav height + buffer
+            var top = el.getBoundingClientRect().top + window.pageYOffset - offset;
+            window.scrollTo({ top: top, behavior: 'smooth' });
+        }
+    }
+
+    // ===== Mobile Nav =====
+    function toggleMobileNav() {
+        var drawer = document.getElementById('mobileNavDrawer');
+        drawer.classList.toggle('open');
+    }
+
+    function closeMobileNav() {
+        document.getElementById('mobileNavDrawer').classList.remove('open');
+    }
+
+    // Close mobile nav on outside click
+    document.addEventListener('click', function(e) {
+        var drawer = document.getElementById('mobileNavDrawer');
+        var hamburger = document.getElementById('navHamburger');
+        if (drawer.classList.contains('open') && !drawer.contains(e.target) && !hamburger.contains(e.target)) {
+            drawer.classList.remove('open');
+        }
+    });
+
+    // ===== Nav scroll effect =====
+    window.addEventListener('scroll', function() {
+        var nav = document.getElementById('landingNav');
+        if (window.scrollY > 20) {
+            nav.classList.add('scrolled');
+        } else {
+            nav.classList.remove('scrolled');
+        }
+    }, { passive: true });
+
+    // ===== FAQ Accordion =====
+    function toggleFaq(btn) {
+        var expanded = btn.getAttribute('aria-expanded') === 'true';
+        // Close all
+        document.querySelectorAll('.faq-question').forEach(function(q) {
+            q.setAttribute('aria-expanded', 'false');
+            var ans = q.nextElementSibling;
+            if (ans) ans.classList.remove('open');
+        });
+        // Open clicked if it was closed
+        if (!expanded) {
+            btn.setAttribute('aria-expanded', 'true');
+            var answer = btn.nextElementSibling;
+            if (answer) answer.classList.add('open');
+        }
+    }
+
+    // ===== Init =====
+    document.addEventListener('DOMContentLoaded', function() {
+        var theme = document.documentElement.getAttribute('data-theme') || 'dark';
+        updateThemeIcon(theme);
+        updateLogos(theme);
+    });
+</script>
+
+</body>
+</html>
