@@ -121,6 +121,15 @@
         display: none;
     }
 
+    @media (max-width: 480px) {
+        .graph-legend {
+            top: 0.25rem;
+            right: 0.25rem;
+            max-width: 140px;
+            font-size: 0.65rem;
+        }
+    }
+
     .legend-header {
         display: flex;
         justify-content: space-between;
@@ -348,6 +357,12 @@
     });
 
     function initGraph() {
+        // Auto-collapse legend on mobile to prevent overlap
+        if (window.innerWidth <= 480) {
+            const legend = document.getElementById('graphLegend');
+            if (legend) legend.classList.add('collapsed');
+        }
+
         const wrapper = document.getElementById('graphWrapper');
         const width = wrapper.clientWidth;
         const height = wrapper.clientHeight;
