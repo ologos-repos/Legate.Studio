@@ -67,14 +67,22 @@ def _load_or_create_master_key() -> str:
     conn.row_factory = sqlite3.Row
 
     try:
-        # Ensure system_config table exists
+        # Ensure system_config table exists with canonical schema (both created_at AND updated_at).
+        # The canonical definition lives in rag/database.py init_db(). This CREATE IF NOT EXISTS
+        # keeps crypto.py self-contained for startup ordering safety, and matches the schema there.
         conn.execute("""
             CREATE TABLE IF NOT EXISTS system_config (
                 key TEXT PRIMARY KEY,
                 value TEXT NOT NULL,
-                created_at TEXT DEFAULT CURRENT_TIMESTAMP
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             )
         """)
+        # Migration: add updated_at if table was created by an older version of this file
+        try:
+            conn.execute("ALTER TABLE system_config ADD COLUMN updated_at TEXT DEFAULT CURRENT_TIMESTAMP")
+        except Exception:
+            pass  # Column already exists
         conn.commit()
 
         # Try to load existing key

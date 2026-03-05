@@ -719,6 +719,27 @@ def init_db(db_path: Optional[Path] = None, user_id: Optional[str] = None) -> sq
         )
     """)
 
+    # ============ System Configuration Table (canonical schema) ============
+
+    # Canonical system_config table with BOTH created_at AND updated_at.
+    # This is the authoritative CREATE — crypto.py's CREATE TABLE is kept for
+    # backward-compat isolation but this migration ensures the column set is complete.
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS system_config (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    # Migration: add updated_at if this table was created by the old crypto.py schema
+    # (which only had created_at). Safe no-op if column already exists.
+    try:
+        cursor.execute("ALTER TABLE system_config ADD COLUMN updated_at TEXT DEFAULT CURRENT_TIMESTAMP")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+
     # Multi-tenant indexes
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_users_github ON users(github_id)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_users_login ON users(github_login)")

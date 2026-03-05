@@ -182,6 +182,10 @@ def create_app():
         init_chat_db()   # chat.db - chat sessions/messages
         logger.info("All databases initialized (legato.db, agents.db, chat.db)")
 
+    # Initialize Stripe products after DB is ready (no-op if STRIPE_SECRET_KEY not set)
+    from .stripe_billing import init_stripe_products_on_startup
+    init_stripe_products_on_startup(app)
+
     # Initialize chat session manager (in-memory caching with periodic flush)
     from .rag.chat_session_manager import init_chat_manager, shutdown_chat_manager
     chat_manager = init_chat_manager(app)

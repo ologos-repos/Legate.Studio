@@ -372,6 +372,27 @@ def handle_checkout_completed(session_data: dict):
 
     db = _get_db()
 
+    # Check is_beta FIRST — beta users are immune to webhook tier changes (admin-managed)
+    user = db.execute(
+        "SELECT github_login, is_beta FROM users WHERE user_id = ?",
+        (user_id,)
+    ).fetchone()
+    if user and user['is_beta']:
+        logger.info(
+            f"Skipping checkout tier activation for beta user {user['github_login']} "
+            f"— beta tier is admin-managed. Still recording Stripe IDs."
+        )
+        # Still record customer/subscription IDs even for beta users — useful for admin visibility
+        db.execute("""
+            UPDATE users SET
+                stripe_subscription_id = COALESCE(stripe_subscription_id, ?),
+                stripe_customer_id = COALESCE(stripe_customer_id, ?),
+                updated_at = CURRENT_TIMESTAMP
+            WHERE user_id = ?
+        """, (subscription_id, customer_id, user_id))
+        db.commit()
+        return
+
     # Update user's tier and subscription
     db.execute("""
         UPDATE users SET
@@ -394,9 +415,9 @@ def handle_subscription_updated(subscription: dict):
 
     db = _get_db()
 
-    # Find user by subscription or customer ID
+    # Find user by subscription or customer ID — fetch is_beta and current tier too
     user = db.execute(
-        "SELECT user_id, github_login FROM users WHERE stripe_subscription_id = ? OR stripe_customer_id = ?",
+        "SELECT user_id, github_login, tier, is_beta FROM users WHERE stripe_subscription_id = ? OR stripe_customer_id = ?",
         (subscription_id, customer_id)
     ).fetchone()
 
@@ -404,21 +425,41 @@ def handle_subscription_updated(subscription: dict):
         logger.warning(f"Subscription updated but no user found: {subscription_id}")
         return
 
+    # Beta users are immune to webhook tier changes — their tier is managed by admins
+    if user['is_beta']:
+        logger.info(f"Skipping subscription update for beta user {user['github_login']} — beta tier is admin-managed")
+        return
+
     # Get the price/tier from subscription items
     items = subscription.get('items', {}).get('data', [])
     if items:
         price_id = items[0].get('price', {}).get('id')
-        # Look up tier by price ID
-        config = db.execute(
-            "SELECT key FROM system_config WHERE value = ?",
-            (price_id,)
-        ).fetchone()
+        try:
+            # Look up tier by price ID in system_config
+            config = db.execute(
+                "SELECT key FROM system_config WHERE value = ?",
+                (price_id,)
+            ).fetchone()
+        except Exception as e:
+            logger.warning(f"system_config lookup failed (table may not be initialized): {e}")
+            config = None
+
         if config:
             tier = config['key'].replace('stripe_price_', '')
         else:
-            tier = 'trial'  # Fallback
+            # system_config lookup failed or price not found — PRESERVE existing tier, do not overwrite
+            logger.warning(
+                f"Could not resolve tier for price_id={price_id} (subscription {subscription_id}). "
+                f"Preserving existing tier='{user['tier']}' for user {user['github_login']}."
+            )
+            tier = user['tier']
     else:
-        tier = 'trial'
+        # No items in subscription — preserve existing tier
+        logger.warning(
+            f"Subscription {subscription_id} has no items. "
+            f"Preserving existing tier='{user['tier']}' for user {user['github_login']}."
+        )
+        tier = user['tier']
 
     # Update tier based on subscription status
     if status in ('active', 'trialing'):
@@ -446,7 +487,7 @@ def handle_subscription_deleted(subscription: dict):
     db = _get_db()
 
     user = db.execute(
-        "SELECT user_id, github_login FROM users WHERE stripe_subscription_id = ?",
+        "SELECT user_id, github_login, tier, is_beta FROM users WHERE stripe_subscription_id = ?",
         (subscription_id,)
     ).fetchone()
 
@@ -454,7 +495,20 @@ def handle_subscription_deleted(subscription: dict):
         logger.warning(f"Subscription deleted but no user found: {subscription_id}")
         return
 
-    # Revert to trial tier
+    # Beta users are immune to webhook tier changes — admin-managed, never downgrade via webhook
+    if user['is_beta']:
+        logger.info(f"Skipping subscription deletion downgrade for beta user {user['github_login']} — beta tier is admin-managed")
+        # Still clear the subscription ID so we don't track a dead sub, but preserve tier
+        db.execute("""
+            UPDATE users SET
+                stripe_subscription_id = NULL,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE user_id = ?
+        """, (user['user_id'],))
+        db.commit()
+        return
+
+    # Revert to trial tier for non-beta users
     db.execute("""
         UPDATE users SET
             tier = 'trial',

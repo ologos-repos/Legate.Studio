@@ -256,16 +256,34 @@ def _store_installation(user_id: str, installation_id: int, installation_data: d
                 # Use the correct user_id for the rest of this function
                 user_id = correct_user_id
             else:
-                # Create new user record
-                logger.warning(f"User {user_id} missing from database, creating from session")
-                db.execute(
-                    """
-                    INSERT INTO users (user_id, github_id, github_login, tier, created_at, updated_at)
-                    VALUES (?, ?, ?, 'free', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-                    """,
-                    (user_id, github_id, github_login)
-                )
-                db.commit()
+                # Also try by github_login in case github_id index is stale
+                existing_by_login = db.execute(
+                    "SELECT user_id FROM users WHERE github_login = ?",
+                    (github_login,)
+                ).fetchone()
+
+                if existing_by_login:
+                    # Found by login — update session to use canonical user_id, don't recreate
+                    correct_user_id = existing_by_login['user_id']
+                    logger.warning(
+                        f"User {user_id} not found but github_login '{github_login}' exists as "
+                        f"{correct_user_id}, fixing session"
+                    )
+                    if has_request_context():
+                        session['user']['user_id'] = correct_user_id
+                        session.modified = True
+                    user_id = correct_user_id
+                else:
+                    # Truly new user — create record with tier='trial' (matches normal signup flow)
+                    logger.warning(f"User {user_id} missing from database, creating from session")
+                    db.execute(
+                        """
+                        INSERT INTO users (user_id, github_id, github_login, tier, created_at, updated_at)
+                        VALUES (?, ?, ?, 'trial', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                        """,
+                        (user_id, github_id, github_login)
+                    )
+                    db.commit()
         else:
             logger.error(f"Cannot store installation: user {user_id} not found and no session data to recreate")
             raise ValueError(f"User {user_id} not found in database")
