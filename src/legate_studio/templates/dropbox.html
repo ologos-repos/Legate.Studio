@@ -85,7 +85,7 @@
 .record-time {
     font-size: 2rem;
     font-weight: 600;
-    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+    font-family: var(--font-mono);
     color: var(--text-primary);
 }
 
@@ -152,7 +152,7 @@
 .visualizer-bar {
     width: 4px;
     height: 100%;
-    background: var(--accent-blue);
+    background: var(--text-secondary);
     border-radius: 2px;
     transition: height 0.05s ease;
 }
@@ -221,7 +221,7 @@
     width: 20px;
     height: 20px;
     border: 2px solid var(--border-color);
-    border-top-color: var(--accent-blue);
+    border-top-color: var(--text-secondary);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
 }
@@ -352,7 +352,7 @@
 }
 .upload-progress-bar-fill {
     height: 100%;
-    background: var(--accent-blue);
+    background: var(--text-secondary);
     border-radius: 3px;
     width: 0%;
     transition: width 0.25s ease;

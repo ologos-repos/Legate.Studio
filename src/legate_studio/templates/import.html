@@ -43,13 +43,13 @@
 }
 
 .upload-area:hover {
-    border-color: var(--accent-color);
-    background: rgba(88, 166, 255, 0.05);
+    border-color: var(--border-strong);
+    background: var(--hover-tint);
 }
 
 .upload-area.dragover {
-    border-color: var(--accent-color);
-    background: rgba(88, 166, 255, 0.1);
+    border-color: var(--border-strong);
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .upload-icon {
@@ -92,7 +92,7 @@
 
 .progress-bar {
     height: 100%;
-    background: var(--accent-color);
+    background: var(--text-secondary);
     border-radius: 8px;
     transition: width 0.3s ease;
     width: 0;
@@ -137,7 +137,7 @@
 }
 
 .job-id {
-    font-family: monospace;
+    font-family: var(--font-mono, monospace);
     font-size: 0.875rem;
     color: var(--text-secondary);
 }
@@ -164,33 +164,39 @@
 }
 
 .job-status.pending {
-    background: var(--warning-color);
-    color: #000;
+    background: transparent;
+    border: 1px solid var(--accent-yellow, #d29922);
+    color: var(--accent-yellow, #d29922);
 }
 
 .job-status.classifying {
-    background: var(--accent-color);
-    color: #fff;
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
 }
 
 .job-status.classified {
-    background: var(--success-color);
-    color: #fff;
+    background: transparent;
+    border: 1px solid var(--accent-green, #3fb950);
+    color: var(--accent-green, #3fb950);
 }
 
 .job-status.writing {
-    background: var(--accent-color);
-    color: #fff;
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
 }
 
 .job-status.completed {
-    background: #238636;
-    color: #fff;
+    background: transparent;
+    border: 1px solid var(--accent-green, #3fb950);
+    color: var(--accent-green, #3fb950);
 }
 
 .job-status.failed {
-    background: var(--danger-color);
-    color: #fff;
+    background: transparent;
+    border: 1px solid var(--accent-red, #e05252);
+    color: var(--accent-red, #e05252);
 }
 
 .job-actions {
@@ -238,8 +244,9 @@
 .step-number {
     width: 24px;
     height: 24px;
-    background: var(--accent-color);
-    color: #fff;
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    color: var(--text-secondary);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -283,13 +290,13 @@
 }
 
 .mode-option:hover {
-    border-color: var(--accent-color);
-    background: rgba(88, 166, 255, 0.05);
+    border-color: var(--border-strong);
+    background: var(--hover-tint);
 }
 
 .mode-option input[type="radio"] {
     margin-top: 0.25rem;
-    accent-color: var(--accent-color);
+    accent-color: var(--text-secondary);
 }
 
 .mode-option input[type="radio"]:checked + .mode-content {
@@ -336,7 +343,7 @@
 
 .new-category-input input:focus {
     outline: none;
-    border-color: var(--accent-color);
+    border-color: var(--border-strong);
 }
 
 .input-hint {

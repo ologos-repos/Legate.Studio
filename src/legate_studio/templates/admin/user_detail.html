@@ -10,13 +10,13 @@
         padding: 2rem;
     }
     .back-link {
-        color: var(--text-secondary, #8b949e);
+        color: var(--text-secondary, #aaaaaa);
         text-decoration: none;
         display: inline-block;
         margin-bottom: 1rem;
     }
     .back-link:hover {
-        color: var(--text-primary, #e6edf3);
+        color: var(--text-primary, #ffffff);
     }
     .user-header {
         display: flex;
@@ -25,23 +25,23 @@
         margin-bottom: 2rem;
     }
     .user-header h1 {
-        color: var(--text-primary, #e6edf3);
+        color: var(--text-primary, #ffffff);
         margin: 0 0 0.5rem 0;
     }
     .user-id {
-        color: var(--text-secondary, #8b949e);
+        color: var(--text-secondary, #aaaaaa);
         font-size: 0.875rem;
-        font-family: monospace;
+        font-family: var(--font-mono, monospace);
     }
     .section {
-        background: var(--bg-secondary, #21262d);
+        background: transparent;
         border-radius: 8px;
-        border: 1px solid var(--border-color, #30363d);
+        border: 1px solid var(--border-color, rgba(255,255,255,0.08));
         padding: 1.5rem;
         margin-bottom: 1.5rem;
     }
     .section h2 {
-        color: var(--text-primary, #e6edf3);
+        color: var(--text-primary, #ffffff);
         font-size: 1.125rem;
         margin: 0 0 1rem 0;
     }
@@ -56,16 +56,16 @@
         gap: 0.25rem;
     }
     .info-item label {
-        color: var(--text-secondary, #8b949e);
+        color: var(--text-secondary, #aaaaaa);
         font-size: 0.75rem;
         text-transform: uppercase;
     }
     .info-item span {
-        color: var(--text-primary, #e6edf3);
+        color: var(--text-primary, #ffffff);
     }
     .status-ok { color: #3fb950; }
     .status-warn { color: #d29922; }
-    .status-error { color: #f85149; }
+    .status-error { color: #e05252; }
     .item-list {
         list-style: none;
         padding: 0;
@@ -73,45 +73,48 @@
     }
     .item-list li {
         padding: 0.75rem;
-        border-bottom: 1px solid var(--border-color, #30363d);
-        color: var(--text-primary, #e6edf3);
+        border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.08));
+        color: var(--text-primary, #ffffff);
     }
     .item-list li:last-child {
         border-bottom: none;
     }
     .delete-btn {
-        background: #da3633;
-        color: #fff;
-        border: none;
+        background: transparent;
+        color: var(--accent-red, #e05252);
+        border: 1px solid var(--accent-red, #e05252);
         padding: 0.5rem 1rem;
         border-radius: 6px;
         cursor: pointer;
         font-size: 0.875rem;
+        transition: background 150ms ease;
     }
     .delete-btn:hover {
-        background: #f85149;
+        background: rgba(224,82,82,0.1);
     }
     .tier-badge, .copilot-badge {
         display: inline-block;
         padding: 0.25rem 0.5rem;
-        border-radius: 4px;
+        border-radius: 999px;
         font-size: 0.75rem;
         font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
     }
-    .tier-free { background: #6e7681; color: #fff; }
-    .tier-beta { background: #238636; color: #fff; }
-    .tier-starter { background: #1f6feb; color: #fff; }
-    .tier-pro { background: #8957e5; color: #fff; }
-    .tier-founder { background: #da3633; color: #fff; }
+    .tier-free { background: transparent; border: 1px solid var(--border-color, rgba(255,255,255,0.08)); color: var(--text-muted, #666); }
+    .tier-beta { background: transparent; border: 1px solid var(--accent-green, #3fb950); color: var(--accent-green, #3fb950); }
+    .tier-starter { background: transparent; border: 1px solid var(--border-strong, rgba(255,255,255,0.15)); color: var(--text-secondary, #aaa); }
+    .tier-pro { background: transparent; border: 1px solid var(--border-strong, rgba(255,255,255,0.15)); color: var(--text-primary, #fff); }
+    .tier-founder { background: transparent; border: 1px solid var(--accent-red, #e05252); color: var(--accent-red, #e05252); }
     .beta-section {
-        background: linear-gradient(135deg, #0d1117, #132a1e);
-        border: 2px solid #238636;
+        background: transparent;
+        border: 1px solid var(--accent-green, #3fb950);
         border-radius: 8px;
         padding: 1.5rem;
         margin-bottom: 1.5rem;
     }
     .beta-section h2 {
-        color: #3fb950;
+        color: var(--accent-green, #3fb950);
         font-size: 1.125rem;
         margin: 0 0 0.75rem 0;
         display: flex;
@@ -121,16 +124,16 @@
     .beta-badge {
         display: inline-block;
         padding: 0.2rem 0.6rem;
-        border-radius: 12px;
+        border-radius: 999px;
         font-size: 0.7rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
-    .beta-badge-on { background: #238636; color: #fff; }
-    .beta-badge-off { background: #6e7681; color: #fff; }
+    .beta-badge-on { background: transparent; border: 1px solid var(--accent-green, #3fb950); color: var(--accent-green, #3fb950); }
+    .beta-badge-off { background: transparent; border: 1px solid var(--border-color, rgba(255,255,255,0.08)); color: var(--text-muted, #666); }
     .beta-description {
-        color: var(--text-secondary, #8b949e);
+        color: var(--text-secondary, #aaaaaa);
         font-size: 0.875rem;
         margin-bottom: 1rem;
     }
@@ -141,50 +144,56 @@
         flex-wrap: wrap;
     }
     .btn-beta-enable {
-        background: #238636;
-        color: #fff;
-        border: none;
+        background: transparent;
+        color: var(--accent-green, #3fb950);
+        border: 1px solid var(--accent-green, #3fb950);
         padding: 0.5rem 1.25rem;
         border-radius: 6px;
         cursor: pointer;
         font-size: 0.875rem;
         font-weight: 600;
+        transition: background 150ms ease;
     }
-    .btn-beta-enable:hover { background: #2ea043; }
+    .btn-beta-enable:hover { background: rgba(63,185,80,0.08); }
     .btn-beta-disable {
         background: transparent;
-        color: #f85149;
-        border: 1px solid #f85149;
+        color: var(--accent-red, #e05252);
+        border: 1px solid var(--accent-red, #e05252);
         padding: 0.5rem 1.25rem;
         border-radius: 6px;
         cursor: pointer;
         font-size: 0.875rem;
+        transition: background 150ms ease;
     }
-    .btn-beta-disable:hover { background: rgba(248, 81, 73, 0.1); }
+    .btn-beta-disable:hover { background: rgba(224,82,82,0.1); }
     .audit-link {
         display: inline-block;
-        color: #58a6ff;
+        color: var(--text-secondary, #aaaaaa);
         text-decoration: none;
         font-size: 0.875rem;
         padding: 0.5rem 1rem;
-        border: 1px solid #30363d;
+        border: 1px solid var(--border-color, rgba(255,255,255,0.08));
         border-radius: 6px;
+        transition: border-color 150ms ease, color 150ms ease;
     }
-    .audit-link:hover { border-color: #58a6ff; background: rgba(88,166,255,0.05); }
+    .audit-link:hover { border-color: var(--border-strong, rgba(255,255,255,0.15)); color: var(--text-primary, #fff); }
     .refresh-btn {
-        background: #238636;
-        color: #fff;
-        border: none;
+        background: transparent;
+        color: var(--text-secondary, #aaaaaa);
+        border: 1px solid var(--border-color, rgba(255,255,255,0.08));
         padding: 0.5rem 1rem;
         border-radius: 6px;
         cursor: pointer;
         font-size: 0.875rem;
+        transition: background 150ms ease, border-color 150ms ease;
     }
     .refresh-btn:hover {
-        background: #2ea043;
+        background: var(--hover-tint, rgba(255,255,255,0.05));
+        border-color: var(--border-strong, rgba(255,255,255,0.15));
+        color: var(--text-primary, #fff);
     }
     .refresh-btn:disabled {
-        background: #6e7681;
+        opacity: 0.4;
         cursor: not-allowed;
     }
 </style>
@@ -254,7 +263,7 @@
             </div>
             <div class="info-item">
                 <label>Stripe Customer ID</label>
-                <span style="font-family: monospace; font-size: 0.8rem;">{{ profile.stripe_customer_id or '-' }}</span>
+                <span style="font-family: var(--font-mono, monospace); font-size: 0.8rem;">{{ profile.stripe_customer_id or '-' }}</span>
             </div>
             <div class="info-item">
                 <label>Created</label>
@@ -364,7 +373,7 @@
 async function setBeta(enabled) {
     const statusEl = document.getElementById('beta-status');
     statusEl.textContent = 'Saving...';
-    statusEl.style.color = '#8b949e';
+    statusEl.style.color = '#aaaaaa';
 
     try {
         const resp = await fetch('/admin/api/user/{{ profile.user_id }}/beta', {
@@ -375,15 +384,15 @@ async function setBeta(enabled) {
         const data = await resp.json();
         if (!resp.ok) {
             statusEl.textContent = 'Error: ' + (data.error || 'Unknown error');
-            statusEl.style.color = '#f85149';
+            statusEl.style.color = '#e05252';
             return;
         }
         statusEl.textContent = enabled ? 'Beta enabled — webhook-immune.' : 'Beta disabled.';
-        statusEl.style.color = enabled ? '#3fb950' : '#d29922';
+        statusEl.style.color = enabled ? '#3fb950' : '#aaaaaa';
         setTimeout(() => window.location.reload(), 1200);
     } catch (e) {
         statusEl.textContent = 'Error: ' + e.message;
-        statusEl.style.color = '#f85149';
+        statusEl.style.color = '#e05252';
     }
 }
 

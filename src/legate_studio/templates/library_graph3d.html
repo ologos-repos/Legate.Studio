@@ -344,7 +344,7 @@
         const container = document.getElementById('graph-container');
 
         graph = ForceGraph3D()(container)
-            .backgroundColor('#0d1117')
+            .backgroundColor('#0a0a0a')
             .nodeId('id')
             .nodeLabel(node => `${node.title}\n(${node.category})`)
             .nodeColor(node => node.color)
@@ -354,7 +354,7 @@
             .linkTarget('target')
             .linkWidth(link => 0.5 + link.weight * 2)
             .linkOpacity(0.3)
-            .linkColor(() => '#4a5568')
+            .linkColor(() => 'rgba(255,255,255,0.15)')
             .onNodeClick(node => {
                 window.location.href = `/library/entry/${node.id}`;
             })
@@ -410,7 +410,7 @@
             </div>
             <div class="legend-items">
                 <div class="legend-item ${!activeCategory ? 'active' : ''}" onclick="filterByCategory(null)">
-                    <span class="legend-dot" style="background: linear-gradient(135deg, #6366f1, #f59e0b, #ec4899)"></span>
+                    <span class="legend-dot" style="background: var(--border-strong)"></span>
                     <span class="legend-label">All</span>
                     <span class="legend-count">${graphData.nodes.length}</span>
                 </div>

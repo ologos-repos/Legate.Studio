@@ -520,7 +520,7 @@
                 {% for cat in categories %}
                 <a href="{{ url_for('library.view_category', category=cat.category) }}"
                    class="sidebar-link {% if cat.category == entry.category %}active{% endif %}">
-                    <span class="category-dot" style="background: {{ cat.color or '#6366f1' }}"></span>
+                    <span class="category-dot" style="background: {{ cat.color or '#888888' }}"></span>
                     <span>{{ cat.display_name or cat.category or 'Uncategorized' }}</span>
                     <span class="sidebar-count">{{ cat.count }}</span>
                 </a>
@@ -753,15 +753,15 @@
             // Set initial color on category badge
             const badge = document.querySelector('.category-badge');
             if (badge && categoryData[currentCategory]) {
-                const color = categoryData[currentCategory].color || '#6366f1';
+                const color = categoryData[currentCategory].color || '#888888';
                 badge.closest('.category-selector').style.setProperty('--category-color', color);
             }
 
             dropdown.innerHTML = data.categories.map(cat => `
                 <button class="category-option ${cat.name === currentCategory ? 'current' : ''}"
                         onclick="changeCategory('${cat.name}')"
-                        data-color="${cat.color || '#6366f1'}">
-                    <span class="option-dot" style="background: ${cat.color || '#6366f1'}"></span>
+                        data-color="${cat.color || '#888888'}">
+                    <span class="option-dot" style="background: ${cat.color || '#888888'}"></span>
                     <span class="option-content">
                         ${cat.display_name}
                         <span class="category-desc">${cat.description || ''}</span>

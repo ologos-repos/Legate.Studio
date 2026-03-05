@@ -62,8 +62,9 @@
     }
 
     .sidebar-link.active {
-        background: var(--accent-color);
-        color: white;
+        background: var(--hover-tint);
+        border: 1px solid var(--border-strong);
+        color: var(--text-primary);
     }
 
     .sidebar-count {
@@ -132,7 +133,7 @@
     }
 
     .month-tile:hover {
-        border-color: var(--accent-color);
+        border-color: var(--border-strong);
         transform: translateY(-2px);
     }
 
@@ -141,7 +142,7 @@
     }
 
     .month-tile.current-month {
-        border-color: var(--accent-color);
+        border-color: var(--border-strong);
     }
 
     .month-tile-name {
@@ -190,7 +191,7 @@
     .year-stat-value {
         font-size: 2rem;
         font-weight: 700;
-        color: var(--accent-color);
+        color: var(--text-primary);
     }
 
     .year-stat-label {

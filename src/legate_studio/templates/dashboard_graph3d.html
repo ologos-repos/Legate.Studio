@@ -507,12 +507,12 @@ function initGraph() {
     const container = document.getElementById('graph-container');
 
     graph = ForceGraph3D()(container)
-        .backgroundColor('#0d1117')
+        .backgroundColor('#0a0a0a')
         .nodeId('id')
         .nodeLabel('')  // We'll use custom tooltip
         .nodeColor(node => {
             if (selectedNodes.has(node.id)) {
-                return '#58a6ff';  // Highlight selected
+                return '#ffffff';  // Highlight selected
             }
             return node.color;
         })
@@ -522,7 +522,7 @@ function initGraph() {
         .linkTarget('target')
         .linkWidth(link => 0.5 + link.weight * 2)
         .linkOpacity(0.25)
-        .linkColor(() => '#4a5568')
+        .linkColor(() => 'rgba(255,255,255,0.15)')
         .onNodeClick((node, event) => {
             if (event.shiftKey) {
                 toggleNodeSelection(node);
@@ -582,7 +582,7 @@ function renderLegend() {
         </div>
         <div class="legend-items">
             <div class="legend-item ${!activeCategory ? 'active' : ''}" onclick="filterByCategory(null)">
-                <span class="legend-dot" style="background: linear-gradient(135deg, #6366f1, #f59e0b, #ec4899)"></span>
+                <span class="legend-dot" style="background: var(--border-strong)"></span>
                 <span>All</span>
                 <span class="legend-count">${graphData.nodes.length}</span>
             </div>
@@ -741,7 +741,7 @@ function toggleNodeSelection(nodeData) {
 
     updateSelectionUI();
     // Re-render to update node colors
-    graph.nodeColor(node => selectedNodes.has(node.id) ? '#58a6ff' : node.color);
+    graph.nodeColor(node => selectedNodes.has(node.id) ? '#ffffff' : node.color);
 }
 
 function updateSelectionUI() {

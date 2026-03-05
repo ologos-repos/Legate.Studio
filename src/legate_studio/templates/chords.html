@@ -13,19 +13,20 @@
 
     .btn-danger {
         background: transparent;
-        color: var(--danger-color);
-        border: 1px solid var(--danger-color);
+        color: var(--accent-red);
+        border: 1px solid var(--accent-red);
+        transition: var(--transition);
     }
 
     .btn-danger:hover {
-        background: var(--danger-color);
-        color: white;
+        background: rgba(224, 82, 82, 0.1);
+        color: var(--accent-red);
     }
 
     .btn-danger-confirm {
-        background: var(--danger-color);
+        background: var(--accent-red);
         color: white;
-        border: 1px solid var(--danger-color);
+        border: 1px solid var(--accent-red);
         animation: pulse 1s infinite;
     }
 
@@ -48,22 +49,24 @@
     .delete-warning {
         margin-top: 0.5rem;
         padding: 0.5rem;
-        background: rgba(220, 53, 69, 0.1);
-        border: 1px solid var(--danger-color);
+        background: rgba(224, 82, 82, 0.1);
+        border: 1px solid var(--accent-red);
         border-radius: 4px;
         font-size: 0.875rem;
-        color: var(--danger-color);
+        color: var(--accent-red);
     }
 
     .btn-incident {
         background: transparent;
-        color: var(--accent-color);
-        border: 1px solid var(--accent-color);
+        color: var(--text-secondary);
+        border: 1px solid var(--border-color);
+        transition: var(--transition);
     }
 
     .btn-incident:hover {
-        background: var(--accent-color);
-        color: white;
+        background: var(--hover-tint);
+        color: var(--text-primary);
+        border-color: var(--border-strong);
     }
 
     /* Incident Modal Styles */
@@ -159,7 +162,7 @@
     .form-group input:focus,
     .form-group textarea:focus {
         outline: none;
-        border-color: var(--accent-color);
+        border-color: var(--border-strong);
     }
 
     .form-group textarea {
@@ -175,17 +178,18 @@
     }
 
     .btn-primary {
-        background: var(--accent-color);
-        color: white;
-        border: none;
+        background: transparent;
+        color: var(--text-primary);
+        border: 1px solid var(--border-strong);
+        transition: var(--transition);
     }
 
     .btn-primary:hover {
-        background: var(--accent-hover);
+        background: var(--hover-tint);
     }
 
     .btn-primary:disabled {
-        opacity: 0.6;
+        opacity: 0.5;
         cursor: not-allowed;
     }
 
@@ -517,8 +521,9 @@
             bottom: 20px;
             right: 20px;
             padding: 1rem 1.5rem;
-            background: ${type === 'error' ? 'var(--danger-color)' : 'var(--accent-color)'};
-            color: white;
+            background: var(--bg-elevated);
+            border: 1px solid ${type === 'error' ? 'var(--accent-red)' : 'var(--border-strong)'};
+            color: ${type === 'error' ? 'var(--accent-red)' : 'var(--text-primary)'};
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             z-index: 1000;

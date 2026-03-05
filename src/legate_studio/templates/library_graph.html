@@ -410,7 +410,7 @@
             </div>
             <div class="legend-items">
                 <div class="legend-item legend-all ${!activeCategory ? 'active' : ''}" onclick="filterByCategory(null)" style="cursor:pointer">
-                    <span class="legend-dot" style="background: linear-gradient(135deg, #6366f1, #f59e0b, #ec4899)"></span>
+                    <span class="legend-dot" style="background: var(--border-strong)"></span>
                     <span class="legend-label">All</span>
                     <span class="legend-count">${graphData.nodes.length}</span>
                 </div>
@@ -514,7 +514,7 @@
             .data(links)
             .join('line')
             .attr('class', 'link')
-            .attr('stroke', '#4a5568')
+            .attr('stroke', 'rgba(255,255,255,0.15)')
             .attr('stroke-width', d => 1 + d.weight * 2);
 
         // Draw nodes
