@@ -427,7 +427,7 @@ def init_db(db_path: Path | None = None, user_id: str | None = None) -> sqlite3.
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_knowledge_category ON knowledge_entries(category)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_knowledge_entry_id ON knowledge_entries(entry_id)")
     cursor.execute(
-        "CREATE INDEX IF NOT EXISTS idx_knowledge_needs_chord ONknowledge_entries(needs_chord, chord_status)"
+        "CREATE INDEX IF NOT EXISTS idx_knowledge_needs_chord ON knowledge_entries(needs_chord, chord_status)"
     )
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_knowledge_task_status ON knowledge_entries(task_status)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_embeddings_entry ON embeddings(entry_id, entry_type)")
