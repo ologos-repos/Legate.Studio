@@ -20,7 +20,7 @@ os.environ.setdefault("DATA_DIR", "/tmp/legato-test-data")
 @pytest.fixture(scope="session")
 def app():
     """Create a Flask application configured for testing."""
-    from legato_pit.core import create_app
+    from legate_studio.core import create_app
 
     flask_app = create_app()
     flask_app.config.update(

@@ -88,7 +88,7 @@ docker-compose up --build
 src/
 ├── main.py              # Application entry point
 ├── requirements.txt     # Python dependencies
-└── legato_pit/
+└── legate_studio/
     ├── core.py          # Flask app factory
     ├── auth.py          # GitHub OAuth
     ├── dashboard.py     # Dashboard routes

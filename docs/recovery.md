@@ -42,7 +42,7 @@ Check for issues without making changes:
 
 ```bash
 cd Legato.Pit
-python -m legato_pit.recovery validate --repo bobbyhiddn/Legato.Library
+python -m legate_studio.recovery validate --repo bobbyhiddn/Legato.Library
 ```
 
 Output includes:
@@ -56,12 +56,12 @@ Output includes:
 
 Preview:
 ```bash
-python -m legato_pit.recovery fix_frontmatter --dry-run
+python -m legate_studio.recovery fix_frontmatter --dry-run
 ```
 
 Apply:
 ```bash
-python -m legato_pit.recovery fix_frontmatter
+python -m legate_studio.recovery fix_frontmatter
 ```
 
 This merges multiple frontmatter blocks, keeping the first block's values and adding any unique fields from subsequent blocks.
@@ -70,12 +70,12 @@ This merges multiple frontmatter blocks, keeping the first block's values and ad
 
 Preview:
 ```bash
-python -m legato_pit.recovery normalize_ids --dry-run
+python -m legate_studio.recovery normalize_ids --dry-run
 ```
 
 Apply:
 ```bash
-python -m legato_pit.recovery normalize_ids
+python -m legate_studio.recovery normalize_ids
 ```
 
 Converts legacy IDs to canonical format:
@@ -86,12 +86,12 @@ Converts legacy IDs to canonical format:
 
 Preview:
 ```bash
-python -m legato_pit.recovery rebuild_hashes --dry-run
+python -m legate_studio.recovery rebuild_hashes --dry-run
 ```
 
 Apply:
 ```bash
-python -m legato_pit.recovery rebuild_hashes
+python -m legate_studio.recovery rebuild_hashes
 ```
 
 Computes SHA256 hash of content body and stores in frontmatter for integrity verification.
@@ -101,7 +101,7 @@ Computes SHA256 hash of content body and stores in frontmatter for integrity ver
 **Warning**: This clears and rebuilds the knowledge_entries table.
 
 ```bash
-python -m legato_pit.recovery rebuild_database
+python -m legate_studio.recovery rebuild_database
 ```
 
 Use this when the Pit database is out of sync with Library.
@@ -112,12 +112,12 @@ Run all recovery operations in order:
 
 Preview:
 ```bash
-python -m legato_pit.recovery full_recovery --dry-run
+python -m legate_studio.recovery full_recovery --dry-run
 ```
 
 Apply:
 ```bash
-python -m legato_pit.recovery full_recovery
+python -m legate_studio.recovery full_recovery
 ```
 
 Order of operations:
@@ -132,8 +132,8 @@ Order of operations:
 For tenant-specific recovery:
 
 ```bash
-python -m legato_pit.recovery validate --tenant acme-corp
-python -m legato_pit.recovery full_recovery --tenant acme-corp --dry-run
+python -m legate_studio.recovery validate --tenant acme-corp
+python -m legate_studio.recovery full_recovery --tenant acme-corp --dry-run
 ```
 
 The tenant ID is prefixed to all generated IDs: `acme-corp.library.concept.my-note`
@@ -146,7 +146,7 @@ If you have both `tech-thoughts` and `tech-thoughtss` folders:
 
 1. Run validation to identify affected files:
    ```bash
-   python -m legato_pit.recovery validate | grep category_typo
+   python -m legate_studio.recovery validate | grep category_typo
    ```
 
 2. Manually move files in GitHub or locally:
@@ -157,12 +157,12 @@ If you have both `tech-thoughts` and `tech-thoughtss` folders:
 
 3. Run ID normalization:
    ```bash
-   python -m legato_pit.recovery normalize_ids
+   python -m legate_studio.recovery normalize_ids
    ```
 
 4. Rebuild database:
    ```bash
-   python -m legato_pit.recovery rebuild_database
+   python -m legate_studio.recovery rebuild_database
    ```
 
 ### Recover Specific File

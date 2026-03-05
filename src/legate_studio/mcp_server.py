@@ -2,7 +2,7 @@
 MCP Protocol Handler for Claude.ai
 
 Implements the Model Context Protocol (JSON-RPC 2.0) to expose
-Legato Library tools and resources to Claude via the MCP connector.
+Legate Studio library tools and resources to Claude via the MCP connector.
 
 Protocol version: 2025-06-18
 """

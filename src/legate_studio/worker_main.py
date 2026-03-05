@@ -2,7 +2,7 @@
 Worker Process Entry Point for Fly.io
 
 This module is run as a separate process in Fly.io deployments:
-    python -m legato_pit.worker_main
+    python -m legate_studio.worker_main
 
 It creates a Flask app context and runs the MotifWorker to process
 jobs from the queue.
@@ -39,8 +39,8 @@ def main():
     logger.info("=" * 60)
 
     # Import app and worker
-    from legato_pit.core import create_app
-    from legato_pit.worker import MotifWorker
+    from legate_studio.core import create_app
+    from legate_studio.worker import MotifWorker
 
     # Create Flask app for context
     app = create_app()

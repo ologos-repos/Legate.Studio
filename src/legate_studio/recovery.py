@@ -13,9 +13,9 @@ Operations:
 - full_recovery: Run all recovery operations
 
 Usage:
-    python -m legato_pit.recovery validate
-    python -m legato_pit.recovery normalize --dry-run
-    python -m legato_pit.recovery full_recovery
+    python -m legate_studio.recovery validate
+    python -m legate_studio.recovery normalize --dry-run
+    python -m legate_studio.recovery full_recovery
 """
 
 import os
@@ -908,7 +908,7 @@ def full_recovery(
 # ============ CLI ============
 
 def main():
-    parser = argparse.ArgumentParser(description="Legato Library Recovery Tool")
+    parser = argparse.ArgumentParser(description="Legate Studio Library Recovery Tool")
     parser.add_argument('operation', choices=[
         'validate', 'fix_frontmatter', 'normalize_ids',
         'rebuild_hashes', 'sync_categories', 'rebuild_database', 'full_recovery'
