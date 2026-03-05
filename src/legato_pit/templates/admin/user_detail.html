@@ -103,6 +103,74 @@
     .tier-starter { background: #1f6feb; color: #fff; }
     .tier-pro { background: #8957e5; color: #fff; }
     .tier-founder { background: #da3633; color: #fff; }
+    .beta-section {
+        background: linear-gradient(135deg, #0d1117, #132a1e);
+        border: 2px solid #238636;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .beta-section h2 {
+        color: #3fb950;
+        font-size: 1.125rem;
+        margin: 0 0 0.75rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .beta-badge {
+        display: inline-block;
+        padding: 0.2rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .beta-badge-on { background: #238636; color: #fff; }
+    .beta-badge-off { background: #6e7681; color: #fff; }
+    .beta-description {
+        color: var(--text-secondary, #8b949e);
+        font-size: 0.875rem;
+        margin-bottom: 1rem;
+    }
+    .beta-toggle-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .btn-beta-enable {
+        background: #238636;
+        color: #fff;
+        border: none;
+        padding: 0.5rem 1.25rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    .btn-beta-enable:hover { background: #2ea043; }
+    .btn-beta-disable {
+        background: transparent;
+        color: #f85149;
+        border: 1px solid #f85149;
+        padding: 0.5rem 1.25rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.875rem;
+    }
+    .btn-beta-disable:hover { background: rgba(248, 81, 73, 0.1); }
+    .audit-link {
+        display: inline-block;
+        color: #58a6ff;
+        text-decoration: none;
+        font-size: 0.875rem;
+        padding: 0.5rem 1rem;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+    }
+    .audit-link:hover { border-color: #58a6ff; background: rgba(88,166,255,0.05); }
     .refresh-btn {
         background: #238636;
         color: #fff;
@@ -134,6 +202,31 @@
         <button class="delete-btn" onclick="deleteUser()">Delete User</button>
     </div>
 
+    <!-- Beta / Tester Status — immune to Stripe webhooks -->
+    <div class="beta-section">
+        <h2>
+            🧪 Beta / Tester Status
+            <span class="beta-badge {% if profile.is_beta %}beta-badge-on{% else %}beta-badge-off{% endif %}">
+                {% if profile.is_beta %}ACTIVE{% else %}OFF{% endif %}
+            </span>
+        </h2>
+        <p class="beta-description">
+            Beta users get <strong>managed</strong> tier for free and are <strong>immune to Stripe webhook tier changes</strong>.
+            Admin-set beta status is never overridden by subscription events.
+        </p>
+        <div class="beta-toggle-row">
+            {% if profile.is_beta %}
+            <button class="btn-beta-disable" onclick="setBeta(false)">Disable Beta Access</button>
+            {% else %}
+            <button class="btn-beta-enable" onclick="setBeta(true)">Enable Beta Access</button>
+            {% endif %}
+            <a href="/admin/api/user/{{ profile.user_id }}/state" class="audit-link" target="_blank">
+                🔍 View Full State Audit
+            </a>
+            <span id="beta-status" style="font-size: 0.875rem;"></span>
+        </div>
+    </div>
+
     <div class="section">
         <h2>Account Info</h2>
         <div class="info-grid">
@@ -146,12 +239,22 @@
                 <span>{{ profile.github_id }}</span>
             </div>
             <div class="info-item">
-                <label>Tier</label>
+                <label>Tier (Raw)</label>
                 <span class="tier-badge tier-{{ profile.tier or 'free' }}">{{ profile.tier or 'free' }}</span>
+            </div>
+            <div class="info-item">
+                <label>Beta / Tester</label>
+                <span class="{% if profile.is_beta %}status-ok{% else %}status-warn{% endif %}">
+                    {% if profile.is_beta %}Yes — managed tier (webhook-immune){% else %}No{% endif %}
+                </span>
             </div>
             <div class="info-item">
                 <label>Copilot</label>
                 <span>{{ 'Enabled' if profile.has_copilot else 'Disabled' }}</span>
+            </div>
+            <div class="info-item">
+                <label>Stripe Customer ID</label>
+                <span style="font-family: monospace; font-size: 0.8rem;">{{ profile.stripe_customer_id or '-' }}</span>
             </div>
             <div class="info-item">
                 <label>Created</label>
@@ -258,6 +361,32 @@
 </div>
 
 <script>
+async function setBeta(enabled) {
+    const statusEl = document.getElementById('beta-status');
+    statusEl.textContent = 'Saving...';
+    statusEl.style.color = '#8b949e';
+
+    try {
+        const resp = await fetch('/admin/api/user/{{ profile.user_id }}/beta', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({is_beta: enabled})
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+            statusEl.textContent = 'Error: ' + (data.error || 'Unknown error');
+            statusEl.style.color = '#f85149';
+            return;
+        }
+        statusEl.textContent = enabled ? 'Beta enabled — webhook-immune.' : 'Beta disabled.';
+        statusEl.style.color = enabled ? '#3fb950' : '#d29922';
+        setTimeout(() => window.location.reload(), 1200);
+    } catch (e) {
+        statusEl.textContent = 'Error: ' + e.message;
+        statusEl.style.color = '#f85149';
+    }
+}
+
 async function deleteUser() {
     if (!confirm('Are you sure you want to delete this user? This cannot be undone.')) {
         return;

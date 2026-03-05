@@ -342,6 +342,100 @@ def api_set_user_beta(user_id: str):
     })
 
 
+@admin_bp.route('/api/user/<user_id>/state', methods=['GET'])
+@admin_required
+def api_user_state(user_id: str):
+    """State audit endpoint — returns full tier/beta/Stripe state for a single user."""
+    from .rag.database import init_db
+    from .core import get_effective_tier, get_trial_status
+
+    db = init_db()
+
+    user = db.execute("""
+        SELECT user_id, github_login, tier, is_beta,
+               stripe_customer_id, stripe_subscription_id,
+               trial_started_at, created_at, updated_at
+        FROM users WHERE user_id = ?
+    """, (user_id,)).fetchone()
+
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    try:
+        effective_tier = get_effective_tier(user_id)
+    except Exception as e:
+        logger.error(f"get_effective_tier failed for {user_id}: {e}")
+        effective_tier = None
+
+    try:
+        trial_status = get_trial_status(user_id)
+    except Exception as e:
+        logger.error(f"get_trial_status failed for {user_id}: {e}")
+        trial_status = None
+
+    return jsonify({
+        'user_id': user['user_id'],
+        'github_login': user['github_login'],
+        'tier': user['tier'],
+        'effective_tier': effective_tier,
+        'is_beta': bool(user['is_beta']),
+        'stripe_customer_id': user['stripe_customer_id'],
+        'stripe_subscription_id': user['stripe_subscription_id'],
+        'trial_started_at': user['trial_started_at'],
+        'trial_status': trial_status,
+        'created_at': user['created_at'],
+        'updated_at': user['updated_at'],
+    })
+
+
+@admin_bp.route('/api/users/state', methods=['GET'])
+@admin_required
+def api_all_users_state():
+    """State audit endpoint — returns full tier/beta/Stripe state for ALL users."""
+    from .rag.database import init_db
+    from .core import get_effective_tier, get_trial_status
+
+    db = init_db()
+
+    users = db.execute("""
+        SELECT user_id, github_login, tier, is_beta,
+               stripe_customer_id, stripe_subscription_id,
+               trial_started_at, created_at, updated_at
+        FROM users ORDER BY created_at DESC
+    """).fetchall()
+
+    results = []
+    for user in users:
+        user_id = user['user_id']
+        try:
+            effective_tier = get_effective_tier(user_id)
+        except Exception as e:
+            logger.error(f"get_effective_tier failed for {user_id}: {e}")
+            effective_tier = None
+
+        try:
+            trial_status = get_trial_status(user_id)
+        except Exception as e:
+            logger.error(f"get_trial_status failed for {user_id}: {e}")
+            trial_status = None
+
+        results.append({
+            'user_id': user['user_id'],
+            'github_login': user['github_login'],
+            'tier': user['tier'],
+            'effective_tier': effective_tier,
+            'is_beta': bool(user['is_beta']),
+            'stripe_customer_id': user['stripe_customer_id'],
+            'stripe_subscription_id': user['stripe_subscription_id'],
+            'trial_started_at': user['trial_started_at'],
+            'trial_status': trial_status,
+            'created_at': user['created_at'],
+            'updated_at': user['updated_at'],
+        })
+
+    return jsonify({'users': results, 'count': len(results)})
+
+
 @admin_bp.route('/api/user/<user_id>/refresh-token', methods=['POST'])
 @admin_required
 def api_refresh_user_token(user_id: str):
