@@ -129,19 +129,19 @@
     }
 
     .column-header.status-blocked {
-        border-color: var(--danger-color, #dc3545);
+        border-color: var(--accent-red, #e05252);
     }
 
     .column-header.status-in_progress {
-        border-color: var(--warning-color, #f59e0b);
+        border-color: var(--accent-yellow, #d29922);
     }
 
     .column-header.status-pending {
-        border-color: var(--accent-color);
+        border-color: var(--border-strong);
     }
 
     .column-header.status-done {
-        border-color: var(--success-color, #22c55e);
+        border-color: var(--accent-green, #3fb950);
     }
 
     .column-title {
@@ -183,8 +183,8 @@
     }
 
     .task-card:hover {
-        border-color: var(--accent-color);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border-color: var(--border-strong);
+        box-shadow: none;
     }
 
     .task-card.dragging {
@@ -225,7 +225,7 @@
     }
 
     .task-link:hover .task-title {
-        color: var(--accent-color);
+        color: var(--text-primary);
     }
 
     /* Status dropdown on task cards */
@@ -252,10 +252,10 @@
         box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
 
-    .task-status-btn.status-blocked { background: var(--danger-color, #dc3545); }
-    .task-status-btn.status-in_progress { background: var(--warning-color, #f59e0b); }
-    .task-status-btn.status-pending { background: var(--accent-color); }
-    .task-status-btn.status-done { background: var(--success-color, #22c55e); }
+    .task-status-btn.status-blocked { background: var(--accent-red, #e05252); }
+    .task-status-btn.status-in_progress { background: var(--accent-yellow, #d29922); }
+    .task-status-btn.status-pending { background: var(--border-strong); }
+    .task-status-btn.status-done { background: var(--accent-green, #3fb950); }
 
     .task-status-dropdown {
         position: absolute;
@@ -295,7 +295,7 @@
     }
 
     .task-status-option.current {
-        color: var(--accent-color);
+        color: var(--text-primary);
         font-weight: 500;
     }
 
@@ -331,19 +331,19 @@
     }
 
     .task-due.overdue {
-        color: var(--danger-color, #dc3545);
+        color: var(--accent-red, #e05252);
         font-weight: 500;
     }
 
     .task-due.soon {
-        color: var(--warning-color, #f59e0b);
+        color: var(--accent-yellow, #d29922);
     }
 
     /* Status dots */
-    .dot-blocked { background: var(--danger-color, #dc3545); }
-    .dot-in_progress { background: var(--warning-color, #f59e0b); }
-    .dot-pending { background: var(--accent-color); }
-    .dot-done { background: var(--success-color, #22c55e); }
+    .dot-blocked { background: var(--accent-red, #e05252); }
+    .dot-in_progress { background: var(--accent-yellow, #d29922); }
+    .dot-pending { background: var(--text-muted); }
+    .dot-done { background: var(--accent-green, #3fb950); }
 
     /* Empty state */
     .column-empty {
@@ -408,7 +408,7 @@
             <nav class="sidebar-nav">
                 {% for cat in categories %}
                 <a href="{{ url_for('library.view_category', category=cat.category) }}" class="sidebar-link">
-                    <span class="status-dot" style="background: {{ cat.color or '#6366f1' }}"></span>
+                    <span class="status-dot" style="background: {{ cat.color or '#888888' }}"></span>
                     <span>{{ cat.display_name or cat.category }}</span>
                     <span class="sidebar-count">{{ cat.count }}</span>
                 </a>
@@ -467,7 +467,7 @@
                         <div class="task-meta">
                             {% if task.category %}
                             <span class="task-category">
-                                {% set cat_color = categories | selectattr('category', 'equalto', task.category) | map(attribute='color') | first | default('#6366f1') %}
+                                {% set cat_color = categories | selectattr('category', 'equalto', task.category) | map(attribute='color') | first | default('#888888') %}
                                 <span class="dot" style="background: {{ cat_color }}"></span>
                                 {{ task.category }}
                             </span>
@@ -528,7 +528,7 @@
                         <div class="task-meta">
                             {% if task.category %}
                             <span class="task-category">
-                                {% set cat_color = categories | selectattr('category', 'equalto', task.category) | map(attribute='color') | first | default('#6366f1') %}
+                                {% set cat_color = categories | selectattr('category', 'equalto', task.category) | map(attribute='color') | first | default('#888888') %}
                                 <span class="dot" style="background: {{ cat_color }}"></span>
                                 {{ task.category }}
                             </span>
@@ -589,7 +589,7 @@
                         <div class="task-meta">
                             {% if task.category %}
                             <span class="task-category">
-                                {% set cat_color = categories | selectattr('category', 'equalto', task.category) | map(attribute='color') | first | default('#6366f1') %}
+                                {% set cat_color = categories | selectattr('category', 'equalto', task.category) | map(attribute='color') | first | default('#888888') %}
                                 <span class="dot" style="background: {{ cat_color }}"></span>
                                 {{ task.category }}
                             </span>
@@ -650,7 +650,7 @@
                         <div class="task-meta">
                             {% if task.category %}
                             <span class="task-category">
-                                {% set cat_color = categories | selectattr('category', 'equalto', task.category) | map(attribute='color') | first | default('#6366f1') %}
+                                {% set cat_color = categories | selectattr('category', 'equalto', task.category) | map(attribute='color') | first | default('#888888') %}
                                 <span class="dot" style="background: {{ cat_color }}"></span>
                                 {{ task.category }}
                             </span>

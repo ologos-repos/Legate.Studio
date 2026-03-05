@@ -12,6 +12,15 @@
         flex-direction: column;
     }
 
+    @media (max-width: 480px) {
+        .graph-card {
+            height: 360px;
+        }
+        .graph-wrapper {
+            min-height: 260px;
+        }
+    }
+
     .graph-card h2 {
         display: flex;
         justify-content: space-between;
@@ -116,7 +125,7 @@
         top: 0.5rem;
         right: 0.5rem;
         bottom: 0.5rem;
-        background: rgba(22, 27, 34, 0.9);
+        background: rgba(17, 17, 17, 0.92);
         border: 1px solid var(--border-color);
         border-radius: 6px;
         padding: 0.5rem;
@@ -213,8 +222,9 @@
     }
 
     .legend-item.active {
-        background: var(--accent-color);
-        color: white;
+        background: var(--active-tint);
+        color: var(--text-primary);
+        outline: 1px solid var(--border-strong);
     }
 
     .legend-dot {
@@ -232,7 +242,7 @@
 
     .graph-tooltip {
         position: fixed;
-        background: rgba(22, 27, 34, 0.95);
+        background: var(--bg-tertiary);
         border: 1px solid var(--border-color);
         border-radius: 6px;
         padding: 0.5rem 0.75rem;
@@ -267,7 +277,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(22, 27, 34, 0.8);
+        background: rgba(10, 10, 10, 0.8);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -370,8 +380,8 @@
         bottom: 1rem;
         left: 50%;
         transform: translateX(-50%);
-        background: var(--card-bg);
-        border: 1px solid var(--accent-color);
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-strong);
         border-radius: 8px;
         padding: 0.5rem 1rem;
         display: none;
@@ -391,8 +401,9 @@
     }
 
     .selection-count span {
-        color: var(--accent-color);
+        color: var(--text-primary);
         font-weight: 600;
+        font-family: var(--font-mono);
     }
 
     /* Dashboard Grid Layout */
@@ -452,14 +463,15 @@
         text-align: center;
         padding: 0.75rem;
         margin-top: 0.75rem;
-        color: var(--accent-color);
+        color: var(--text-secondary);
         text-decoration: none;
         font-size: 0.875rem;
         border-top: 1px solid var(--border-color);
+        transition: color var(--transition);
     }
 
     .view-all-link:hover {
-        text-decoration: underline;
+        color: var(--text-primary);
     }
 
     /* Motif Jobs */
@@ -496,23 +508,27 @@
     }
 
     .motif-job-item .badge-completed {
-        background: var(--color-success, #238636);
-        color: white;
+        background: transparent;
+        border: 1px solid var(--accent-green);
+        color: var(--accent-green);
     }
 
     .motif-job-item .badge-processing {
-        background: var(--color-warning, #9e6a03);
-        color: white;
+        background: transparent;
+        border: 1px solid var(--accent-yellow);
+        color: var(--accent-yellow);
     }
 
     .motif-job-item .badge-pending {
-        background: var(--text-secondary);
-        color: var(--bg-primary);
+        background: transparent;
+        border: 1px solid var(--border-strong);
+        color: var(--text-secondary);
     }
 
     .motif-job-item .badge-failed {
-        background: var(--color-danger, #da3633);
-        color: white;
+        background: transparent;
+        border: 1px solid var(--accent-red);
+        color: var(--accent-red);
     }
 
     /* Mini Calendar */
@@ -567,7 +583,8 @@
     }
 
     .calendar-day.has-notes {
-        background: rgba(88, 166, 255, 0.2);
+        background: var(--active-tint);
+        border: 1px solid var(--border-strong);
         color: var(--text-primary);
         font-weight: 500;
     }
@@ -590,7 +607,7 @@
 {% block content %}
 <div class="dashboard">
     <header class="page-header">
-        <h1>LEGATO Dashboard</h1>
+        <h1>Dashboard</h1>
         <button class="btn btn-small" onclick="refreshDashboard()">Refresh</button>
     </header>
 
@@ -1134,7 +1151,7 @@ function renderLegend() {
         </div>
         <div class="legend-items">
             <div class="legend-item ${!activeCategory ? 'active' : ''}" onclick="filterByCategory(null)">
-                <span class="legend-dot" style="background: linear-gradient(135deg, #6366f1, #f59e0b, #ec4899)"></span>
+                <span class="legend-dot" style="background: var(--border-strong)"></span>
                 <span>All</span>
                 <span class="legend-count">${graphData.nodes.length}</span>
             </div>
@@ -1317,7 +1334,7 @@ function renderGraph() {
         .data(links)
         .join(useCurved ? 'path' : 'line')
         .attr('class', `link ${useCurved ? 'curved' : ''}`)
-        .attr('stroke', '#4a5568')
+        .attr('stroke', 'rgba(255,255,255,0.12)')
         .attr('stroke-width', d => 1 + d.weight * 2);
 
     // Draw nodes
@@ -1427,7 +1444,7 @@ function showTooltip(event, d) {
     const tooltip = document.getElementById('graphTooltip');
     tooltip.innerHTML = `
         <div style="font-weight: 500; margin-bottom: 0.25rem">${d.title}</div>
-        <div style="font-size: 0.7rem; color: ${d.color}">${d.category}</div>
+        <div style="font-size: 0.7rem; color: var(--text-secondary); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.06em">${d.category}</div>
     `;
     tooltip.style.left = (event.clientX + 10) + 'px';
     tooltip.style.top = (event.clientY - 30) + 'px';

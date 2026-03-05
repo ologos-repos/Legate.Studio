@@ -45,7 +45,7 @@
     }
 
     .category-card:hover {
-        border-color: var(--accent-color);
+        border-color: var(--border-strong);
     }
 
     .category-card.dragging {
@@ -82,7 +82,7 @@
     .category-slug {
         font-size: 0.75rem;
         color: var(--text-secondary);
-        font-family: monospace;
+        font-family: var(--font-mono, monospace);
     }
 
     .category-description {
@@ -93,8 +93,8 @@
 
     .category-folder {
         font-size: 0.75rem;
-        color: var(--accent-color);
-        font-family: monospace;
+        color: var(--text-muted);
+        font-family: var(--font-mono, monospace);
         margin-top: 0.25rem;
     }
 
@@ -158,7 +158,7 @@
     .form-group input:focus,
     .form-group textarea:focus {
         outline: none;
-        border-color: var(--accent-color);
+        border-color: var(--border-strong);
     }
 
     .form-group textarea {
@@ -192,8 +192,9 @@
 
     /* Delete confirmation styling */
     .warning {
-        color: var(--danger-color, #dc3545);
-        background: rgba(220, 53, 69, 0.1);
+        color: var(--accent-red, #e05252);
+        background: rgba(224, 82, 82, 0.08);
+        border: 1px solid rgba(224, 82, 82, 0.25);
         padding: 0.75rem;
         border-radius: 6px;
         margin: 0.5rem 0;
@@ -206,13 +207,14 @@
     }
 
     .btn-danger {
-        background: var(--danger-color, #dc3545);
-        color: white;
-        border: none;
+        background: transparent;
+        color: var(--accent-red, #e05252);
+        border: 1px solid var(--accent-red, #e05252);
+        transition: background 150ms ease;
     }
 
     .btn-danger:hover {
-        opacity: 0.9;
+        background: rgba(224, 82, 82, 0.1);
     }
 
     /* Inactive categories section */
@@ -235,29 +237,32 @@
     }
 
     .inactive-card {
-        background: var(--card-bg);
-        border: 1px dashed var(--warning-color, #f59e0b);
+        background: transparent;
+        border: 1px dashed var(--border-color);
         border-radius: 8px;
         padding: 0.75rem 1rem;
         display: flex;
         align-items: center;
         gap: 1rem;
         margin-bottom: 0.5rem;
-        opacity: 0.8;
+        opacity: 0.7;
+        transition: opacity 150ms ease, border-color 150ms ease;
     }
 
     .inactive-card:hover {
         opacity: 1;
+        border-color: var(--border-strong);
     }
 
     .btn-reactivate {
-        background: var(--warning-color, #f59e0b);
-        color: white;
-        border: none;
+        background: transparent;
+        color: var(--accent-yellow, #d29922);
+        border: 1px solid var(--accent-yellow, #d29922);
+        transition: background 150ms ease;
     }
 
     .btn-reactivate:hover {
-        filter: brightness(1.1);
+        background: rgba(210, 153, 34, 0.1);
     }
 
     .form-input {
@@ -435,7 +440,7 @@
             <span class="category-drag-handle">&#9776;</span>
             <div class="category-info">
                 <div class="category-name">
-                    <span class="category-color-dot" style="background: {{ cat.color or '#6366f1' }}"></span>
+                    <span class="category-color-dot" style="background: {{ cat.color or '#888888' }}"></span>
                     {{ cat.display_name }}
                 </div>
                 <div class="category-slug">{{ cat.name }}</div>
@@ -445,7 +450,7 @@
                 <div class="category-folder">{{ cat.folder_name }}/</div>
             </div>
             <div class="category-actions">
-                <button class="btn btn-secondary btn-sm" onclick="showEditModal({{ cat.id }}, '{{ cat.name }}', '{{ cat.display_name }}', `{{ cat.description|default('', true)|e }}`, '{{ cat.folder_name }}', '{{ cat.color or '#6366f1' }}')">Edit</button>
+                <button class="btn btn-secondary btn-sm" onclick="showEditModal({{ cat.id }}, '{{ cat.name }}', '{{ cat.display_name }}', `{{ cat.description|default('', true)|e }}`, '{{ cat.folder_name }}', '{{ cat.color or '#888888' }}')">Edit</button>
                 <button class="btn btn-secondary btn-sm" onclick="deleteCategory({{ cat.id }}, '{{ cat.display_name }}')">Delete</button>
             </div>
         </div>
@@ -505,22 +510,22 @@
             <div class="form-group">
                 <label>Color</label>
                 <div class="color-picker-container">
-                    <div class="color-preview" id="colorPreview" style="background: #6366f1">
-                        <input type="color" id="categoryColor" value="#6366f1">
+                    <div class="color-preview" id="colorPreview" style="background: #888888">
+                        <input type="color" id="categoryColor" value="#888888">
                     </div>
                     <div class="color-sliders">
                         <div class="color-slider-row">
                             <span class="color-slider-label">H</span>
-                            <input type="range" class="hue-slider" id="hueSlider" min="0" max="360" value="239">
+                            <input type="range" class="hue-slider" id="hueSlider" min="0" max="360" value="0">
                         </div>
                         <div class="color-slider-row">
                             <span class="color-slider-label">S</span>
-                            <input type="range" class="sat-slider" id="satSlider" min="0" max="100" value="84">
+                            <input type="range" class="sat-slider" id="satSlider" min="0" max="100" value="0">
                         </div>
                         <div class="color-slider-row">
                             <span class="color-slider-label">L</span>
-                            <input type="range" class="light-slider" id="lightSlider" min="20" max="80" value="57">
-                            <span class="color-hex-display" id="colorHexDisplay">#6366f1</span>
+                            <input type="range" class="light-slider" id="lightSlider" min="20" max="80" value="53">
+                            <span class="color-hex-display" id="colorHexDisplay">#888888</span>
                         </div>
                     </div>
                 </div>
@@ -643,7 +648,7 @@
         document.getElementById('categoryForm').reset();
         document.getElementById('categoryName').readOnly = false;
         document.getElementById('categoryName').dataset.manual = '';
-        updateSlidersFromHex('#6366f1');
+        updateSlidersFromHex('#888888');
         document.getElementById('submitBtn').textContent = 'Create';
         document.getElementById('categoryModal').classList.add('visible');
         document.getElementById('displayName').focus();
@@ -657,7 +662,7 @@
         document.getElementById('displayName').value = displayName;
         document.getElementById('description').value = description;
         document.getElementById('folderName').value = folderName;
-        updateSlidersFromHex(color || '#6366f1');
+        updateSlidersFromHex(color || '#888888');
         document.getElementById('submitBtn').textContent = 'Save';
         document.getElementById('categoryModal').classList.add('visible');
         document.getElementById('displayName').focus();

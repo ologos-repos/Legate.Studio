@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="{{ app_description }}">
-    <meta name="theme-color" content="#161b22">
+    <meta name="theme-color" content="#0a0a0a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>{% block title %}{{ title|default(app_name) }}{% endblock %}</title>
@@ -12,83 +12,151 @@
     {% block head %}{% endblock %}
 </head>
 <body>
-    <nav class="main-nav">
-        <div class="nav-content">
-            <a href="/" class="nav-brand">{{ app_name }}</a>
-            {% if is_authenticated %}
-            <div class="nav-links">
-                <a href="{{ url_for('dashboard.index') }}" class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}">Dashboard</a>
-                <a href="{{ url_for('library.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('library.') %}active{% endif %}">Library</a>
+    <div class="app-shell">
+        {% if is_authenticated %}
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar" id="appSidebar">
+            <div class="sidebar-header">
+                <a href="/" class="nav-brand">
+                    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="{{ app_name }}" class="sidebar-logo">
+                    <span class="sidebar-brand">{{ app_name }}</span>
+                </a>
+            </div>
+
+            <div class="sidebar-nav">
+                <div class="sidebar-section">NAVIGATION</div>
+                <a href="{{ url_for('dashboard.index') }}"
+                   class="sidebar-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    Dashboard
+                </a>
+                <a href="{{ url_for('library.index') }}"
+                   class="sidebar-link {% if request.endpoint and request.endpoint.startswith('library.') %}active{% endif %}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+                    Library
+                </a>
                 {% if user.has_copilot %}
-                <a href="{{ url_for('chords.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('chords.') %}active{% endif %}">Chords</a>
-                <a href="{{ url_for('agents.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('agents.') %}active{% endif %}">Agents<span class="nav-badge" id="agentQueueBadge" style="display:none;"></span></a>
+                <a href="{{ url_for('chords.index') }}"
+                   class="sidebar-link {% if request.endpoint and request.endpoint.startswith('chords.') %}active{% endif %}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><path d="M3 12a9 9 0 1018 0 9 9 0 00-18 0"/></svg>
+                    Chords
+                </a>
+                <a href="{{ url_for('agents.index') }}"
+                   class="sidebar-link {% if request.endpoint and request.endpoint.startswith('agents.') %}active{% endif %}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                    Agents
+                    <span class="nav-badge" id="agentQueueBadge" style="display:none;"></span>
+                </a>
                 {% endif %}
-                <a href="{{ url_for('chat.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('chat.') %}active{% endif %}">Chat</a>
-                <a href="{{ url_for('motif_api.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('motif_api.') %}active{% endif %}">Motif</a>
-                <a href="{{ url_for('import_api.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('import_api.') %}active{% endif %}">Import</a>
-                <a href="{{ url_for('categories.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('categories.') %}active{% endif %}">Categories</a>
-                <div class="nav-user">
-                    <div class="user-menu">
-                        <button class="user-menu-trigger" onclick="toggleUserMenu()" aria-label="User menu">
-                            {% if user.avatar_url %}
-                            <img src="{{ user.avatar_url }}" alt="{{ user.username }}" class="user-avatar">
-                            {% else %}
-                            <span class="user-avatar-placeholder">{{ user.username[0]|upper }}</span>
-                            {% endif %}
-                        </button>
-                        <div class="user-menu-dropdown" id="userMenuDropdown">
-                            <div class="user-menu-header">
-                                <span class="user-menu-name">{{ user.name or user.username }}</span>
-                                <span class="user-menu-username">@{{ user.username }}</span>
-                            </div>
-                            <div class="user-menu-divider"></div>
-                            {% if is_admin %}
-                            <a href="{{ url_for('admin.index') }}" class="user-menu-item">
-                                <span class="user-menu-icon">&#9733;</span>
-                                Admin
-                            </a>
-                            {% endif %}
-                            <a href="{{ url_for('auth.setup') }}" class="user-menu-item">
-                                <span class="user-menu-icon">&#9881;</span>
-                                Settings
-                            </a>
-                            <a href="{{ url_for('billing.index') }}" class="user-menu-item">
-                                <span class="user-menu-icon">&#128179;</span>
-                                Billing
-                            </a>
-                            <div class="user-menu-divider"></div>
-                            <a href="{{ url_for('auth.logout') }}" class="user-menu-item user-menu-logout">
-                                <span class="user-menu-icon">&#10140;</span>
-                                Logout
-                            </a>
+                <a href="{{ url_for('chat.index') }}"
+                   class="sidebar-link {% if request.endpoint and request.endpoint.startswith('chat.') %}active{% endif %}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                    Chat
+                </a>
+                <a href="{{ url_for('motif_api.index') }}"
+                   class="sidebar-link {% if request.endpoint and request.endpoint.startswith('motif_api.') %}active{% endif %}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    Motif
+                </a>
+                <a href="{{ url_for('import_api.index') }}"
+                   class="sidebar-link {% if request.endpoint and request.endpoint.startswith('import_api.') %}active{% endif %}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Import
+                </a>
+                <a href="{{ url_for('categories.index') }}"
+                   class="sidebar-link {% if request.endpoint and request.endpoint.startswith('categories.') %}active{% endif %}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                    Categories
+                </a>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="user-menu">
+                    <button class="user-menu-trigger sidebar-user-trigger" onclick="toggleUserMenu()" aria-label="User menu">
+                        {% if user.avatar_url %}
+                        <img src="{{ user.avatar_url }}" alt="{{ user.username }}" class="user-avatar">
+                        {% else %}
+                        <span class="user-avatar-placeholder">{{ user.username[0]|upper }}</span>
+                        {% endif %}
+                        <span class="sidebar-user-name">{{ user.name or user.username }}</span>
+                    </button>
+                    <div class="user-menu-dropdown" id="userMenuDropdown">
+                        <div class="user-menu-header">
+                            <span class="user-menu-name">{{ user.name or user.username }}</span>
+                            <span class="user-menu-username">@{{ user.username }}</span>
                         </div>
+                        <div class="user-menu-divider"></div>
+                        {% if is_admin %}
+                        <a href="{{ url_for('admin.index') }}" class="user-menu-item">
+                            <span class="user-menu-icon">&#9733;</span>
+                            Admin
+                        </a>
+                        {% endif %}
+                        <a href="{{ url_for('auth.setup') }}" class="user-menu-item">
+                            <span class="user-menu-icon">&#9881;</span>
+                            Settings
+                        </a>
+                        <a href="{{ url_for('billing.index') }}" class="user-menu-item">
+                            <span class="user-menu-icon">&#128179;</span>
+                            Billing
+                        </a>
+                        <div class="user-menu-divider"></div>
+                        <a href="{{ url_for('auth.logout') }}" class="user-menu-item user-menu-logout">
+                            <span class="user-menu-icon">&#10140;</span>
+                            Logout
+                        </a>
                     </div>
                 </div>
             </div>
+        </nav>
+
+        <!-- Mobile sidebar backdrop -->
+        <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
+        {% endif %}
+
+        <!-- Main content area -->
+        <div class="{% if is_authenticated %}main-content{% endif %}">
+            {% if is_authenticated %}
+            <!-- Mobile top bar -->
+            <div class="mobile-topbar">
+                <button class="nav-toggle" id="sidebarToggle" onclick="toggleSidebar()" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <a href="/" class="nav-brand">
+                    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="{{ app_name }}" style="height: 22px; width: auto;">
+                    <span>{{ app_name }}</span>
+                </a>
+            </div>
             {% endif %}
-        </div>
-    </nav>
 
-    <main class="content">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        <div class="flash-messages">
-            {% for category, message in messages %}
-            <div class="flash flash-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        </div>
-        {% endif %}
-        {% endwith %}
+            <main class="content">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                    <div class="flash flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% endwith %}
 
-        {% if trial_expired %}
-        <div class="trial-expired-banner">
-            Your 14-day trial has expired.
-            <a href="{{ url_for('billing.index') }}">Upgrade now</a> to continue using Legate Studio.
-        </div>
-        {% endif %}
+                {% if trial_expired %}
+                <div class="trial-expired-banner">
+                    Your 14-day trial has expired.
+                    <a href="{{ url_for('billing.index') }}">Upgrade now</a> to continue using Legate Studio.
+                </div>
+                {% endif %}
 
-        {% block content %}{% endblock %}
-    </main>
+                {% block content %}{% endblock %}
+            </main>
+
+            <footer class="site-footer">
+                <p>{{ app_name }} &middot; {{ now.year }}</p>
+            </footer>
+        </div><!-- end main-content -->
+    </div><!-- end app-shell -->
 
     {% if user and user.has_copilot %}
     <!-- Chord Queue Sidebar (persistent across Library pages) -->
@@ -113,15 +181,72 @@
     </button>
     {% endif %}
 
-    <footer>
-        <p>{{ app_name }} &middot; {{ now.year }}</p>
-    </footer>
-
     <!-- Toast Notification Container -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Toast Styles -->
+    <!-- Toast + Base Styles -->
     <style>
+        /* Mobile topbar — only visible on small screens */
+        .mobile-topbar {
+            display: none;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0 1rem;
+            height: var(--header-height);
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-topbar {
+                display: flex;
+            }
+            .main-content {
+                margin-left: 0 !important;
+            }
+        }
+
+        /* Sidebar user trigger button */
+        .sidebar-user-trigger {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            color: var(--text-primary);
+            transition: background var(--transition);
+        }
+
+        .sidebar-user-trigger:hover {
+            background: var(--hover-tint);
+        }
+
+        .sidebar-user-name {
+            font-size: 0.875rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+            text-align: left;
+        }
+
+        /* Site footer — in flow, not fixed */
+        .site-footer {
+            padding: 1.5rem 1rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            margin-top: auto;
+        }
+
         .toast-container {
             position: fixed;
             top: 70px;
@@ -134,7 +259,7 @@
         }
 
         .toast {
-            background: var(--card-bg);
+            background: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 0.75rem 1rem;
@@ -200,24 +325,371 @@
         }
 
         .toast.toast-success {
-            border-left: 4px solid var(--success-color);
+            border-left: 4px solid var(--accent-green);
         }
-        .toast.toast-success .toast-icon { color: var(--success-color); }
+        .toast.toast-success .toast-icon { color: var(--accent-green); }
 
         .toast.toast-error {
-            border-left: 4px solid var(--danger-color, #dc3545);
+            border-left: 4px solid var(--accent-red);
         }
-        .toast.toast-error .toast-icon { color: var(--danger-color, #dc3545); }
+        .toast.toast-error .toast-icon { color: var(--accent-red); }
 
         .toast.toast-warning {
-            border-left: 4px solid var(--warning-color);
+            border-left: 4px solid var(--accent-yellow);
         }
-        .toast.toast-warning .toast-icon { color: var(--warning-color); }
+        .toast.toast-warning .toast-icon { color: var(--accent-yellow); }
 
         .toast.toast-info {
-            border-left: 4px solid var(--accent-color);
+            border-left: 4px solid var(--border-strong);
         }
-        .toast.toast-info .toast-icon { color: var(--accent-color); }
+        .toast.toast-info .toast-icon { color: var(--text-secondary); }
+
+        /* User Menu */
+        .user-menu {
+            position: relative;
+        }
+        .user-menu-trigger {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            transition: border-color var(--transition);
+        }
+        .sidebar-user-trigger .user-avatar {
+            width: 24px;
+            height: 24px;
+        }
+        .user-menu-trigger:hover .user-avatar,
+        .user-menu-trigger:focus .user-avatar {
+            border-color: var(--border-strong);
+        }
+        .user-avatar-placeholder {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        .sidebar-user-trigger .user-avatar-placeholder {
+            width: 24px;
+            height: 24px;
+            font-size: 0.75rem;
+        }
+        .user-menu-dropdown {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 0;
+            min-width: 200px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(8px);
+            transition: opacity var(--transition), transform var(--transition), visibility var(--transition);
+            z-index: 1000;
+        }
+        .user-menu-dropdown.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .user-menu-header {
+            padding: 0.75rem 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+        .user-menu-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+        .user-menu-username {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        .user-menu-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 0;
+        }
+        .user-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: background var(--transition);
+        }
+        .user-menu-item:hover {
+            background: var(--hover-tint);
+            color: var(--text-primary);
+        }
+        .user-menu-icon {
+            width: 1.25rem;
+            text-align: center;
+            opacity: 0.7;
+        }
+        .user-menu-logout {
+            color: var(--accent-red);
+        }
+        .user-menu-logout:hover {
+            color: var(--accent-red);
+            background: rgba(224, 82, 82, 0.08);
+        }
+
+        /* Nav badge for notifications */
+        .nav-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 18px;
+            height: 18px;
+            background: var(--accent-yellow);
+            color: #000;
+            font-size: 0.7rem;
+            font-weight: 600;
+            border-radius: 9px;
+            margin-left: auto;
+            padding: 0 5px;
+            font-family: var(--font-mono);
+        }
+
+        /* Chord Queue Sidebar */
+        .chord-queue-sidebar {
+            position: fixed;
+            right: -280px;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: right 0.3s ease;
+            z-index: 300;
+        }
+        .chord-queue-sidebar.open {
+            right: 0;
+        }
+        .chord-queue-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chord-queue-header h3 {
+            margin: 0;
+            font-size: 1rem;
+        }
+        .chord-queue-count {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.125rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: var(--font-mono);
+        }
+        .chord-queue-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+        .chord-queue-empty {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 2rem 1rem;
+            font-size: 0.875rem;
+        }
+        .chord-queue-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0.75rem;
+            margin-bottom: 0.25rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+        .chord-queue-item-title {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .chord-queue-item-remove {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.25rem;
+            margin-left: 0.5rem;
+            transition: color var(--transition);
+        }
+        .chord-queue-item-remove:hover {
+            color: var(--accent-red);
+        }
+        .chord-queue-actions {
+            padding: 1rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 0.5rem;
+        }
+        .chord-queue-actions .btn {
+            flex: 1;
+        }
+        .chord-queue-toggle {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-strong);
+            color: var(--text-primary);
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 99;
+            transition: transform var(--transition), border-color var(--transition);
+        }
+        .chord-queue-toggle:hover {
+            transform: scale(1.08);
+            border-color: var(--text-tertiary);
+        }
+        .chord-queue-toggle .toggle-icon {
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+        .chord-queue-toggle .toggle-count {
+            font-size: 0.6rem;
+            font-weight: 600;
+            font-family: var(--font-mono);
+        }
+
+        /* Chord Modal */
+        .chord-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 400;
+        }
+        .chord-modal-overlay.visible {
+            display: flex;
+        }
+        .chord-modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            max-width: 400px;
+            width: 90%;
+        }
+        .chord-modal h3 {
+            margin: 0 0 0.5rem 0;
+        }
+        .chord-modal-list {
+            margin: 1rem 0;
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            padding-left: 1.25rem;
+        }
+        .chord-modal-hint {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            font-style: italic;
+        }
+        .chord-modal-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            transition: border-color var(--transition);
+        }
+        .chord-modal-input:focus {
+            outline: none;
+            border-color: var(--border-strong);
+        }
+        .chord-modal-input::placeholder {
+            color: var(--text-muted);
+        }
+        .chord-modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+        .chord-modal-result {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            border-left: 3px solid var(--accent-green);
+        }
+        .chord-result-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .chord-result-summary {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Add to chord button */
+        .btn-add-chord {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            transition: all var(--transition);
+        }
+        .btn-add-chord:hover {
+            border-color: var(--border-strong);
+            color: var(--text-primary);
+        }
+        .btn-add-chord.added {
+            background: transparent;
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
     </style>
 
     <!-- Toast JavaScript -->
@@ -261,7 +733,6 @@
             }
         }
 
-        // Convenience functions
         function showSuccess(message) { return showToast(message, 'success'); }
         function showError(message) { return showToast(message, 'error', 6000); }
         function showWarning(message) { return showToast(message, 'warning', 5000); }
@@ -291,324 +762,38 @@
     </div>
     {% endif %}
 
-    <!-- Chord Queue Styles -->
-    <style>
-        /* User Menu Dropdown */
-        .user-menu {
-            position: relative;
-        }
-        .user-menu-trigger {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0;
-            display: flex;
-            align-items: center;
-        }
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: 2px solid transparent;
-            transition: border-color 0.2s;
-        }
-        .user-menu-trigger:hover .user-avatar,
-        .user-menu-trigger:focus .user-avatar {
-            border-color: var(--accent-color);
-        }
-        .user-avatar-placeholder {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: var(--accent-color);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
-        .user-menu-dropdown {
-            position: absolute;
-            top: calc(100% + 8px);
-            right: 0;
-            min-width: 200px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-8px);
-            transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
-            z-index: 1000;
-        }
-        .user-menu-dropdown.open {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-        .user-menu-header {
-            padding: 0.75rem 1rem;
-            display: flex;
-            flex-direction: column;
-        }
-        .user-menu-name {
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-        .user-menu-username {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-        .user-menu-divider {
-            height: 1px;
-            background: var(--border-color);
-            margin: 0;
-        }
-        .user-menu-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.625rem 1rem;
-            color: var(--text-primary);
-            text-decoration: none;
-            transition: background 0.15s;
-        }
-        .user-menu-item:hover {
-            background: var(--bg-tertiary);
-        }
-        .user-menu-icon {
-            width: 1.25rem;
-            text-align: center;
-            opacity: 0.7;
-        }
-        .user-menu-logout {
-            color: var(--danger-color, #dc3545);
-        }
-
-        /* Nav badge for notifications */
-        .nav-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 18px;
-            height: 18px;
-            background: var(--warning-color);
-            color: white;
-            font-size: 0.7rem;
-            font-weight: 600;
-            border-radius: 9px;
-            margin-left: 4px;
-            padding: 0 5px;
-        }
-
-        .chord-queue-sidebar {
-            position: fixed;
-            right: -280px;
-            top: 60px;
-            width: 280px;
-            height: calc(100vh - 60px);
-            background: var(--card-bg);
-            border-left: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            transition: right 0.3s ease;
-            z-index: 100;
-        }
-        .chord-queue-sidebar.open {
-            right: 0;
-        }
-        .chord-queue-header {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .chord-queue-header h3 {
-            margin: 0;
-            font-size: 1rem;
-        }
-        .chord-queue-count {
-            background: var(--accent-color);
-            color: white;
-            padding: 0.25rem 0.5rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        .chord-queue-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 0.5rem;
-        }
-        .chord-queue-empty {
-            text-align: center;
-            color: var(--text-secondary);
-            padding: 2rem 1rem;
-            font-size: 0.875rem;
-        }
-        .chord-queue-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.5rem 0.75rem;
-            margin-bottom: 0.25rem;
-            background: var(--bg-tertiary);
-            border-radius: 6px;
-            font-size: 0.875rem;
-        }
-        .chord-queue-item-title {
-            flex: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .chord-queue-item-remove {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            padding: 0.25rem;
-            margin-left: 0.5rem;
-        }
-        .chord-queue-item-remove:hover {
-            color: var(--danger-color);
-        }
-        .chord-queue-actions {
-            padding: 1rem;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            gap: 0.5rem;
-        }
-        .chord-queue-actions .btn {
-            flex: 1;
-        }
-        .chord-queue-toggle {
-            position: fixed;
-            right: 20px;
-            bottom: 20px;
-            width: 56px;
-            height: 56px;
-            border-radius: 28px;
-            background: var(--accent-color);
-            color: white;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 99;
-            transition: transform 0.2s;
-        }
-        .chord-queue-toggle:hover {
-            transform: scale(1.1);
-        }
-        .chord-queue-toggle .toggle-icon {
-            font-size: 1.5rem;
-            line-height: 1;
-        }
-        .chord-queue-toggle .toggle-count {
-            font-size: 0.625rem;
-            font-weight: 600;
-        }
-        .chord-modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.7);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 200;
-        }
-        .chord-modal-overlay.visible {
-            display: flex;
-        }
-        .chord-modal {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 1.5rem;
-            max-width: 400px;
-            width: 90%;
-        }
-        .chord-modal h3 {
-            margin: 0 0 0.5rem 0;
-        }
-        .chord-modal-list {
-            margin: 1rem 0;
-            max-height: 150px;
-            overflow-y: auto;
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            padding-left: 1.25rem;
-        }
-        .chord-modal-hint {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            margin-bottom: 0.75rem;
-            font-style: italic;
-        }
-        .chord-modal-input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-            margin-bottom: 1rem;
-        }
-        .chord-modal-input::placeholder {
-            color: var(--text-secondary);
-            opacity: 0.7;
-        }
-        .chord-modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 0.5rem;
-        }
-        .chord-modal-result {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: var(--bg-tertiary);
-            border-radius: 6px;
-            border-left: 3px solid var(--success-color);
-        }
-        .chord-result-title {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-        .chord-result-summary {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-        /* Add to chord button style */
-        .btn-add-chord {
-            background: transparent;
-            color: var(--accent-color);
-            border: 1px solid var(--accent-color);
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-        }
-        .btn-add-chord:hover {
-            background: var(--accent-color);
-            color: white;
-        }
-        .btn-add-chord.added {
-            background: var(--success-color);
-            border-color: var(--success-color);
-            color: white;
-        }
-    </style>
-
-    <!-- Chord Queue JavaScript -->
+    <!-- Chord Queue + App JavaScript -->
     <script>
-        // Chord Queue - persists in localStorage
+        // ===== Sidebar Toggle =====
+        function toggleSidebar() {
+            const sidebar = document.getElementById('appSidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            if (!sidebar) return;
+            const isOpen = sidebar.classList.toggle('open');
+            backdrop.classList.toggle('active', isOpen);
+            // Persist desktop preference
+            if (window.innerWidth > 768) {
+                localStorage.setItem('sidebarCollapsed', isOpen ? 'false' : 'true');
+            }
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('appSidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            if (sidebar) sidebar.classList.remove('open');
+            if (backdrop) backdrop.classList.remove('active');
+        }
+
+        // On desktop, restore sidebar state from localStorage
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('appSidebar');
+            if (sidebar && window.innerWidth > 768) {
+                const collapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+                // Sidebar is always visible on desktop; the 'open' class is only for mobile
+            }
+        });
+
+        // ===== Chord Queue =====
         const CHORD_QUEUE_KEY = 'legato_chord_queue';
 
         function getChordQueue() {
@@ -630,7 +815,6 @@
                 queue.push({ id: entryId, title: title });
                 saveChordQueue(queue);
             }
-            // Update button state
             const btn = document.querySelector(`[data-entry-id="${entryId}"] .btn-add-chord`);
             if (btn) {
                 btn.classList.add('added');
@@ -641,7 +825,6 @@
         function removeFromChordQueue(entryId) {
             const queue = getChordQueue().filter(e => e.id !== entryId);
             saveChordQueue(queue);
-            // Update button state
             const btn = document.querySelector(`[data-entry-id="${entryId}"] .btn-add-chord`);
             if (btn) {
                 btn.classList.remove('added');
@@ -663,7 +846,6 @@
             showSuccess('Chord queue cleared');
         }
 
-        // Expose clear function globally for debugging
         window.clearChordQueue = clearChordQueue;
 
         function updateChordQueueUI() {
@@ -675,27 +857,24 @@
             const toggleCountEl = document.getElementById('toggleCount');
             const listEl = document.getElementById('chordQueueList');
 
-            // Update counts
-            countEl.textContent = count;
-            toggleCountEl.textContent = count;
+            if (countEl) countEl.textContent = count;
+            if (toggleCountEl) toggleCountEl.textContent = count;
+            if (toggle) toggle.style.display = count > 0 ? 'flex' : 'none';
 
-            // Show/hide toggle button
-            toggle.style.display = count > 0 ? 'flex' : 'none';
-
-            // Update list
-            if (count === 0) {
-                listEl.innerHTML = '<p class="chord-queue-empty">Add notes to build a chord</p>';
-                sidebar.classList.remove('open');
-            } else {
-                listEl.innerHTML = queue.map(e => `
-                    <div class="chord-queue-item">
-                        <span class="chord-queue-item-title">${escapeHtml(e.title)}</span>
-                        <button class="chord-queue-item-remove" onclick="removeFromChordQueue('${e.id}')">&times;</button>
-                    </div>
-                `).join('');
+            if (listEl) {
+                if (count === 0) {
+                    listEl.innerHTML = '<p class="chord-queue-empty">Add notes to build a chord</p>';
+                    if (sidebar) sidebar.classList.remove('open');
+                } else {
+                    listEl.innerHTML = queue.map(e => `
+                        <div class="chord-queue-item">
+                            <span class="chord-queue-item-title">${escapeHtml(e.title)}</span>
+                            <button class="chord-queue-item-remove" onclick="removeFromChordQueue('${e.id}')">&times;</button>
+                        </div>
+                    `).join('');
+                }
             }
 
-            // Update add buttons on page
             document.querySelectorAll('.btn-add-chord').forEach(btn => {
                 const entryId = btn.closest('[data-entry-id]')?.dataset.entryId;
                 if (entryId && queue.find(e => e.id === entryId)) {
@@ -713,14 +892,13 @@
 
         function toggleChordQueue() {
             const sidebar = document.getElementById('chordQueueSidebar');
-            sidebar.classList.toggle('open');
+            if (sidebar) sidebar.classList.toggle('open');
         }
 
         function createChordFromQueue() {
             const queue = getChordQueue();
             if (queue.length === 0) return;
 
-            // Populate modal
             document.getElementById('chordModalCount').textContent = queue.length;
             document.getElementById('chordModalList').innerHTML = queue.map(e =>
                 `<li>${escapeHtml(e.title)}</li>`
@@ -759,7 +937,6 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Show the generated result briefly
                     document.getElementById('chordResultTitle').textContent = data.title;
                     document.getElementById('chordResultSummary').textContent = data.summary;
                     resultDiv.style.display = 'block';
@@ -767,7 +944,6 @@
 
                     showSuccess(`Chord "${data.title}" queued for agent`);
 
-                    // Wait a moment to show the result, then redirect
                     setTimeout(() => {
                         closeChordModal();
                         clearChordQueue();
@@ -785,16 +961,18 @@
             }
         }
 
-        // Close modal on escape
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeChordModal();
+            if (e.key === 'Escape') {
+                closeChordModal();
+                closeSidebar();
+            }
         });
 
-        // Fetch and display pending agent count
+        // ===== Agent Badge =====
         async function updateAgentBadge() {
             try {
                 const response = await fetch('/agents/api/pending-count');
-                if (!response.ok) return; // Silently fail if not authorized
+                if (!response.ok) return;
                 const data = await response.json();
                 const badge = document.getElementById('agentQueueBadge');
                 if (badge && data.count > 0) {
@@ -804,17 +982,16 @@
                     badge.style.display = 'none';
                 }
             } catch (error) {
-                // Silently ignore - user may not have access
+                // Silently ignore
             }
         }
 
-        // User Menu Toggle
+        // ===== User Menu =====
         function toggleUserMenu() {
             const dropdown = document.getElementById('userMenuDropdown');
-            dropdown.classList.toggle('open');
+            if (dropdown) dropdown.classList.toggle('open');
         }
 
-        // Close user menu when clicking outside
         document.addEventListener('click', (e) => {
             const userMenu = document.querySelector('.user-menu');
             const dropdown = document.getElementById('userMenuDropdown');
@@ -823,7 +1000,7 @@
             }
         });
 
-        // Initialize on page load
+        // ===== Init =====
         document.addEventListener('DOMContentLoaded', () => {
             updateChordQueueUI();
             updateAgentBadge();

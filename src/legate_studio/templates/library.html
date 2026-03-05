@@ -66,21 +66,22 @@
     }
 
     .sidebar-link.active {
-        background: var(--accent-color);
-        color: white;
+        background: var(--active-tint);
+        color: var(--text-primary);
+        outline: 1px solid var(--border-strong);
     }
 
     .sidebar-count {
         font-size: 0.75rem;
-        color: var(--text-secondary);
-        background: var(--bg-tertiary);
+        color: var(--text-muted);
+        background: transparent;
         padding: 0.125rem 0.375rem;
         border-radius: 4px;
+        font-family: var(--font-mono);
     }
 
     .sidebar-link.active .sidebar-count {
-        background: rgba(255,255,255,0.2);
-        color: white;
+        color: var(--text-secondary);
     }
 
     .sidebar-search {
@@ -99,7 +100,7 @@
 
     .sidebar-search input:focus {
         outline: none;
-        border-color: var(--accent-color);
+        border-color: var(--border-strong);
     }
 
     /* Main content styles */
@@ -140,7 +141,7 @@
     }
 
     .entry-card:hover {
-        border-color: var(--accent-color);
+        border-color: var(--border-strong);
     }
 
     .entry-link {
@@ -158,7 +159,7 @@
     }
 
     .entry-link:hover .entry-title {
-        color: var(--accent-color);
+        color: var(--text-primary);
     }
 
     .entry-date {
@@ -179,7 +180,7 @@
         opacity: 1;
     }
 
-    /* Category pill with dynamic color */
+    /* Category pill — monochrome border-only pill */
     .category-pill {
         position: relative;
     }
@@ -187,18 +188,18 @@
     .category-select {
         appearance: none;
         -webkit-appearance: none;
-        padding: 0.25rem 1.25rem 0.25rem 0.5rem;
-        font-size: 0.7rem;
+        padding: 0.2rem 1.25rem 0.2rem 0.5rem;
+        font-size: 0.65rem;
         font-weight: 500;
         text-transform: uppercase;
-        letter-spacing: 0.03em;
-        border: none;
-        border-radius: 12px;
-        background: var(--category-color, var(--bg-tertiary));
-        color: white;
+        letter-spacing: 0.06em;
+        border: 1px solid var(--border-strong);
+        border-radius: 999px;
+        background: transparent;
+        color: var(--text-secondary);
         cursor: pointer;
-        transition: all 0.2s;
-        text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+        transition: border-color var(--transition), color var(--transition);
+        font-family: var(--font-mono);
     }
 
     .category-pill::after {
@@ -208,18 +209,19 @@
         top: 50%;
         transform: translateY(-50%);
         font-size: 0.6rem;
-        color: white;
+        color: var(--text-muted);
         pointer-events: none;
-        text-shadow: 0 1px 1px rgba(0,0,0,0.2);
     }
 
     .category-select:hover {
-        filter: brightness(1.1);
+        border-color: var(--text-tertiary);
+        color: var(--text-primary);
     }
 
     .category-select:focus {
         outline: none;
-        filter: brightness(1.1);
+        border-color: var(--text-tertiary);
+        color: var(--text-primary);
     }
 
     /* Sidebar category colors */
@@ -232,8 +234,8 @@
     }
 
     .sidebar-link.orphaned {
-        border: 1px dashed var(--warning-color, #f59e0b);
-        background: rgba(245, 158, 11, 0.1);
+        border: 1px dashed var(--accent-yellow);
+        background: rgba(210, 153, 34, 0.08);
     }
 
     .sidebar-link.orphaned .category-dot {
@@ -249,15 +251,16 @@
         font-size: 0.65rem;
         padding: 0.125rem 0.375rem;
         border-radius: 4px;
-        background: var(--warning-color, #f59e0b);
-        color: white;
-        border: none;
+        background: transparent;
+        color: var(--accent-yellow);
+        border: 1px solid var(--accent-yellow);
         cursor: pointer;
         margin-left: 0.25rem;
+        transition: background var(--transition);
     }
 
     .adopt-btn:hover {
-        filter: brightness(1.1);
+        background: rgba(210, 153, 34, 0.12);
     }
 
     /* Action button group */
@@ -292,13 +295,15 @@
     }
 
     .action-btn.btn-chord:hover {
-        background: var(--accent-color);
-        color: white;
+        background: var(--hover-tint);
+        border-color: var(--border-strong);
+        color: var(--text-primary);
     }
 
     .action-btn.btn-delete:hover {
-        background: var(--danger-color, #dc3545);
-        color: white;
+        background: rgba(224, 82, 82, 0.08);
+        border-color: var(--accent-red);
+        color: var(--accent-red);
     }
 
     .action-btn svg {
@@ -324,8 +329,9 @@
     .stat-value {
         display: block;
         font-size: 1.5rem;
-        font-weight: 600;
-        color: var(--accent-color);
+        font-weight: 700;
+        color: var(--text-primary);
+        font-family: var(--font-mono);
     }
 
     .stat-label {
@@ -373,7 +379,7 @@
                 <a href="{{ url_for('library.view_category', category=cat.category) }}"
                    class="sidebar-link {% if cat.orphaned %}orphaned{% endif %}"
                    {% if cat.orphaned %}title="Orphaned category - click Adopt to restore"{% endif %}>
-                    <span class="category-dot" style="background: {{ cat.color or '#6366f1' }}"></span>
+                    <span class="category-dot" style="background: {{ cat.color or '#888888' }}"></span>
                     <span>{{ cat.display_name or cat.category or 'Uncategorized' }}</span>
                     {% if cat.orphaned %}
                     <button class="adopt-btn" onclick="event.preventDefault(); adoptCategory('{{ cat.category }}')" title="Restore this category">Adopt</button>
@@ -431,10 +437,10 @@
                         <div class="entry-date">{{ entry.created_at[:10] }}</div>
                     </a>
                     <div class="entry-actions">
-                        <span class="category-pill" style="--category-color: {{ categories | selectattr('category', 'equalto', entry.category) | map(attribute='color') | first | default('#6366f1') }}">
+                        <span class="category-pill" style="--category-color: {{ categories | selectattr('category', 'equalto', entry.category) | map(attribute='color') | first | default('#888888') }}">
                             <select class="category-select" onchange="changeCategory('{{ entry.entry_id }}', this.value, this)" title="Change category">
                                 {% for cat in categories %}
-                                <option value="{{ cat.category }}" data-color="{{ cat.color or '#6366f1' }}" {% if cat.category == entry.category %}selected{% endif %}>{{ cat.display_name or cat.category }}</option>
+                                <option value="{{ cat.category }}" data-color="{{ cat.color or '#888888' }}" {% if cat.category == entry.category %}selected{% endif %}>{{ cat.display_name or cat.category }}</option>
                                 {% endfor %}
                             </select>
                         </span>
@@ -528,7 +534,7 @@
 
         // Get new color from selected option
         const selectedOption = select.options[select.selectedIndex];
-        const newColor = selectedOption.dataset.color || '#6366f1';
+        const newColor = selectedOption.dataset.color || '#888888';
         pill.style.setProperty('--category-color', newColor);
 
         try {
@@ -548,13 +554,13 @@
                 select.value = originalValue;
                 // Revert color
                 const oldOption = Array.from(select.options).find(o => o.value === originalValue);
-                pill.style.setProperty('--category-color', oldOption?.dataset.color || '#6366f1');
+                pill.style.setProperty('--category-color', oldOption?.dataset.color || '#888888');
             }
         } catch (error) {
             showError(error.message);
             select.value = originalValue;
             const oldOption = Array.from(select.options).find(o => o.value === originalValue);
-            pill.style.setProperty('--category-color', oldOption?.dataset.color || '#6366f1');
+            pill.style.setProperty('--category-color', oldOption?.dataset.color || '#888888');
         }
     }
 

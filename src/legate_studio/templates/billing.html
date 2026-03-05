@@ -52,45 +52,50 @@
     }
 
     .plan-badge.trial {
-        background: var(--text-secondary);
-        color: var(--bg-primary);
+        background: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
     }
 
     .plan-badge.byok {
-        background: #6366f1;
-        color: white;
+        background: transparent;
+        border: 1px solid var(--border-strong);
+        color: var(--text-primary);
     }
 
     .plan-badge.managed {
-        background: #10b981;
-        color: white;
+        background: transparent;
+        border: 1px solid var(--accent-green);
+        color: var(--accent-green);
     }
 
     .plan-badge.beta {
-        background: #f59e0b;
-        color: black;
+        background: transparent;
+        border: 1px solid var(--accent-yellow);
+        color: var(--accent-yellow);
     }
 
     .trial-info {
-        background: rgba(255, 255, 255, 0.05);
+        background: var(--bg-tertiary);
         border-radius: 6px;
         padding: 1rem;
         margin-top: 1rem;
     }
 
     .trial-info.expired {
-        background: rgba(239, 68, 68, 0.1);
-        border: 1px solid rgba(239, 68, 68, 0.3);
+        background: rgba(224, 82, 82, 0.1);
+        border: 1px solid rgba(224, 82, 82, 0.3);
     }
 
     .trial-days {
         font-size: 1.5rem;
         font-weight: 700;
-        color: var(--accent-color);
+        font-family: var(--font-mono);
+        color: var(--text-primary);
     }
 
     .trial-days.expired {
-        color: #ef4444;
+        color: var(--accent-red);
     }
 
     .plans-grid {
@@ -102,19 +107,24 @@
 
     .plan-card {
         background: var(--card-bg);
-        border: 2px solid var(--border-color);
-        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
         padding: 1.5rem;
         display: flex;
         flex-direction: column;
+        transition: border-color var(--transition);
+    }
+
+    .plan-card:hover {
+        border-color: var(--border-strong);
     }
 
     .plan-card.recommended {
-        border-color: var(--accent-color);
+        border-color: var(--border-strong);
     }
 
     .plan-card.current {
-        border-color: #10b981;
+        border-color: var(--accent-green);
     }
 
     .plan-name {
@@ -126,6 +136,7 @@
     .plan-price {
         font-size: 2rem;
         font-weight: 700;
+        font-family: var(--font-mono);
         margin-bottom: 0.25rem;
     }
 
@@ -137,6 +148,7 @@
         font-size: 0.875rem;
         color: var(--text-secondary);
         font-weight: 400;
+        font-family: var(--font-sans);
     }
 
     .plan-description {
@@ -162,35 +174,38 @@
         content: "✓";
         position: absolute;
         left: 0;
-        color: #10b981;
+        color: var(--accent-green);
     }
 
     .plan-button {
         width: 100%;
         padding: 0.75rem;
-        border: none;
+        border: 1px solid var(--border-color);
         border-radius: 6px;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.2s;
+        background: transparent;
+        color: var(--text-secondary);
+        transition: var(--transition);
     }
 
     .plan-button.primary {
-        background: var(--accent-color);
-        color: white;
-    }
-
-    .plan-button.primary:hover {
-        filter: brightness(1.1);
-    }
-
-    .plan-button.secondary {
-        background: var(--bg-tertiary);
+        border-color: var(--border-strong);
         color: var(--text-primary);
     }
 
+    .plan-button.primary:hover {
+        background: var(--hover-tint);
+    }
+
+    .plan-button.secondary {
+        border-color: var(--border-color);
+        color: var(--text-secondary);
+    }
+
     .plan-button.secondary:hover {
-        background: var(--bg-secondary);
+        background: var(--hover-tint);
+        color: var(--text-primary);
     }
 
     .plan-button:disabled {
@@ -217,23 +232,23 @@
     }
 
     .beta-notice {
-        background: rgba(245, 158, 11, 0.1);
-        border: 1px solid rgba(245, 158, 11, 0.3);
+        background: rgba(210, 153, 34, 0.1);
+        border: 1px solid rgba(210, 153, 34, 0.3);
         border-radius: 8px;
         padding: 1rem;
         margin-bottom: 1.5rem;
     }
 
     .cancel-notice {
-        background: rgba(239, 68, 68, 0.1);
-        border: 1px solid rgba(239, 68, 68, 0.3);
+        background: rgba(224, 82, 82, 0.1);
+        border: 1px solid rgba(224, 82, 82, 0.3);
         border-radius: 8px;
         padding: 1rem;
         margin-bottom: 1.5rem;
     }
 
     .cancel-notice strong {
-        color: #ef4444;
+        color: var(--accent-red);
     }
 
     .manage-actions {
@@ -245,22 +260,24 @@
 
     .btn-danger {
         background: transparent;
-        border: 1px solid #ef4444;
-        color: #ef4444;
+        border: 1px solid var(--accent-red);
+        color: var(--accent-red);
+        transition: var(--transition);
     }
 
     .btn-danger:hover {
-        background: rgba(239, 68, 68, 0.1);
+        background: rgba(224, 82, 82, 0.1);
     }
 
     .btn-success {
-        background: #10b981;
-        color: white;
-        border: none;
+        background: transparent;
+        border: 1px solid var(--accent-green);
+        color: var(--accent-green);
+        transition: var(--transition);
     }
 
     .btn-success:hover {
-        filter: brightness(1.1);
+        background: rgba(63, 185, 80, 0.1);
     }
 </style>
 {% endblock %}

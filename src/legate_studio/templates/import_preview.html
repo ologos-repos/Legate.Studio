@@ -68,15 +68,15 @@
 }
 
 .stat-item.success .stat-value {
-    color: var(--success-color);
+    color: var(--accent-green, #3fb950);
 }
 
 .stat-item.warning .stat-value {
-    color: var(--warning-color);
+    color: var(--accent-yellow, #d29922);
 }
 
 .stat-item.error .stat-value {
-    color: var(--danger-color);
+    color: var(--accent-red, #e05252);
 }
 
 /* File List */
@@ -94,7 +94,7 @@
 }
 
 .file-card.error {
-    border-color: var(--danger-color);
+    border-color: var(--accent-red, #e05252);
 }
 
 .file-header {
@@ -118,7 +118,7 @@
 .file-path {
     font-size: 0.75rem;
     color: var(--text-secondary);
-    font-family: monospace;
+    font-family: var(--font-mono, monospace);
 }
 
 .file-category {
@@ -131,12 +131,12 @@
     color: var(--text-secondary);
 }
 
-.file-category.concept { background: var(--indigo-bg, #6366f1); color: #fff; }
-.file-category.epiphany { background: var(--amber-bg, #f59e0b); color: #000; }
-.file-category.reflection { background: var(--violet-bg, #8b5cf6); color: #fff; }
-.file-category.glimmer { background: var(--pink-bg, #ec4899); color: #fff; }
-.file-category.reminder { background: var(--teal-bg, #14b8a6); color: #fff; }
-.file-category.worklog { background: var(--slate-bg, #64748b); color: #fff; }
+.file-category.concept { background: transparent; border: 1px solid var(--border-strong); color: var(--text-primary); }
+.file-category.epiphany { background: transparent; border: 1px solid var(--accent-yellow, #d29922); color: var(--accent-yellow, #d29922); }
+.file-category.reflection { background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); }
+.file-category.glimmer { background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); }
+.file-category.reminder { background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); }
+.file-category.worklog { background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); }
 
 .file-details {
     display: none;
@@ -181,7 +181,7 @@
 }
 
 .content-preview {
-    font-family: monospace;
+    font-family: var(--font-mono, monospace);
     font-size: 0.8rem;
     background: var(--bg-tertiary);
     padding: 0.75rem;
@@ -230,10 +230,11 @@
 
 /* Error State */
 .error-message {
-    color: var(--danger-color);
+    color: var(--accent-red, #e05252);
     font-size: 0.875rem;
     padding: 0.75rem;
-    background: rgba(248, 81, 73, 0.1);
+    background: rgba(224, 82, 82, 0.08);
+    border: 1px solid rgba(224, 82, 82, 0.2);
     border-radius: 4px;
 }
 

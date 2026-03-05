@@ -84,8 +84,9 @@
     }
 
     .session-item.active {
-        background: var(--accent-color);
-        color: white;
+        background: var(--active-tint);
+        color: var(--text-primary);
+        outline: 1px solid var(--border-strong);
     }
 
     .session-title {
@@ -108,23 +109,27 @@
     }
 
     .session-delete {
-        font-size: 0.75rem;
+        font-size: 0.65rem;
         padding: 0.125rem 0.375rem;
-        background: var(--danger-color);
-        color: white;
-        border: none;
+        background: transparent;
+        color: var(--accent-red);
+        border: 1px solid var(--accent-red);
         border-radius: 4px;
         cursor: pointer;
         opacity: 0;
-        transition: opacity 0.2s;
+        transition: opacity var(--transition), background var(--transition);
     }
 
     .session-item:hover .session-delete {
         opacity: 1;
     }
 
+    .session-delete:hover {
+        background: rgba(224, 82, 82, 0.1);
+    }
+
     .session-item.active .session-delete {
-        background: rgba(255,255,255,0.2);
+        opacity: 0.7;
     }
 
     .no-sessions {
@@ -177,8 +182,9 @@
 
     .message-user {
         align-self: flex-end;
-        background: var(--accent-color);
-        color: white;
+        background: var(--bg-elevated);
+        color: var(--text-primary);
+        border: 1px solid var(--border-strong);
         border-bottom-right-radius: 0.25rem;
     }
 
@@ -245,7 +251,7 @@
     }
 
     .message-assistant .message-content blockquote {
-        border-left: 3px solid var(--accent-color);
+        border-left: 3px solid var(--border-strong);
         margin: 0.5em 0;
         padding-left: 0.75em;
         opacity: 0.9;
@@ -302,25 +308,27 @@
 
     .chat-input:focus {
         outline: none;
-        border-color: var(--accent-color);
+        border-color: var(--border-strong);
     }
 
     .chat-send-btn {
         padding: 0.75rem 1.5rem;
-        background: var(--accent-color);
-        color: white;
-        border: none;
+        background: transparent;
+        color: var(--text-primary);
+        border: 1px solid var(--border-strong);
         border-radius: 1.5rem;
         cursor: pointer;
         font-weight: 500;
+        transition: background var(--transition), border-color var(--transition);
     }
 
     .chat-send-btn:hover {
-        opacity: 0.9;
+        background: var(--hover-tint);
+        border-color: var(--text-tertiary);
     }
 
     .chat-send-btn:disabled {
-        opacity: 0.5;
+        opacity: 0.4;
         cursor: not-allowed;
     }
 
@@ -351,7 +359,7 @@
 
     .model-select:focus {
         outline: none;
-        border-color: var(--accent-blue);
+        border-color: var(--border-strong);
     }
 
     .typing-indicator {
@@ -401,6 +409,30 @@
 
     .empty-chat p {
         max-width: 400px;
+    }
+
+    /* Mobile chat layout */
+    @media (max-width: 768px) {
+        .chat-wrapper {
+            flex-direction: column;
+            height: auto;
+            min-height: calc(100vh - 120px);
+        }
+
+        .chat-sidebar {
+            width: 100%;
+            max-height: 160px;
+        }
+
+        .chat-sidebar.collapsed {
+            width: 100%;
+            max-height: 40px;
+        }
+
+        .chat-container {
+            max-width: 100%;
+            min-height: 400px;
+        }
     }
 </style>
 {% endblock %}

@@ -235,7 +235,8 @@
 }
 
 .setup-section {
-    background: var(--bg-secondary);
+    background: transparent;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
@@ -250,15 +251,20 @@
 .tier-badge {
     display: inline-block;
     padding: 0.25rem 0.75rem;
-    border-radius: 4px;
+    border-radius: 999px;
     font-weight: 600;
     text-transform: uppercase;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    font-family: var(--font-mono);
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    color: var(--text-secondary);
 }
 
-.tier-free { background: #3d4852; color: #e2e8f0; }
-.tier-byk { background: #2563eb; color: white; }
-.tier-managed { background: #7c3aed; color: white; }
+.tier-free { border-color: var(--border-color); color: var(--text-muted); }
+.tier-byk { border-color: var(--border-strong); color: var(--text-secondary); }
+.tier-managed { border-color: var(--text-secondary); color: var(--text-primary); }
 
 .tier-description {
     margin-top: 0.5rem;
@@ -273,19 +279,23 @@
 .copilot-badge {
     display: inline-block;
     padding: 0.25rem 0.75rem;
-    border-radius: 4px;
+    border-radius: 999px;
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    background: transparent;
 }
 
 .copilot-enabled {
-    background: #10b981;
-    color: white;
+    border: 1px solid var(--accent-green);
+    color: var(--accent-green);
 }
 
 .copilot-disabled {
-    background: #6b7280;
-    color: white;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
 }
 
 .installation-list {
@@ -299,7 +309,8 @@
     align-items: center;
     gap: 1rem;
     padding: 0.75rem;
-    background: var(--bg-primary);
+    background: transparent;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     margin-bottom: 0.5rem;
 }
@@ -327,7 +338,7 @@
 }
 
 .library-configured {
-    color: var(--text-success, #10b981);
+    color: var(--text-success, #3fb950);
     font-size: 1rem;
 }
 
@@ -435,7 +446,8 @@ details.setup-section[open] summary {
     display: flex;
     gap: 1rem;
     padding: 1rem;
-    background: var(--bg-primary);
+    background: transparent;
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     margin-bottom: 0.75rem;
 }
@@ -444,14 +456,16 @@ details.setup-section[open] summary {
     flex-shrink: 0;
     width: 28px;
     height: 28px;
-    background: var(--accent-color);
-    color: white;
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    color: var(--text-secondary);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
     font-size: 0.875rem;
+    font-family: var(--font-mono);
 }
 
 .step-content {
@@ -514,11 +528,11 @@ details.setup-section[open] summary {
 }
 
 .reset-status.success {
-    color: var(--text-success, #10b981);
+    color: var(--text-success, #3fb950);
 }
 
 .reset-status.error {
-    color: var(--text-error, #ef4444);
+    color: var(--text-error, #e05252);
 }
 
 .reset-status.loading {

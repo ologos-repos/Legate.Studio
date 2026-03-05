@@ -73,12 +73,13 @@
     }
 
     .sidebar-link.active {
-        background: var(--accent-color);
-        color: white;
+        background: var(--hover-tint);
+        border: 1px solid var(--border-strong);
+        color: var(--text-primary);
     }
 
     .sidebar-link.active .category-dot {
-        box-shadow: 0 0 0 2px rgba(255,255,255,0.5);
+        box-shadow: 0 0 0 2px rgba(255,255,255,0.3);
     }
 
     .sidebar-count {
@@ -90,8 +91,8 @@
     }
 
     .sidebar-link.active .sidebar-count {
-        background: rgba(255,255,255,0.2);
-        color: white;
+        background: rgba(255,255,255,0.1);
+        color: var(--text-secondary);
     }
 
     .sidebar-search {
@@ -186,13 +187,13 @@
     .form-group input:focus,
     .form-group textarea:focus {
         outline: none;
-        border-color: var(--accent-color);
+        border-color: var(--border-strong);
     }
 
     .form-group textarea {
         resize: vertical;
         min-height: 150px;
-        font-family: monospace;
+        font-family: var(--font-mono, monospace);
     }
 
     .modal-actions {
@@ -221,7 +222,7 @@
     }
 
     .entry-card:hover {
-        border-color: var(--accent-color);
+        border-color: var(--border-strong);
     }
 
     .entry-info {
@@ -243,7 +244,7 @@
     }
 
     .entry-link:hover .entry-title {
-        color: var(--accent-color);
+        color: var(--text-primary);
     }
 
     .entry-date {
@@ -346,7 +347,7 @@
     }
 
     .action-btn.btn-delete:hover {
-        background: var(--danger-color, #dc3545);
+        background: var(--accent-red, #e05252);
         color: white;
     }
 
@@ -510,7 +511,7 @@
                 {% for cat in categories %}
                 <a href="{{ url_for('library.view_category', category=cat.category) }}"
                    class="sidebar-link {% if cat.category == category %}active{% endif %}">
-                    <span class="category-dot" style="background: {{ cat.color or '#6366f1' }}"></span>
+                    <span class="category-dot" style="background: {{ cat.color or '#888888' }}"></span>
                     <span>{{ cat.display_name or cat.category or 'Uncategorized' }}</span>
                     <span class="sidebar-count">{{ cat.count }}</span>
                 </a>
@@ -590,10 +591,10 @@
                     {% elif entry.chord_status == 'pending' %}
                     <span class="chord-badge pending">Queued</span>
                     {% endif %}
-                    <span class="category-pill" style="--category-color: {{ categories | selectattr('category', 'equalto', category) | map(attribute='color') | first | default('#6366f1') }}">
+                    <span class="category-pill" style="--category-color: {{ categories | selectattr('category', 'equalto', category) | map(attribute='color') | first | default('#888888') }}">
                         <select class="category-select" onchange="changeCategory('{{ entry.entry_id }}', this.value, this)" title="Change category">
                             {% for cat in categories %}
-                            <option value="{{ cat.category }}" data-color="{{ cat.color or '#6366f1' }}" {% if cat.category == category %}selected{% endif %}>{{ cat.display_name or cat.category }}</option>
+                            <option value="{{ cat.category }}" data-color="{{ cat.color or '#888888' }}" {% if cat.category == category %}selected{% endif %}>{{ cat.display_name or cat.category }}</option>
                             {% endfor %}
                         </select>
                     </span>
