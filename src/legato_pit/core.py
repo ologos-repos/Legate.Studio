@@ -72,7 +72,32 @@ def _get_or_create_persistent_key(env_var: str, filename: str) -> str:
 
 
 def create_app():
-    """Application factory."""
+    """Application factory.
+
+    Required environment variables:
+      SENTRY_DSN         — DSN from sentry.io project settings (leave unset in dev to disable)
+      SENTRY_ENVIRONMENT — 'production' or 'staging' (defaults to 'production')
+    """
+    # --- Sentry error tracking ---
+    # Initialize BEFORE creating the Flask app so Flask integration wraps it from the start.
+    # Safe to leave SENTRY_DSN unset in dev — Sentry won't initialize and nothing breaks.
+    import sentry_sdk
+    from sentry_sdk.integrations.flask import FlaskIntegration
+
+    dsn = os.environ.get('SENTRY_DSN')
+    if dsn:
+        sentry_sdk.init(
+            dsn=dsn,
+            integrations=[FlaskIntegration()],
+            traces_sample_rate=0.1,   # 10% performance sampling — stays within free tier (5K/mo)
+            profiles_sample_rate=0.1,
+            environment=os.environ.get('SENTRY_ENVIRONMENT', 'production'),
+            send_default_pii=False,   # No PII — we handle user voice recordings
+        )
+        logger.info("Sentry initialized (environment=%s)", os.environ.get('SENTRY_ENVIRONMENT', 'production'))
+    else:
+        logger.debug("SENTRY_DSN not set — Sentry disabled")
+
     static_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
     template_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 
@@ -173,6 +198,16 @@ def create_app():
     app.register_blueprint(billing_bp)  # Stripe billing
     app.register_blueprint(import_api_bp)  # Markdown ZIP import
     app.register_blueprint(assets_bp)  # Library asset management
+
+    # Debug-only route to verify Sentry is wired up correctly.
+    # Only reachable when app.debug=True (never in production).
+    from flask import abort as flask_abort
+
+    @app.route('/debug-sentry')
+    def trigger_error():
+        if not app.debug:
+            flask_abort(404)
+        division_by_zero = 1 / 0  # noqa: F841 — intentional ZeroDivisionError for Sentry test
 
     # Initialize all databases on startup
     with app.app_context():
