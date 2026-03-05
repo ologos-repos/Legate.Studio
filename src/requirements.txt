@@ -36,3 +36,6 @@ cryptography>=41.0.0
 
 # Stripe for subscription billing
 stripe>=7.0.0
+
+# Error tracking
+sentry-sdk[flask]>=1.40.0
