@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="Legate Studio — Record your thoughts. Build a knowledge graph. Chat with your second brain.">
+    <meta name="description" content="Legate Studio — Record your thoughts. Build a knowledge graph. Remember everything.">
     <meta name="theme-color" content="#0d1117">
     <title>Legate Studio — Your Personal Knowledge Base</title>
     <link rel="icon" href="{{ url_for('static', filename='img/favicon.png') }}" type="image/png">
@@ -888,7 +888,7 @@
         <h1 class="hero-headline">Your thoughts, organized into a knowledge graph</h1>
 
         <p class="hero-subheadline">
-            Record your thoughts. Build a knowledge graph. Chat with your second brain.
+            Record your thoughts. Build a knowledge graph. Remember everything.
         </p>
 
         <div class="hero-cta-group">
@@ -909,7 +909,7 @@
         <div class="section">
             <div class="section-label">How it works</div>
             <h2 class="section-title">From thought to insight in three steps</h2>
-            <p class="section-subtitle">Legate turns your raw thoughts into a living knowledge base that you can actually have a conversation with.</p>
+            <p class="section-subtitle">Legate turns your raw thoughts into a living knowledge base you can explore, search, and build on over time.</p>
 
             <div class="steps-grid">
                 <div class="step-card">
@@ -924,8 +924,8 @@
                 </div>
                 <div class="step-card">
                     <div class="step-num">03</div>
-                    <div class="step-title">Converse</div>
-                    <p class="step-desc">Chat with your knowledge base using AI. Ask questions and get answers grounded in your own thoughts &mdash; not hallucinations. Your knowledge, your words, retrieved in context.</p>
+                    <div class="step-title">Explore</div>
+                    <p class="step-desc">Browse, search, or chat with your growing library. Ask your AI questions about your own knowledge, or use MCP to query it from Claude Desktop and other AI tools &mdash; your second brain, always within reach.</p>
                 </div>
             </div>
         </div>
@@ -987,22 +987,8 @@
                         </svg>
                     </div>
                     <span class="feature-tag">Converse</span>
-                    <div class="feature-name">Chat</div>
-                    <p class="feature-desc">RAG-powered conversations with your knowledge base. Ask questions, get answers sourced from your own notes. Not generic AI &mdash; your knowledge, retrieved in context.</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
-                            <polyline points="16 3 21 3 21 8"/>
-                            <line x1="4" y1="20" x2="21" y2="3"/>
-                            <polyline points="21 16 21 21 16 21"/>
-                            <line x1="15" y1="15" x2="21" y2="21"/>
-                        </svg>
-                    </div>
-                    <span class="feature-tag">Automate</span>
-                    <div class="feature-name">Chords</div>
-                    <p class="feature-desc">Automated workflows powered by GitHub Copilot. Multi-step operations on your knowledge &mdash; bulk tagging, cross-referencing, structured extraction, and more.</p>
+                    <div class="feature-name">AI Chat</div>
+                    <p class="feature-desc">Chat with an AI that already knows your library. Ask questions, explore connections, surface ideas &mdash; your knowledge base is the context. Included on every plan.</p>
                 </div>
 
                 <div class="feature-card">
@@ -1062,11 +1048,11 @@
                     <div class="pricing-divider"></div>
                     <ul class="pricing-features">
                         <li>All features unlocked</li>
+                        <li>AI Chat with library awareness</li>
                         <li>GitHub-backed knowledge repo</li>
                         <li>Voice memos &amp; text capture</li>
-                        <li>Knowledge graph &amp; chat</li>
+                        <li>Knowledge graph &amp; library</li>
                         <li>MCP integration</li>
-                        <li>14 days, no strings attached</li>
                     </ul>
                     <a href="{{ url_for('auth.login') }}" class="pricing-cta">Start Free Trial</a>
                 </div>
@@ -1082,11 +1068,11 @@
                     <div class="pricing-divider"></div>
                     <ul class="pricing-features">
                         <li>Everything in Free Trial</li>
-                        <li>Use your own OpenAI key</li>
-                        <li>Use your own Anthropic key</li>
-                        <li>Use your own Gemini key</li>
+                        <li>AI Chat &mdash; unlimited, uses your keys</li>
+                        <li>Use your own OpenAI, Anthropic, or Gemini key</li>
                         <li>Pay only for what the AI actually costs you</li>
                         <li>No markup on AI usage</li>
+                        <li>Chat has full awareness of your library</li>
                     </ul>
                     <a href="{{ url_for('auth.login') }}" class="pricing-cta">Get Started</a>
                 </div>
@@ -1097,15 +1083,15 @@
                         <span class="pricing-amount">$5</span>
                         <span class="pricing-period">/ month</span>
                     </div>
-                    <p class="pricing-tagline">We handle the AI. No API key setup, no billing complexity.</p>
+                    <p class="pricing-tagline">We handle the AI. No API key setup, no billing complexity. Chat included.</p>
                     <div class="pricing-divider"></div>
                     <ul class="pricing-features">
                         <li>Everything in BYOK</li>
+                        <li>AI Chat included &mdash; $4.50/mo in token credits</li>
                         <li>AI provided &amp; managed by us</li>
                         <li>No API keys to configure</li>
                         <li>Works out of the box</li>
                         <li>Includes Claude, GPT &amp; Gemini access</li>
-                        <li>Priority support</li>
                     </ul>
                     <a href="{{ url_for('auth.login') }}" class="pricing-cta">Get Started</a>
                 </div>
@@ -1149,7 +1135,7 @@
                         <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                     </button>
                     <div class="faq-answer">
-                        BYOK (Bring Your Own Keys) means you add your own API keys from OpenAI, Anthropic, or Google. You pay those providers directly at their rates &mdash; we just charge $0.99/month for the platform. Managed means we provide the AI infrastructure: no keys to configure, no per-token billing from AI providers. Everything is handled for $5/month.
+                        BYOK (Bring Your Own Keys) means you add your own API keys from OpenAI, Anthropic, or Google. You pay those providers directly at their rates &mdash; we just charge $0.99/month for the platform. Chat is unlimited since it uses your keys. Managed means we provide the AI infrastructure: no keys to configure, no per-token billing from AI providers. Everything is handled for $5/month, including AI Chat with up to $4.50/month in token credits.
                     </div>
                 </div>
 
@@ -1175,21 +1161,21 @@
 
                 <div class="faq-item" role="listitem">
                     <button class="faq-question" aria-expanded="false" onclick="toggleFaq(this)">
-                        Can I export my data?
+                        How does AI Chat work?
                         <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                     </button>
                     <div class="faq-answer">
-                        Your knowledge is already in a GitHub repository you own. You can clone it, fork it, or download it at any time &mdash; no export process needed. Your notes are Markdown files, readable by any editor. There's no lock-in.
+                        Legate's AI Chat is a conversational interface that has full awareness of your library. Ask it questions about your notes, explore connections between ideas, or have it surface relevant knowledge as you work. On BYOK, chat is unlimited &mdash; it uses your own API keys. On Managed, chat is included with up to $4.50/month in token credits.
                     </div>
                 </div>
 
                 <div class="faq-item" role="listitem">
                     <button class="faq-question" aria-expanded="false" onclick="toggleFaq(this)">
-                        What is a Chord?
+                        Can I export my data?
                         <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                     </button>
                     <div class="faq-answer">
-                        A Chord is an automated workflow that runs multi-step operations on your knowledge base using GitHub Copilot. Think bulk-categorization, cross-referencing related notes, structured extraction from large documents, or automated tagging. Chords are how Legate scales your knowledge management without scaling your effort.
+                        Your knowledge is already in a GitHub repository you own. You can clone it, fork it, or download it at any time &mdash; no export process needed. Your notes are Markdown files, readable by any editor. There's no lock-in.
                     </div>
                 </div>
 
