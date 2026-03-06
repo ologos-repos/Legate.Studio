@@ -1,0 +1,299 @@
+# Legate Chat Subscription Awareness — Requirements Trace Model
+# Task #24201 — shipped in commit b3c3664
+#
+# Requirements:
+#   REQ-LCSA-001: API key routing based on subscription tier (BYOK vs Managed)
+#   REQ-LCSA-002: Token usage tracking (usage_events + usage_meters tables)
+#   REQ-LCSA-003: Credit cap enforcement — 429 when monthly cap exceeded
+#   REQ-LCSA-004: Chat UI credit usage bar (progress + cap-reached banner)
+#   REQ-LCSA-005: Credit top-up purchasing — $5 increments ($4.50 credits + $0.50 margin)
+#
+# Coverage: 100% — all 5 requirements traced to at least one implementing node.
+
+name: Legate Chat Subscription Awareness
+version: "2.0"
+description: >
+  Subscription-aware chat pipeline for Legate.Studio. Routes API keys based on
+  subscription tier (BYOK vs Managed), tracks token usage per request, enforces
+  monthly credit caps, exposes a credit usage UI, and supports top-up purchasing.
+
+logic:
+  mode: diagramming
+  version: '2.0'
+
+  networks:
+    - id: chat-subscription-network
+      label: Chat Subscription Awareness
+
+      factories:
+
+        # ═══════════════════════════════════════════════════════════════════
+        # FACTORY 1: Chat Orchestration Pipeline
+        # chat.py + chat_service.py — key resolution, cap check, LLM call,
+        # usage recording. Core request path for every chat message.
+        # ═══════════════════════════════════════════════════════════════════
+        - id: chat-pipeline-factory
+          label: Chat Orchestration Pipeline
+
+          machines:
+
+            # Machine 1: Key Resolution
+            # Determines which API key to use based on user tier.
+            # BYOK → user's stored key; Managed → platform env key.
+            - id: key-resolution-machine
+              label: API Key Resolution
+              nodes:
+                - id: tier-decision
+                  type: decision
+                  title: Tier Decision (BYOK vs Managed)
+                  description: >
+                    _resolve_api_key() in chat.py detects LEGATO_MODE (multi-tenant
+                    vs single-tenant), then calls get_effective_tier() to determine
+                    the user's subscription tier. Branches into BYOK or Managed path.
+                  requirements:
+                    - REQ-LCSA-001
+                  outputs: [byok-key-fetch, managed-key-fetch]
+
+                - id: byok-key-fetch
+                  type: process
+                  title: BYOK Key Fetch
+                  description: >
+                    Calls get_api_key_for_user(user_id, provider) which reads from
+                    the user_api_keys table. Returns the user's stored provider key.
+                    No cap enforcement for BYOK — user pays their provider directly.
+                  requirements:
+                    - REQ-LCSA-001
+                  outputs: [chat-service-init]
+
+                - id: managed-key-fetch
+                  type: process
+                  title: Managed Platform Key Fetch
+                  description: >
+                    For Managed tiers, get_api_key_for_user() returns the platform's
+                    environment variable key (os.environ). Managed users share
+                    platform keys — their usage is tracked and capped.
+                  requirements:
+                    - REQ-LCSA-001
+                  outputs: [cap-check]
+
+            # Machine 2: Cap Enforcement + LLM Call
+            # Enforces the monthly credit cap before calling the LLM.
+            - id: cap-enforcement-machine
+              label: Cap Enforcement & LLM Call
+              nodes:
+                - id: cap-check
+                  type: decision
+                  title: Credit Cap Check
+                  description: >
+                    check_credit_cap(user_id, tier) in usage.py computes:
+                      effective_cap = base_tier_cap + purchased_topup_credits
+                      remaining = effective_cap - current_month_spend
+                    Returns (allowed=False, 0) when cap exceeded. chat.py
+                    returns HTTP 429 immediately without calling the LLM.
+                  requirements:
+                    - REQ-LCSA-003
+                  outputs: [chat-service-init, cap-429-output]
+
+                - id: cap-429-output
+                  type: output
+                  title: 429 Cap Exceeded Response
+                  description: >
+                    JSON error response with credit_cap_reached=True and
+                    upgrade messaging. Returned before any LLM call is made.
+                    Only triggered for Managed tier users over their cap.
+                  requirements:
+                    - REQ-LCSA-003
+
+                - id: chat-service-init
+                  type: process
+                  title: ChatService Init (with resolved key)
+                  description: >
+                    ChatService(provider, model, api_key=resolved_key) in
+                    chat_service.py. The api_key parameter was added to support
+                    BYOK — if None, falls back to os.environ (backward compat
+                    for single-tenant mode).
+                  requirements:
+                    - REQ-LCSA-001
+                  outputs: [llm-call]
+
+                - id: llm-call
+                  type: ai
+                  title: LLM API Call (Claude / OpenAI / Gemini)
+                  description: >
+                    ChatService.chat() dispatches to the resolved provider.
+                    Now returns dict {text, usage: {input_tokens, output_tokens}}
+                    instead of a bare string — usage extracted from provider
+                    response objects (response.usage.input_tokens etc).
+                  requirements:
+                    - REQ-LCSA-002
+                  outputs: [usage-recorder]
+
+            # Machine 3: Usage Recording
+            # After every LLM call, record the token usage and update meters.
+            - id: usage-recording-machine
+              label: Usage Recording
+              nodes:
+                - id: usage-recorder
+                  type: worker
+                  title: Usage Event Recorder
+                  description: >
+                    record_usage_event() in usage.py. Inserts a row into
+                    usage_events with user_id, provider, tokens_in, tokens_out,
+                    cost_microdollars, event_type='chat'. Only fires for Managed
+                    tier — BYOK users are not tracked here.
+                  requirements:
+                    - REQ-LCSA-002
+                  outputs: [meter-updater]
+
+                - id: meter-updater
+                  type: worker
+                  title: Usage Meter Updater
+                  description: >
+                    update_usage_meter() in usage.py. Upserts three rows in
+                    usage_meters (chat_tokens_in, chat_tokens_out,
+                    chat_cost_microdollars) for the current YYYY-MM period.
+                    ON CONFLICT increments quantity atomically.
+                  requirements:
+                    - REQ-LCSA-002
+                  outputs: [usage-db]
+
+          # Factory-level standalone nodes — connected to machines above
+          nodes:
+            - id: usage-db
+              type: database
+              title: Usage DB (usage_events + usage_meters + credit_topups)
+              description: >
+                SQLite tables in the legato DB:
+                  - usage_events: per-request detail (tokens, cost, provider)
+                  - usage_meters: per-user per-period aggregates (upserted)
+                  - credit_topups: purchased top-up records with Stripe PI ID
+                Queried by check_credit_cap() and get_usage_summary() for
+                cap enforcement and UI display.
+              requirements:
+                - REQ-LCSA-002
+                - REQ-LCSA-003
+                - REQ-LCSA-005
+              inputs: [usage-recording-machine]
+
+        # ═══════════════════════════════════════════════════════════════════
+        # FACTORY 2: Credit UI & Top-Up Purchase Flow
+        # chat.html + chat.py API endpoints for usage display and buying credits.
+        # REQ-LCSA-004 (UI) and REQ-LCSA-005 (top-up purchasing) live here.
+        # ═══════════════════════════════════════════════════════════════════
+        - id: credit-ui-factory
+          label: Credit UI & Top-Up Flow
+
+          machines:
+
+            # Machine 4: Usage API + UI Rendering
+            # GET /chat/api/usage endpoint and the credit bar in chat.html
+            - id: credit-ui-machine
+              label: Credit Usage Display
+              nodes:
+                - id: usage-api
+                  type: api
+                  title: GET /chat/api/usage
+                  description: >
+                    Flask endpoint in chat.py. Calls get_usage_summary(user_id)
+                    from usage.py which returns tokens_in, tokens_out,
+                    cost_dollars, effective_cap, remaining_dollars,
+                    percent_used, topup_credits, and period. Only accessible
+                    to logged-in Managed tier users.
+                  requirements:
+                    - REQ-LCSA-004
+                  outputs: [credit-bar-ui]
+
+                - id: credit-bar-ui
+                  type: output
+                  title: Credit Usage Bar (chat.html)
+                  description: >
+                    JS in chat.html fetches /chat/api/usage on page load.
+                    Renders a progress bar showing "used / cap" with percent.
+                    Shows a "cap-reached" banner with a "Buy Credits" CTA when
+                    percent_used >= 100. Hidden entirely for BYOK users.
+                  requirements:
+                    - REQ-LCSA-004
+                  outputs: [buy-credits-trigger]
+
+            # Machine 5: Top-Up Purchase Flow
+            # POST /chat/api/buy-credits — Stripe PaymentIntent creation and
+            # accounting record via record_credit_topup()
+            - id: topup-machine
+              label: Credit Top-Up Purchase
+              nodes:
+                - id: buy-credits-trigger
+                  type: input
+                  title: Buy Credits Button (chat.html)
+                  description: >
+                    "Buy Credits ($5)" button in chat.html, shown when cap is
+                    reached or from the usage bar. Triggers a POST to
+                    /chat/api/buy-credits with provider=stripe.
+                    $5 purchase = $4.50 token credits + $0.50 platform margin.
+                  requirements:
+                    - REQ-LCSA-005
+                  outputs: [buy-credits-api]
+
+                - id: buy-credits-api
+                  type: api
+                  title: POST /chat/api/buy-credits
+                  description: >
+                    Flask endpoint in chat.py. Validates the user is Managed tier.
+                    Creates a Stripe PaymentIntent for $5 (500 cents).
+                    On success, calls record_credit_topup(user_id, stripe_pi_id,
+                    topup_microdollars=4_500_000, purchase_amount_cents=500).
+                    Returns updated usage summary with new effective cap.
+                  requirements:
+                    - REQ-LCSA-005
+                  outputs: [topup-accounting]
+
+                - id: topup-accounting
+                  type: process
+                  title: Top-Up Accounting (record_credit_topup)
+                  description: >
+                    record_credit_topup() in usage.py. Inserts a row into
+                    credit_topups with topup_microdollars=4_500_000 ($4.50),
+                    purchase_amount_cents=500 ($5.00), and the Stripe PI ID.
+                    check_credit_cap() reads this table to compute effective_cap
+                    = base_cap + SUM(topup_microdollars) for the period.
+                  requirements:
+                    - REQ-LCSA-005
+                  outputs: [stripe-gateway]
+
+                - id: stripe-gateway
+                  type: gateway
+                  title: Stripe Payment Gateway
+                  description: >
+                    External Stripe API. Receives PaymentIntent creation request
+                    ($5 / 500 cents, currency=usd). Returns payment_intent_id
+                    used as the audit trail in credit_topups table.
+                  requirements:
+                    - REQ-LCSA-005
+
+          nodes:
+            - id: topup-db-write
+              type: database
+              title: credit_topups DB Write
+              description: >
+                SQLite credit_topups table receives the INSERT from
+                record_credit_topup(). Queried by get_purchased_topup_credits()
+                on every check_credit_cap() call to expand the effective cap
+                beyond the base tier cap. One row per completed top-up purchase.
+              requirements:
+                - REQ-LCSA-005
+              inputs: [topup-machine]
+
+      # Network-level standalone node — cross-factory user entry point
+      nodes:
+        - id: chat-user
+          type: user
+          title: Managed-Tier Chat User
+          description: >
+            Legate.Studio end user on a Managed subscription tier (managed_lite,
+            managed_standard, managed_plus, or legacy managed). Sends chat messages
+            routed through the platform API key. Subject to monthly credit cap.
+            Can purchase top-ups when cap is reached. BYOK users bypass cap logic.
+          requirements:
+            - REQ-LCSA-001
+            - REQ-LCSA-004
+          inputs: [chat-pipeline-factory]
+          outputs: [credit-ui-factory]
