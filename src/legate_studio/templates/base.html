@@ -140,7 +140,7 @@
             {% if is_authenticated %}
             <!-- Mobile top bar -->
             <div class="mobile-topbar">
-                <button class="nav-toggle" id="sidebarToggle" onclick="toggleSidebar()" aria-label="Toggle menu">
+                <button class="nav-toggle" id="sidebarToggle" onclick="toggleMobileNav()" aria-label="Toggle menu">
                     <span></span>
                     <span></span>
                     <span></span>
@@ -152,6 +152,107 @@
                     <span>{{ app_name }}</span>
                 </a>
             </div>
+
+            <!-- Mobile compact nav dropdown (only rendered on mobile via CSS) -->
+            <div class="mobile-nav-dropdown" id="mobileNavDropdown">
+                <div class="mobile-nav-section">NAVIGATION</div>
+                <a href="{{ url_for('dashboard.index') }}"
+                   class="mobile-nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}"
+                   onclick="closeMobileNav()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    Dashboard
+                </a>
+                <a href="{{ url_for('library.index') }}"
+                   class="mobile-nav-link {% if request.endpoint and request.endpoint.startswith('library.') %}active{% endif %}"
+                   onclick="closeMobileNav()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+                    Library
+                </a>
+                {% if user.has_copilot %}
+                <a href="{{ url_for('chords.index') }}"
+                   class="mobile-nav-link {% if request.endpoint and request.endpoint.startswith('chords.') %}active{% endif %}"
+                   onclick="closeMobileNav()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><path d="M3 12a9 9 0 1018 0 9 9 0 00-18 0"/></svg>
+                    Chords
+                </a>
+                <a href="{{ url_for('agents.index') }}"
+                   class="mobile-nav-link {% if request.endpoint and request.endpoint.startswith('agents.') %}active{% endif %}"
+                   onclick="closeMobileNav()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                    Agents
+                </a>
+                {% endif %}
+                {% if user.has_chat %}
+                <a href="{{ url_for('chat.index') }}"
+                   class="mobile-nav-link {% if request.endpoint and request.endpoint.startswith('chat.') %}active{% endif %}"
+                   onclick="closeMobileNav()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                    Chat
+                </a>
+                {% endif %}
+                <a href="{{ url_for('motif_api.index') }}"
+                   class="mobile-nav-link {% if request.endpoint and request.endpoint.startswith('motif_api.') %}active{% endif %}"
+                   onclick="closeMobileNav()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    Motif
+                </a>
+                <a href="{{ url_for('import_api.index') }}"
+                   class="mobile-nav-link {% if request.endpoint and request.endpoint.startswith('import_api.') %}active{% endif %}"
+                   onclick="closeMobileNav()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Import
+                </a>
+                <a href="{{ url_for('categories.index') }}"
+                   class="mobile-nav-link {% if request.endpoint and request.endpoint.startswith('categories.') %}active{% endif %}"
+                   onclick="closeMobileNav()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                    Categories
+                </a>
+
+                <div class="mobile-nav-divider"></div>
+                <div class="mobile-nav-section">ACCOUNT</div>
+
+                <!-- Theme toggle row -->
+                <button class="mobile-nav-link mobile-nav-theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+                    <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;width:16px;height:16px;flex-shrink:0"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+                    <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;width:16px;height:16px;flex-shrink:0"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    Toggle Theme
+                </button>
+
+                <!-- User info -->
+                <div class="mobile-nav-user-info">
+                    {% if user.avatar_url %}
+                    <img src="{{ user.avatar_url }}" alt="{{ user.username }}" class="user-avatar" style="width:24px;height:24px;">
+                    {% else %}
+                    <span class="user-avatar-placeholder" style="width:24px;height:24px;font-size:0.75rem;">{{ user.username[0]|upper }}</span>
+                    {% endif %}
+                    <div class="mobile-nav-user-names">
+                        <span class="mobile-nav-user-display">{{ user.name or user.username }}</span>
+                        <span class="mobile-nav-user-handle">@{{ user.username }}</span>
+                    </div>
+                </div>
+
+                {% if is_admin %}
+                <a href="{{ url_for('admin.index') }}" class="mobile-nav-link" onclick="closeMobileNav()">
+                    <span style="width:16px;text-align:center;flex-shrink:0;">&#9733;</span>
+                    Admin
+                </a>
+                {% endif %}
+                <a href="{{ url_for('auth.setup') }}" class="mobile-nav-link" onclick="closeMobileNav()">
+                    <span style="width:16px;text-align:center;flex-shrink:0;">&#9881;</span>
+                    Settings
+                </a>
+                <a href="{{ url_for('billing.index') }}" class="mobile-nav-link" onclick="closeMobileNav()">
+                    <span style="width:16px;text-align:center;flex-shrink:0;">&#128179;</span>
+                    Billing
+                </a>
+                <a href="{{ url_for('auth.logout') }}" class="mobile-nav-link mobile-nav-logout" onclick="closeMobileNav()">
+                    <span style="width:16px;text-align:center;flex-shrink:0;">&#10140;</span>
+                    Logout
+                </a>
+            </div>
+            <!-- Mobile nav backdrop -->
+            <div class="mobile-nav-backdrop" id="mobileNavBackdrop" onclick="closeMobileNav()"></div>
             {% endif %}
 
             <main class="content">
@@ -787,16 +888,13 @@
 
     <!-- Chord Queue + App JavaScript -->
     <script>
-        // ===== Sidebar Toggle =====
+        // ===== Sidebar Toggle (desktop only) =====
         function toggleSidebar() {
-            const sidebar = document.getElementById('appSidebar');
-            const backdrop = document.getElementById('sidebarBackdrop');
-            if (!sidebar) return;
-            const isOpen = sidebar.classList.toggle('open');
-            backdrop.classList.toggle('active', isOpen);
-            // Persist desktop preference
-            if (window.innerWidth > 768) {
-                localStorage.setItem('sidebarCollapsed', isOpen ? 'false' : 'true');
+            // On desktop, this is a no-op (sidebar always visible)
+            // On mobile, delegate to the compact dropdown
+            if (window.innerWidth <= 768) {
+                toggleMobileNav();
+                return;
             }
         }
 
@@ -807,14 +905,27 @@
             if (backdrop) backdrop.classList.remove('active');
         }
 
-        // On desktop, restore sidebar state from localStorage
-        document.addEventListener('DOMContentLoaded', () => {
-            const sidebar = document.getElementById('appSidebar');
-            if (sidebar && window.innerWidth > 768) {
-                const collapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-                // Sidebar is always visible on desktop; the 'open' class is only for mobile
-            }
-        });
+        // ===== Mobile Compact Nav Dropdown =====
+        function toggleMobileNav() {
+            const dropdown = document.getElementById('mobileNavDropdown');
+            const backdrop = document.getElementById('mobileNavBackdrop');
+            const toggle = document.getElementById('sidebarToggle');
+            if (!dropdown) return;
+            const isOpen = dropdown.classList.toggle('open');
+            if (backdrop) backdrop.classList.toggle('active', isOpen);
+            if (toggle) toggle.classList.toggle('active', isOpen);
+            document.body.classList.toggle('mobile-nav-open', isOpen);
+        }
+
+        function closeMobileNav() {
+            const dropdown = document.getElementById('mobileNavDropdown');
+            const backdrop = document.getElementById('mobileNavBackdrop');
+            const toggle = document.getElementById('sidebarToggle');
+            if (dropdown) dropdown.classList.remove('open');
+            if (backdrop) backdrop.classList.remove('active');
+            if (toggle) toggle.classList.remove('active');
+            document.body.classList.remove('mobile-nav-open');
+        }
 
         // ===== Chord Queue =====
         const CHORD_QUEUE_KEY = 'legato_chord_queue';
@@ -988,6 +1099,7 @@
             if (e.key === 'Escape') {
                 closeChordModal();
                 closeSidebar();
+                closeMobileNav();
             }
         });
 
