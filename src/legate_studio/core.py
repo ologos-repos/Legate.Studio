@@ -541,6 +541,9 @@ def create_app():
     def ratelimit_error(error):
         return render_template("error.html", title="Rate Limited", message="Too many requests. Please wait."), 429
 
+    # Register is_feature_available as a Jinja2 global so templates can call it
+    app.jinja_env.globals["is_feature_available"] = is_feature_available
+
     logger.info("Legate Studio application initialized")
     return app
 
@@ -813,11 +816,99 @@ def library_required(f):
     return decorated_function
 
 
+def beta_gate(feature_name: str):
+    """Decorator to gate a feature behind beta.
+
+    If the feature is released (feature_flags.is_released = 1), allow everyone.
+    If not released, only allow users with is_beta = True.
+
+    Usage: @beta_gate("chat")
+    Must be used after @login_required.
+    """
+
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if "user" not in session:
+                flash("Please log in to access this page.", "warning")
+                return redirect(url_for("auth.login"))
+
+            # Check if feature is released
+            from legate_studio.rag.database import init_db
+
+            db = init_db()
+            row = db.execute(
+                "SELECT is_released FROM feature_flags WHERE feature_name = ?",
+                (feature_name,),
+            ).fetchone()
+
+            # If feature doesn't exist in DB or is released, allow access
+            if row is None or row["is_released"]:
+                return f(*args, **kwargs)
+
+            # Feature is beta-gated — check if user is a beta tester
+            user = session["user"]
+            is_beta = user.get("is_beta", False)
+
+            if is_beta:
+                return f(*args, **kwargs)
+
+            # Not released and not beta — deny access
+            if (
+                request.path.startswith("/api/")
+                or request.is_json
+                or request.headers.get("Accept") == "application/json"
+            ):
+                return jsonify(
+                    {
+                        "error": f"The {feature_name} feature is currently in beta.",
+                        "beta_required": True,
+                        "feature": feature_name,
+                    }
+                ), 403
+            else:
+                flash("This feature is currently in beta. Contact an admin for access.", "warning")
+                return redirect(url_for("dashboard.index"))
+
+        decorated_function._beta_feature = feature_name  # tag for template helpers
+        return decorated_function
+
+    return decorator
+
+
+def is_feature_available(feature_name: str, user: dict = None) -> bool:
+    """Check if a feature is available to the current user.
+
+    Returns True if:
+    - Feature is released (is_released = 1), OR
+    - User has is_beta = True
+
+    Use in Jinja templates: {{ is_feature_available('chat') }}
+    """
+    from legate_studio.rag.database import init_db
+
+    db = init_db()
+    row = db.execute(
+        "SELECT is_released FROM feature_flags WHERE feature_name = ?",
+        (feature_name,),
+    ).fetchone()
+
+    if row is None or row["is_released"]:
+        return True
+
+    if user is None:
+        user = session.get("user", {})
+    return bool(user.get("is_beta", False))
+
+
 def copilot_required(f):
     """Decorator to require Copilot access for Chords/Agents features.
 
     Must be used after @login_required. Checks if user has Copilot enabled.
     If not, returns 403 for APIs or redirects to dashboard for pages.
+
+    DEPRECATED: Use @beta_gate("feature_name") instead for new feature gating.
+    Kept for backward compatibility.
     """
 
     @wraps(f)

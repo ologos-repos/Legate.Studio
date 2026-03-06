@@ -172,6 +172,7 @@
         <h1>Admin Console</h1>
         <nav class="admin-nav">
             <a href="{{ url_for('admin.index') }}" class="active">Users</a>
+            <a href="{{ url_for('admin.features') }}">Features</a>
             <a href="{{ url_for('admin.system_status') }}">System</a>
             <a href="/admin/api/users/state" target="_blank">🔍 State Audit</a>
             <a href="{{ url_for('admin.logout') }}" style="color: var(--accent-red);">Logout</a>

@@ -1,0 +1,412 @@
+{% extends "base.html" %}
+
+{% block title %}Feature Flags - Admin - {{ app_name }}{% endblock %}
+
+{% block head %}
+<style>
+    .admin-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .admin-header h1 {
+        color: var(--text-primary);
+        margin: 0;
+    }
+    .admin-nav {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    .admin-nav a {
+        color: var(--text-secondary);
+        text-decoration: none;
+        padding: 0.4rem 0.75rem;
+        border-radius: 4px;
+        border: 1px solid transparent;
+        font-size: 0.875rem;
+        transition: var(--transition);
+    }
+    .admin-nav a:hover, .admin-nav a.active {
+        background: var(--hover-tint);
+        color: var(--text-primary);
+        border-color: var(--border-color);
+    }
+
+    /* Add Feature form */
+    .add-feature-card {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .add-feature-card h2 {
+        color: var(--text-primary);
+        font-size: 1rem;
+        font-family: var(--font-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin: 0 0 1rem 0;
+        color: var(--text-muted);
+    }
+    .add-feature-form {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        flex: 1;
+        min-width: 160px;
+    }
+    .form-group label {
+        font-size: 0.7rem;
+        font-family: var(--font-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-muted);
+    }
+    .form-group input {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        padding: 0.4rem 0.6rem;
+        font-size: 0.875rem;
+        font-family: var(--font-sans);
+        transition: var(--transition);
+    }
+    .form-group input:focus {
+        outline: none;
+        border-color: var(--border-strong);
+    }
+    .btn-add {
+        background: transparent;
+        color: var(--accent-green);
+        border: 1px solid var(--accent-green);
+        border-radius: 4px;
+        padding: 0.4rem 1rem;
+        font-size: 0.875rem;
+        font-family: var(--font-mono);
+        cursor: pointer;
+        transition: var(--transition);
+        white-space: nowrap;
+        align-self: flex-end;
+    }
+    .btn-add:hover {
+        background: var(--accent-green);
+        color: var(--bg-primary);
+    }
+
+    /* Feature flags table */
+    .section-title {
+        font-size: 0.75rem;
+        font-family: var(--font-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-muted);
+        margin: 0 0 1rem 0;
+    }
+    .features-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .features-table th, .features-table td {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .features-table th {
+        background: var(--bg-tertiary);
+        color: var(--text-muted);
+        font-weight: 500;
+        font-size: 0.75rem;
+        font-family: var(--font-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+    .features-table td {
+        color: var(--text-primary);
+        font-size: 0.875rem;
+    }
+    .features-table tr:last-child td {
+        border-bottom: none;
+    }
+    .features-table tr:hover td {
+        background: var(--hover-tint);
+    }
+
+    /* Feature name monospace */
+    .feature-name {
+        font-family: var(--font-mono);
+        font-size: 0.875rem;
+        color: var(--text-primary);
+    }
+
+    /* Status badges */
+    .status-badge {
+        display: inline-block;
+        padding: 0.2rem 0.6rem;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        font-family: var(--font-mono);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        border: 1px solid;
+    }
+    .status-released {
+        border-color: #a6e3a1;
+        color: #a6e3a1;
+    }
+    .status-beta {
+        border-color: #f9e2af;
+        color: #f9e2af;
+    }
+
+    /* Toggle button */
+    .btn-toggle {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        border-radius: 4px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.8rem;
+        font-family: var(--font-mono);
+        cursor: pointer;
+        transition: var(--transition);
+    }
+    .btn-toggle:hover {
+        background: var(--hover-tint);
+        color: var(--text-primary);
+        border-color: var(--border-strong);
+    }
+    .btn-toggle.releasing {
+        border-color: #a6e3a1;
+        color: #a6e3a1;
+    }
+    .btn-toggle.releasing:hover {
+        background: #a6e3a1;
+        color: var(--bg-primary);
+    }
+    .btn-toggle.gating {
+        border-color: #f38ba8;
+        color: #f38ba8;
+    }
+    .btn-toggle.gating:hover {
+        background: #f38ba8;
+        color: var(--bg-primary);
+    }
+
+    /* Updated timestamp */
+    .ts {
+        font-size: 0.75rem;
+        font-family: var(--font-mono);
+        color: var(--text-muted);
+    }
+
+    /* Flash/status messages */
+    .table-msg {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+        font-family: var(--font-mono);
+        border-radius: 4px;
+        margin-top: 0.5rem;
+        display: none;
+    }
+    .table-msg.success { background: rgba(166, 227, 161, 0.1); color: #a6e3a1; border: 1px solid #a6e3a1; }
+    .table-msg.error   { background: rgba(243, 139, 168, 0.1); color: #f38ba8; border: 1px solid #f38ba8; }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-muted);
+        font-family: var(--font-mono);
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1>Feature Flags</h1>
+        <nav class="admin-nav">
+            <a href="{{ url_for('admin.index') }}">Users</a>
+            <a href="{{ url_for('admin.features') }}" class="active">Features</a>
+            <a href="{{ url_for('admin.system_status') }}">System</a>
+            <a href="/admin/api/users/state" target="_blank">🔍 State Audit</a>
+            <a href="{{ url_for('admin.logout') }}" style="color: var(--accent-red);">Logout</a>
+        </nav>
+    </div>
+
+    <!-- Add Feature Card -->
+    <div class="add-feature-card">
+        <h2>Add Feature Flag</h2>
+        <div class="add-feature-form">
+            <div class="form-group">
+                <label for="newFeatureName">Feature Name</label>
+                <input type="text" id="newFeatureName" placeholder="e.g. voice_notes" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label for="newDisplayName">Display Name</label>
+                <input type="text" id="newDisplayName" placeholder="e.g. Voice Notes" autocomplete="off">
+            </div>
+            <div class="form-group" style="flex: 2;">
+                <label for="newDescription">Description</label>
+                <input type="text" id="newDescription" placeholder="What this feature does" autocomplete="off">
+            </div>
+            <button class="btn-add" onclick="createFeature()">+ Add</button>
+        </div>
+        <div id="addMsg" class="table-msg"></div>
+    </div>
+
+    <!-- Feature Flags Table -->
+    <h2 class="section-title">All Feature Flags</h2>
+
+    {% if features %}
+    <table class="features-table" id="featuresTable">
+        <thead>
+            <tr>
+                <th>Feature Name</th>
+                <th>Display Name</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Updated</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for f in features %}
+            <tr id="row-{{ f.feature_name }}">
+                <td><span class="feature-name">{{ f.feature_name }}</span></td>
+                <td>{{ f.display_name }}</td>
+                <td style="color: var(--text-secondary);">{{ f.description or '—' }}</td>
+                <td>
+                    <span class="status-badge {% if f.is_released %}status-released{% else %}status-beta{% endif %}"
+                          id="badge-{{ f.feature_name }}">
+                        {% if f.is_released %}Released{% else %}Beta{% endif %}
+                    </span>
+                </td>
+                <td><span class="ts">{{ f.updated_at[:16] if f.updated_at else '—' }}</span></td>
+                <td>
+                    <button class="btn-toggle {% if f.is_released %}gating{% else %}releasing{% endif %}"
+                            id="btn-{{ f.feature_name }}"
+                            onclick="toggleFeature('{{ f.feature_name }}', this)">
+                        {% if f.is_released %}Gate (Beta){% else %}Release{% endif %}
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">No feature flags defined yet. Add one above.</div>
+    {% endif %}
+</div>
+
+<script>
+async function toggleFeature(featureName, btn) {
+    btn.disabled = true;
+    const originalText = btn.textContent;
+    btn.textContent = '...';
+
+    try {
+        const res = await fetch(`/admin/api/features/${featureName}/toggle`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            alert(data.error || 'Toggle failed');
+            btn.textContent = originalText;
+            btn.disabled = false;
+            return;
+        }
+
+        const isReleased = data.is_released;
+        const badge = document.getElementById(`badge-${featureName}`);
+
+        // Update badge
+        badge.textContent = isReleased ? 'Released' : 'Beta';
+        badge.className = `status-badge ${isReleased ? 'status-released' : 'status-beta'}`;
+
+        // Update button
+        btn.textContent = isReleased ? 'Gate (Beta)' : 'Release';
+        btn.className = `btn-toggle ${isReleased ? 'gating' : 'releasing'}`;
+        btn.disabled = false;
+
+    } catch (err) {
+        alert('Network error: ' + err.message);
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
+}
+
+async function createFeature() {
+    const nameInput = document.getElementById('newFeatureName');
+    const displayInput = document.getElementById('newDisplayName');
+    const descInput = document.getElementById('newDescription');
+    const msg = document.getElementById('addMsg');
+
+    const featureName = nameInput.value.trim();
+    const displayName = displayInput.value.trim() || featureName;
+    const description = descInput.value.trim();
+
+    if (!featureName) {
+        showMsg(msg, 'Feature name is required.', 'error');
+        return;
+    }
+
+    try {
+        const res = await fetch('/admin/api/features', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ feature_name: featureName, display_name: displayName, description })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            showMsg(msg, data.error || 'Create failed', 'error');
+            return;
+        }
+
+        showMsg(msg, `Feature '${data.feature}' created. Refreshing...`, 'success');
+        setTimeout(() => window.location.reload(), 800);
+
+    } catch (err) {
+        showMsg(msg, 'Network error: ' + err.message, 'error');
+    }
+}
+
+function showMsg(el, text, type) {
+    el.textContent = text;
+    el.className = `table-msg ${type}`;
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 4000);
+}
+
+// Allow pressing Enter in the add form
+['newFeatureName', 'newDisplayName', 'newDescription'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+        if (e.key === 'Enter') createFeature();
+    });
+});
+</script>
+{% endblock %}

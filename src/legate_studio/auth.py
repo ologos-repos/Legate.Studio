@@ -683,6 +683,7 @@ def github_app_callback():
             "auth_mode": "github_app",
             "has_copilot": bool(user.get("has_copilot", False)),
             "has_chat": bool(user.get("has_chat", False)),
+            "is_beta": bool(user.get("is_beta", False)),
         }
         session["github_token"] = access_token
         session.permanent = True

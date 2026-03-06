@@ -739,6 +739,33 @@ def init_db(db_path: Path | None = None, user_id: str | None = None) -> sqlite3.
         )
     """)
 
+    # ============ Feature Flags Table ============
+
+    # Feature flags for admin-controlled beta gating.
+    # is_released=0 means beta-only (users with is_beta=1 only).
+    # is_released=1 means released to everyone.
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS feature_flags (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            feature_name TEXT UNIQUE NOT NULL,
+            display_name TEXT NOT NULL,
+            description TEXT DEFAULT '',
+            is_released INTEGER DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    # Seed initial beta-gated features (INSERT OR IGNORE = safe to run multiple times)
+    cursor.execute("""
+        INSERT OR IGNORE INTO feature_flags (feature_name, display_name, description, is_released) VALUES
+        ('chat', 'AI Chat', 'Chat with an AI that has awareness of your library', 0),
+        ('chords', 'Chords', 'GitHub repo integration and chord management', 0),
+        ('agents', 'Agents', 'AI agent creation and management', 0)
+    """)
+
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_feature_flags_name ON feature_flags(feature_name)")
+
     # Migration: add updated_at if this table was created by the old crypto.py schema
     # (which only had created_at). Safe no-op if column already exists.
     try:

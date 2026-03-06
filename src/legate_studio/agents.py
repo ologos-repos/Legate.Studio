@@ -16,7 +16,7 @@ from datetime import datetime
 import requests
 from flask import Blueprint, current_app, g, jsonify, render_template, request, session
 
-from .core import copilot_required, library_required, login_required, paid_required
+from .core import beta_gate, copilot_required, library_required, login_required, paid_required
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ def verify_system_token(req) -> bool:
 @agents_bp.route("/")
 @library_required
 @paid_required
-@copilot_required
+@beta_gate("agents")
 def index():
     """Agents queue management page."""
     from flask import session
@@ -167,7 +167,7 @@ def index():
 @agents_bp.route("/api/create", methods=["POST"])
 @login_required
 @paid_required
-@copilot_required
+@beta_gate("agents")
 def api_create_agent():
     """Create a new agent from selected notes.
 
@@ -319,7 +319,7 @@ def api_create_agent():
 @agents_bp.route("/api/queue-chord", methods=["POST"])
 @login_required
 @paid_required
-@copilot_required
+@beta_gate("agents")
 def api_queue_chord():
     """Mark a library entry as needing a chord (lightweight flagging).
 
@@ -389,7 +389,7 @@ def api_queue_chord():
 @agents_bp.route("/api/from-entry", methods=["POST"])
 @login_required
 @paid_required
-@copilot_required
+@beta_gate("agents")
 def api_queue_from_entry():
     """Queue an agent to create a Chord (Lab repo) from a Note (library entry).
 
@@ -729,7 +729,7 @@ def api_debug_agents():
 @agents_bp.route("/api/<queue_id>/approve", methods=["POST"])
 @login_required
 @paid_required
-@copilot_required
+@beta_gate("agents")
 def api_approve_agent(queue_id: str):
     """Approve an agent and trigger spawn.
 
@@ -966,7 +966,7 @@ def api_approve_agent(queue_id: str):
 @agents_bp.route("/api/<queue_id>/retry", methods=["POST"])
 @login_required
 @paid_required
-@copilot_required
+@beta_gate("agents")
 def api_retry_spawn(queue_id: str):
     """Retry spawning a failed chord.
 

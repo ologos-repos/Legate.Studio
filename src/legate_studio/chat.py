@@ -19,7 +19,7 @@ import secrets
 
 from flask import Blueprint, current_app, g, jsonify, redirect, render_template, request, session, url_for
 
-from .core import copilot_required, library_required, login_required, paid_required
+from .core import beta_gate, copilot_required, library_required, login_required, paid_required
 from .rag.chat_session_manager import get_chat_manager
 
 logger = logging.getLogger(__name__)
@@ -176,7 +176,7 @@ def save_message(db_conn, session_id: str, role: str, content: str, context=None
 @chat_bp.route("/")
 @library_required
 @paid_required
-@copilot_required
+@beta_gate("chat")
 def index():
     """Chat interface page."""
     user = session.get("user", {})
@@ -203,6 +203,7 @@ def index():
 @chat_bp.route("/api/send", methods=["POST"])
 @login_required
 @paid_required
+@beta_gate("chat")
 def send_message():
     """Send a message and get a response.
 
@@ -392,6 +393,7 @@ def send_message():
 @chat_bp.route("/api/usage", methods=["GET"])
 @login_required
 @paid_required
+@beta_gate("chat")
 def get_usage():
     """Get current month's token usage and credit cap status.
 
@@ -446,6 +448,7 @@ def get_usage():
 @chat_bp.route("/api/credits/buy", methods=["POST"])
 @login_required
 @paid_required
+@beta_gate("chat")
 def buy_credits():
     """Initiate a credit top-up purchase.
 
@@ -502,6 +505,7 @@ def buy_credits():
 @chat_bp.route("/api/history", methods=["GET"])
 @login_required
 @paid_required
+@beta_gate("chat")
 def get_history():
     """Get chat history for current session.
 
@@ -535,6 +539,7 @@ def get_history():
 @chat_bp.route("/api/sessions", methods=["GET"])
 @login_required
 @paid_required
+@beta_gate("chat")
 def list_sessions():
     """List all chat sessions for the current user."""
     try:
@@ -578,6 +583,7 @@ def list_sessions():
 @chat_bp.route("/api/sessions/new", methods=["POST"])
 @login_required
 @paid_required
+@beta_gate("chat")
 def new_session():
     """Start a new chat session."""
     try:
@@ -610,6 +616,7 @@ def new_session():
 @chat_bp.route("/api/sessions/<session_id>/load", methods=["POST"])
 @login_required
 @paid_required
+@beta_gate("chat")
 def load_session(session_id):
     """Switch to/load a specific chat session.
 
@@ -651,6 +658,7 @@ def load_session(session_id):
 @chat_bp.route("/api/sessions/<session_id>", methods=["DELETE"])
 @login_required
 @paid_required
+@beta_gate("chat")
 def delete_session(session_id):
     """Delete a chat session."""
     try:
@@ -699,6 +707,7 @@ def delete_session(session_id):
 @chat_bp.route("/api/config", methods=["GET"])
 @login_required
 @paid_required
+@beta_gate("chat")
 def get_config():
     """Get current chat configuration."""
     from .rag.chat_service import ChatProvider, ChatService
@@ -720,6 +729,7 @@ def get_config():
 @chat_bp.route("/api/stats", methods=["GET"])
 @login_required
 @paid_required
+@beta_gate("chat")
 def get_stats():
     """Get RAG system statistics for debugging.
 
@@ -752,6 +762,7 @@ def get_stats():
 @chat_bp.route("/api/models", methods=["GET"])
 @login_required
 @paid_required
+@beta_gate("chat")
 def get_models():
     """Get available models for a provider.
 

@@ -49,7 +49,7 @@
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
                     Library
                 </a>
-                {% if user.has_copilot %}
+                {% if is_feature_available('chords') %}
                 <a href="{{ url_for('chords.index') }}"
                    class="sidebar-link {% if request.endpoint and request.endpoint.startswith('chords.') %}active{% endif %}">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><path d="M3 12a9 9 0 1018 0 9 9 0 00-18 0"/></svg>
@@ -62,7 +62,7 @@
                     <span class="nav-badge" id="agentQueueBadge" style="display:none;"></span>
                 </a>
                 {% endif %}
-                {% if user.has_copilot %}
+                {% if is_feature_available('chat') %}
                 <a href="{{ url_for('chat.index') }}"
                    class="sidebar-link {% if request.endpoint and request.endpoint.startswith('chat.') %}active{% endif %}">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
@@ -168,7 +168,7 @@
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
                     Library
                 </a>
-                {% if user.has_copilot %}
+                {% if is_feature_available('chords') %}
                 <a href="{{ url_for('chords.index') }}"
                    class="mobile-nav-link {% if request.endpoint and request.endpoint.startswith('chords.') %}active{% endif %}"
                    onclick="closeMobileNav()">
@@ -182,7 +182,7 @@
                     Agents
                 </a>
                 {% endif %}
-                {% if user.has_copilot %}
+                {% if is_feature_available('chat') %}
                 <a href="{{ url_for('chat.index') }}"
                    class="mobile-nav-link {% if request.endpoint and request.endpoint.startswith('chat.') %}active{% endif %}"
                    onclick="closeMobileNav()">
@@ -282,7 +282,7 @@
         </div><!-- end main-content -->
     </div><!-- end app-shell -->
 
-    {% if user and user.has_copilot %}
+    {% if user and is_feature_available('chords') %}
     <!-- Chord Queue Sidebar (persistent across Library pages) -->
     <aside class="chord-queue-sidebar" id="chordQueueSidebar">
         <div class="chord-queue-header">
@@ -863,7 +863,7 @@
         function showInfo(message) { return showToast(message, 'info'); }
     </script>
 
-    {% if user and user.has_copilot %}
+    {% if user and is_feature_available('chords') %}
     <!-- Chord Queue Modal -->
     <div class="chord-modal-overlay" id="chordModal">
         <div class="chord-modal">

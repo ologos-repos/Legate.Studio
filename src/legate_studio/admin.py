@@ -613,6 +613,72 @@ def api_delete_user(user_id: str):
     )
 
 
+@admin_bp.route("/features")
+@admin_required
+def features():
+    """Feature flags management page."""
+    from .rag.database import init_db
+
+    db = init_db()
+    feature_list = db.execute("SELECT * FROM feature_flags ORDER BY feature_name").fetchall()
+    feature_list = [dict(f) for f in feature_list]
+    return render_template("admin/features.html", features=feature_list)
+
+
+@admin_bp.route("/api/features/<feature_name>/toggle", methods=["POST"])
+@admin_required
+def api_toggle_feature(feature_name: str):
+    """Toggle a feature between beta and released."""
+    from .rag.database import init_db
+
+    db = init_db()
+    row = db.execute(
+        "SELECT is_released FROM feature_flags WHERE feature_name = ?", (feature_name,)
+    ).fetchone()
+    if not row:
+        return jsonify({"error": "Feature not found"}), 404
+
+    new_state = 0 if row["is_released"] else 1
+    db.execute(
+        "UPDATE feature_flags SET is_released = ?, updated_at = CURRENT_TIMESTAMP WHERE feature_name = ?",
+        (new_state, feature_name),
+    )
+    db.commit()
+
+    logger.info(f"Admin toggled feature '{feature_name}' → is_released={new_state}")
+    return jsonify({"feature": feature_name, "is_released": bool(new_state)})
+
+
+@admin_bp.route("/api/features", methods=["POST"])
+@admin_required
+def api_create_feature():
+    """Create a new feature flag."""
+    from .rag.database import init_db
+
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+
+    feature_name = data.get("feature_name", "").strip().lower().replace(" ", "_")
+    display_name = data.get("display_name", feature_name).strip()
+    description = data.get("description", "").strip()
+
+    if not feature_name:
+        return jsonify({"error": "Feature name required"}), 400
+
+    db = init_db()
+    try:
+        db.execute(
+            "INSERT INTO feature_flags (feature_name, display_name, description) VALUES (?, ?, ?)",
+            (feature_name, display_name, description),
+        )
+        db.commit()
+        logger.info(f"Admin created feature flag: '{feature_name}'")
+        return jsonify({"feature": feature_name, "created": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 409
+
+
 @admin_bp.route("/system")
 @admin_required
 def system_status():
