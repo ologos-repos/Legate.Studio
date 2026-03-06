@@ -925,7 +925,7 @@
                 <div class="step-card">
                     <div class="step-num">03</div>
                     <div class="step-title">Explore</div>
-                    <p class="step-desc">Browse and search your growing library by category, date, or keyword. Use your AI assistant tools via MCP to query your knowledge base from anywhere &mdash; your second brain, always within reach.</p>
+                    <p class="step-desc">Browse, search, or chat with your growing library. Ask your AI questions about your own knowledge, or use MCP to query it from Claude Desktop and other AI tools &mdash; your second brain, always within reach.</p>
                 </div>
             </div>
         </div>
@@ -978,6 +978,17 @@
                     <span class="feature-tag">Visualize</span>
                     <div class="feature-name">Knowledge Graph</div>
                     <p class="feature-desc">A visual map of how your ideas connect. Force-directed, interactive, explorable. See clusters form as your knowledge grows &mdash; patterns emerge that you'd never see in a list.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Converse</span>
+                    <div class="feature-name">AI Chat</div>
+                    <p class="feature-desc">Chat with an AI that already knows your library. Ask questions, explore connections, surface ideas &mdash; your knowledge base is the context. Included on every plan.</p>
                 </div>
 
                 <div class="feature-card">
@@ -1037,11 +1048,11 @@
                     <div class="pricing-divider"></div>
                     <ul class="pricing-features">
                         <li>All features unlocked</li>
+                        <li>AI Chat with library awareness</li>
                         <li>GitHub-backed knowledge repo</li>
                         <li>Voice memos &amp; text capture</li>
                         <li>Knowledge graph &amp; library</li>
                         <li>MCP integration</li>
-                        <li>14 days, no strings attached</li>
                     </ul>
                     <a href="{{ url_for('auth.login') }}" class="pricing-cta">Start Free Trial</a>
                 </div>
@@ -1057,11 +1068,11 @@
                     <div class="pricing-divider"></div>
                     <ul class="pricing-features">
                         <li>Everything in Free Trial</li>
-                        <li>Use your own OpenAI key</li>
-                        <li>Use your own Anthropic key</li>
-                        <li>Use your own Gemini key</li>
+                        <li>AI Chat &mdash; unlimited, uses your keys</li>
+                        <li>Use your own OpenAI, Anthropic, or Gemini key</li>
                         <li>Pay only for what the AI actually costs you</li>
                         <li>No markup on AI usage</li>
+                        <li>Chat has full awareness of your library</li>
                     </ul>
                     <a href="{{ url_for('auth.login') }}" class="pricing-cta">Get Started</a>
                 </div>
@@ -1072,15 +1083,15 @@
                         <span class="pricing-amount">$5</span>
                         <span class="pricing-period">/ month</span>
                     </div>
-                    <p class="pricing-tagline">We handle the AI. No API key setup, no billing complexity.</p>
+                    <p class="pricing-tagline">We handle the AI. No API key setup, no billing complexity. Chat included.</p>
                     <div class="pricing-divider"></div>
                     <ul class="pricing-features">
                         <li>Everything in BYOK</li>
+                        <li>AI Chat included &mdash; $4.50/mo in token credits</li>
                         <li>AI provided &amp; managed by us</li>
                         <li>No API keys to configure</li>
                         <li>Works out of the box</li>
                         <li>Includes Claude, GPT &amp; Gemini access</li>
-                        <li>Priority support</li>
                     </ul>
                     <a href="{{ url_for('auth.login') }}" class="pricing-cta">Get Started</a>
                 </div>
@@ -1124,7 +1135,7 @@
                         <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                     </button>
                     <div class="faq-answer">
-                        BYOK (Bring Your Own Keys) means you add your own API keys from OpenAI, Anthropic, or Google. You pay those providers directly at their rates &mdash; we just charge $0.99/month for the platform. Managed means we provide the AI infrastructure: no keys to configure, no per-token billing from AI providers. Everything is handled for $5/month.
+                        BYOK (Bring Your Own Keys) means you add your own API keys from OpenAI, Anthropic, or Google. You pay those providers directly at their rates &mdash; we just charge $0.99/month for the platform. Chat is unlimited since it uses your keys. Managed means we provide the AI infrastructure: no keys to configure, no per-token billing from AI providers. Everything is handled for $5/month, including AI Chat with up to $4.50/month in token credits.
                     </div>
                 </div>
 
@@ -1145,6 +1156,16 @@
                     </button>
                     <div class="faq-answer">
                         Legate supports Claude (Anthropic), GPT models (OpenAI), and Gemini (Google). On BYOK, you pick which provider to use and plug in your own key. On Managed, you get access to all three without any setup.
+                    </div>
+                </div>
+
+                <div class="faq-item" role="listitem">
+                    <button class="faq-question" aria-expanded="false" onclick="toggleFaq(this)">
+                        How does AI Chat work?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        Legate's AI Chat is a conversational interface that has full awareness of your library. Ask it questions about your notes, explore connections between ideas, or have it surface relevant knowledge as you work. On BYOK, chat is unlimited &mdash; it uses your own API keys. On Managed, chat is included with up to $4.50/month in token credits.
                     </div>
                 </div>
 

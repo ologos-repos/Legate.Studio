@@ -32,14 +32,14 @@ billing_bp = Blueprint("billing", __name__, url_prefix="/billing")
 STRIPE_PRODUCTS = {
     "byok": {
         "name": "Legate Studio BYOK",
-        "description": "Bring your own API keys - full features",
+        "description": "Bring your own API keys - full features + unlimited AI chat",
         "price_cents": 99,
         "interval": "month",
         "tier": "byok",
     },
     "managed": {
         "name": "Legate Studio Managed",
-        "description": "Platform API keys included - full features",
+        "description": "AI keys included - full features + AI chat with $4.50/mo token credits",
         "price_cents": 500,
         "interval": "month",
         "tier": "managed",
