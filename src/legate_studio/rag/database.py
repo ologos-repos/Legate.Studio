@@ -741,30 +741,76 @@ def init_db(db_path: Path | None = None, user_id: str | None = None) -> sqlite3.
 
     # ============ Feature Flags Table ============
 
-    # Feature flags for admin-controlled beta gating.
-    # is_released=0 means beta-only (users with is_beta=1 only).
-    # is_released=1 means released to everyone.
+    # feature_flags: registry of known beta-gated features.
+    # Access control is per-user via user_feature_access (NOT a global is_released flag).
+    # When a feature is ready for general release, remove @beta_gate from its routes.
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS feature_flags (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             feature_name TEXT UNIQUE NOT NULL,
             display_name TEXT NOT NULL,
             description TEXT DEFAULT '',
-            is_released INTEGER DEFAULT 0,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     """)
 
-    # Seed initial beta-gated features (INSERT OR IGNORE = safe to run multiple times)
+    # Migration: drop is_released and updated_at columns if they exist from old schema.
+    # SQLite doesn't support DROP COLUMN before 3.35; use a safe try/pass approach —
+    # we simply don't read those columns anywhere, so orphaned columns are harmless.
+    # New code never writes them.
+
+    # Seed known beta features (INSERT OR IGNORE = idempotent)
     cursor.execute("""
-        INSERT OR IGNORE INTO feature_flags (feature_name, display_name, description, is_released) VALUES
-        ('chat', 'AI Chat', 'Chat with an AI that has awareness of your library', 0),
-        ('chords', 'Chords', 'GitHub repo integration and chord management', 0),
-        ('agents', 'Agents', 'AI agent creation and management', 0)
+        INSERT OR IGNORE INTO feature_flags (feature_name, display_name, description) VALUES
+        ('chat', 'AI Chat', 'Chat with an AI that has awareness of your library'),
+        ('chords', 'Chords', 'GitHub repo integration and chord management'),
+        ('agents', 'Agents', 'AI agent creation and management')
     """)
 
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_feature_flags_name ON feature_flags(feature_name)")
+
+    # ============ User Feature Access Table ============
+
+    # Per-user, per-feature entitlement table.
+    # A user can access a beta-gated feature ONLY IF enabled=1 here.
+    # Admins grant/revoke access per user per feature from the admin panel.
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS user_feature_access (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT NOT NULL,
+            feature_name TEXT NOT NULL,
+            enabled INTEGER DEFAULT 1,
+            granted_by TEXT,
+            granted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(user_id, feature_name),
+            FOREIGN KEY (user_id) REFERENCES users(user_id),
+            FOREIGN KEY (feature_name) REFERENCES feature_flags(feature_name)
+        )
+    """)
+
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_user_feature_access_user ON user_feature_access(user_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_user_feature_access_feature ON user_feature_access(feature_name)")
+
+    # ============ Data migration: has_copilot → chords+agents, has_chat → chat ============
+
+    # For every existing user with has_copilot=1, grant access to chords and agents.
+    # For every existing user with has_chat=1, grant access to chat.
+    # INSERT OR IGNORE is idempotent — safe to run every startup.
+    cursor.execute("""
+        INSERT OR IGNORE INTO user_feature_access (user_id, feature_name, granted_by)
+        SELECT user_id, 'chords', 'migration:has_copilot'
+        FROM users WHERE has_copilot = 1
+    """)
+    cursor.execute("""
+        INSERT OR IGNORE INTO user_feature_access (user_id, feature_name, granted_by)
+        SELECT user_id, 'agents', 'migration:has_copilot'
+        FROM users WHERE has_copilot = 1
+    """)
+    cursor.execute("""
+        INSERT OR IGNORE INTO user_feature_access (user_id, feature_name, granted_by)
+        SELECT user_id, 'chat', 'migration:has_chat'
+        FROM users WHERE has_chat = 1
+    """)
 
     # Migration: add updated_at if this table was created by the old crypto.py schema
     # (which only had created_at). Safe no-op if column already exists.

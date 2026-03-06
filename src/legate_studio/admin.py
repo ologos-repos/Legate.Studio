@@ -273,6 +273,21 @@ def user_detail(user_id: str):
             logger.error(f"Failed to get token status: {e}")
             user["token_status"] = {}
 
+        # Get all known features with this user's access status
+        try:
+            feature_rows = db.execute("""
+                SELECT f.feature_name, f.display_name,
+                       ufa.enabled, ufa.granted_by, ufa.granted_at
+                FROM feature_flags f
+                LEFT JOIN user_feature_access ufa
+                    ON f.feature_name = ufa.feature_name AND ufa.user_id = ?
+                ORDER BY f.feature_name
+            """, (user_id,)).fetchall()
+            user["feature_access"] = [dict(r) for r in feature_rows]
+        except Exception as e:
+            logger.error(f"Failed to get feature access: {e}")
+            user["feature_access"] = []
+
         return render_template("admin/user_detail.html", profile=user)
 
     except Exception as e:
@@ -616,43 +631,58 @@ def api_delete_user(user_id: str):
 @admin_bp.route("/features")
 @admin_required
 def features():
-    """Feature flags management page."""
+    """Feature flags management page — shows all features with per-user access counts."""
     from .rag.database import init_db
 
     db = init_db()
-    feature_list = db.execute("SELECT * FROM feature_flags ORDER BY feature_name").fetchall()
+
+    # All known features with count of users who have access
+    feature_list = db.execute("""
+        SELECT f.feature_name, f.display_name, f.description, f.created_at,
+               COUNT(CASE WHEN ufa.enabled = 1 THEN 1 END) as access_count
+        FROM feature_flags f
+        LEFT JOIN user_feature_access ufa ON f.feature_name = ufa.feature_name
+        GROUP BY f.feature_name
+        ORDER BY f.feature_name
+    """).fetchall()
     feature_list = [dict(f) for f in feature_list]
+
     return render_template("admin/features.html", features=feature_list)
 
 
-@admin_bp.route("/api/features/<feature_name>/toggle", methods=["POST"])
+@admin_bp.route("/features/<feature_name>")
 @admin_required
-def api_toggle_feature(feature_name: str):
-    """Toggle a feature between beta and released."""
+def feature_detail(feature_name: str):
+    """Per-feature view: all users and their access status for this feature."""
     from .rag.database import init_db
 
     db = init_db()
-    row = db.execute(
-        "SELECT is_released FROM feature_flags WHERE feature_name = ?", (feature_name,)
+
+    feature = db.execute(
+        "SELECT * FROM feature_flags WHERE feature_name = ?", (feature_name,)
     ).fetchone()
-    if not row:
-        return jsonify({"error": "Feature not found"}), 404
+    if not feature:
+        flash("Feature not found.", "error")
+        return redirect(url_for("admin.features"))
 
-    new_state = 0 if row["is_released"] else 1
-    db.execute(
-        "UPDATE feature_flags SET is_released = ?, updated_at = CURRENT_TIMESTAMP WHERE feature_name = ?",
-        (new_state, feature_name),
-    )
-    db.commit()
+    # All users with their access status for this feature
+    users = db.execute("""
+        SELECT u.user_id, u.github_login, u.tier, u.is_beta,
+               ufa.enabled, ufa.granted_by, ufa.granted_at
+        FROM users u
+        LEFT JOIN user_feature_access ufa
+            ON u.user_id = ufa.user_id AND ufa.feature_name = ?
+        ORDER BY u.github_login
+    """, (feature_name,)).fetchall()
+    users = [dict(u) for u in users]
 
-    logger.info(f"Admin toggled feature '{feature_name}' → is_released={new_state}")
-    return jsonify({"feature": feature_name, "is_released": bool(new_state)})
+    return render_template("admin/feature_detail.html", feature=dict(feature), users=users)
 
 
 @admin_bp.route("/api/features", methods=["POST"])
 @admin_required
 def api_create_feature():
-    """Create a new feature flag."""
+    """Create a new feature flag registry entry."""
     from .rag.database import init_db
 
     data = request.get_json()
@@ -677,6 +707,64 @@ def api_create_feature():
         return jsonify({"feature": feature_name, "created": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 409
+
+
+@admin_bp.route("/api/features/<feature_name>/access/<user_id>", methods=["POST"])
+@admin_required
+def api_set_user_feature_access(feature_name: str, user_id: str):
+    """Grant or revoke a specific user's access to a feature.
+
+    Body: { "enabled": true/false }
+    """
+    from .rag.database import init_db
+
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+
+    enabled = bool(data.get("enabled", True))
+    admin_user = session.get("user", {})
+    granted_by = admin_user.get("username") or admin_user.get("login") or "admin"
+
+    db = init_db()
+
+    # Verify feature exists
+    feature = db.execute(
+        "SELECT feature_name FROM feature_flags WHERE feature_name = ?", (feature_name,)
+    ).fetchone()
+    if not feature:
+        return jsonify({"error": f"Feature '{feature_name}' not found"}), 404
+
+    # Verify user exists
+    user = db.execute("SELECT github_login FROM users WHERE user_id = ?", (user_id,)).fetchone()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    if enabled:
+        db.execute(
+            """INSERT INTO user_feature_access (user_id, feature_name, enabled, granted_by)
+               VALUES (?, ?, 1, ?)
+               ON CONFLICT(user_id, feature_name) DO UPDATE SET enabled=1, granted_by=?, granted_at=CURRENT_TIMESTAMP""",
+            (user_id, feature_name, granted_by, granted_by),
+        )
+        logger.info(f"Admin '{granted_by}' granted '{feature_name}' access to {user['github_login']}")
+    else:
+        db.execute(
+            """INSERT INTO user_feature_access (user_id, feature_name, enabled, granted_by)
+               VALUES (?, ?, 0, ?)
+               ON CONFLICT(user_id, feature_name) DO UPDATE SET enabled=0, granted_by=?, granted_at=CURRENT_TIMESTAMP""",
+            (user_id, feature_name, granted_by, granted_by),
+        )
+        logger.info(f"Admin '{granted_by}' revoked '{feature_name}' access from {user['github_login']}")
+
+    db.commit()
+
+    return jsonify({
+        "user_id": user_id,
+        "feature": feature_name,
+        "enabled": enabled,
+        "github_login": user["github_login"],
+    })
 
 
 @admin_bp.route("/system")

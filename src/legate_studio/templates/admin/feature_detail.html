@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}Feature: {{ feature.display_name }} - Admin - {{ app_name }}{% endblock %}
+
+{% block head %}
+<style>
+    .admin-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    .back-link {
+        color: var(--text-secondary);
+        text-decoration: none;
+        display: inline-block;
+        margin-bottom: 1.5rem;
+        font-size: 0.875rem;
+    }
+    .back-link:hover { color: var(--text-primary); }
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .page-header h1 {
+        color: var(--text-primary);
+        margin: 0 0 0.25rem 0;
+    }
+    .feature-meta {
+        color: var(--text-muted);
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        margin-top: 0.25rem;
+    }
+    .feature-desc {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+    .admin-nav {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    .admin-nav a {
+        color: var(--text-secondary);
+        text-decoration: none;
+        padding: 0.4rem 0.75rem;
+        border-radius: 4px;
+        border: 1px solid transparent;
+        font-size: 0.875rem;
+        transition: var(--transition);
+    }
+    .admin-nav a:hover {
+        background: var(--hover-tint);
+        color: var(--text-primary);
+        border-color: var(--border-color);
+    }
+
+    /* Search bar */
+    .search-bar {
+        margin-bottom: 1rem;
+    }
+    .search-bar input {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        width: 300px;
+        transition: var(--transition);
+    }
+    .search-bar input:focus {
+        outline: none;
+        border-color: var(--border-strong);
+    }
+
+    /* Users table */
+    .users-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .users-table th, .users-table td {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .users-table th {
+        background: var(--bg-tertiary);
+        color: var(--text-muted);
+        font-weight: 500;
+        font-size: 0.75rem;
+        font-family: var(--font-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+    .users-table td {
+        color: var(--text-primary);
+        font-size: 0.875rem;
+    }
+    .users-table tr:last-child td { border-bottom: none; }
+    .users-table tr:hover td { background: var(--hover-tint); }
+    .users-table tr.hidden-row { display: none; }
+
+    /* Access badge */
+    .access-badge {
+        display: inline-block;
+        padding: 0.2rem 0.6rem;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        font-family: var(--font-mono);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        border: 1px solid;
+    }
+    .access-yes { border-color: #a6e3a1; color: #a6e3a1; }
+    .access-no  { border-color: var(--border-color); color: var(--text-muted); }
+
+    /* Toggle button */
+    .btn-toggle {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        border-radius: 4px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.8rem;
+        font-family: var(--font-mono);
+        cursor: pointer;
+        transition: var(--transition);
+    }
+    .btn-grant {
+        border-color: #a6e3a1;
+        color: #a6e3a1;
+    }
+    .btn-grant:hover { background: #a6e3a1; color: var(--bg-primary); }
+    .btn-revoke {
+        border-color: #f38ba8;
+        color: #f38ba8;
+    }
+    .btn-revoke:hover { background: #f38ba8; color: var(--bg-primary); }
+    .btn-toggle:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .ts {
+        font-size: 0.75rem;
+        font-family: var(--font-mono);
+        color: var(--text-muted);
+    }
+    .granted-by {
+        font-size: 0.75rem;
+        font-family: var(--font-mono);
+        color: var(--text-muted);
+    }
+
+    /* Stats row */
+    .stats-row {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .stat-pill {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 0.5rem 1rem;
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+    .stat-pill strong { color: var(--text-primary); }
+    .stat-pill.green { border-color: #a6e3a1; color: #a6e3a1; }
+    .stat-pill.green strong { color: #a6e3a1; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <a href="{{ url_for('admin.features') }}" class="back-link">&larr; Back to Features</a>
+
+    <div class="page-header">
+        <div>
+            <h1>{{ feature.display_name }}</h1>
+            <div class="feature-meta">feature_name: {{ feature.feature_name }}</div>
+            {% if feature.description %}
+            <div class="feature-desc">{{ feature.description }}</div>
+            {% endif %}
+        </div>
+        <nav class="admin-nav">
+            <a href="{{ url_for('admin.index') }}">Users</a>
+            <a href="{{ url_for('admin.features') }}">Features</a>
+            <a href="{{ url_for('admin.system_status') }}">System</a>
+            <a href="{{ url_for('admin.logout') }}" style="color: var(--accent-red);">Logout</a>
+        </nav>
+    </div>
+
+    {% set access_count = users | selectattr('enabled', 'equalto', 1) | list | length %}
+    <div class="stats-row">
+        <div class="stat-pill green">
+            <strong>{{ access_count }}</strong> user{% if access_count != 1 %}s{% endif %} with access
+        </div>
+        <div class="stat-pill">
+            <strong>{{ users | length }}</strong> total users
+        </div>
+    </div>
+
+    <div class="search-bar">
+        <input type="text" id="userSearch" placeholder="Search by username..." oninput="filterUsers(this.value)">
+    </div>
+
+    {% if users %}
+    <table class="users-table" id="usersTable">
+        <thead>
+            <tr>
+                <th>GitHub Login</th>
+                <th>Tier</th>
+                <th>Access</th>
+                <th>Granted By</th>
+                <th>Granted At</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr id="row-{{ u.user_id }}" data-login="{{ u.github_login | lower }}">
+                <td>
+                    <a href="{{ url_for('admin.user_detail', user_id=u.user_id) }}"
+                       style="color: var(--text-primary); text-decoration: none; font-family: var(--font-mono);">
+                        {{ u.github_login }}
+                    </a>
+                </td>
+                <td style="color: var(--text-secondary);">{{ u.tier or 'free' }}</td>
+                <td>
+                    <span class="access-badge {% if u.enabled %}access-yes{% else %}access-no{% endif %}"
+                          id="badge-{{ u.user_id }}">
+                        {% if u.enabled %}Access{% else %}No Access{% endif %}
+                    </span>
+                </td>
+                <td><span class="granted-by">{{ u.granted_by or '—' }}</span></td>
+                <td><span class="ts">{{ u.granted_at[:16] if u.granted_at else '—' }}</span></td>
+                <td>
+                    {% if u.enabled %}
+                    <button class="btn-toggle btn-revoke"
+                            id="btn-{{ u.user_id }}"
+                            onclick="setAccess('{{ u.user_id }}', '{{ feature.feature_name }}', false, this)">
+                        Revoke
+                    </button>
+                    {% else %}
+                    <button class="btn-toggle btn-grant"
+                            id="btn-{{ u.user_id }}"
+                            onclick="setAccess('{{ u.user_id }}', '{{ feature.feature_name }}', true, this)">
+                        Grant
+                    </button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div style="text-align: center; padding: 3rem; color: var(--text-muted); font-family: var(--font-mono);">
+        No users found.
+    </div>
+    {% endif %}
+</div>
+
+<script>
+async function setAccess(userId, featureName, enable, btn) {
+    btn.disabled = true;
+    const orig = btn.textContent;
+    btn.textContent = '...';
+
+    try {
+        const res = await fetch(`/admin/api/features/${featureName}/access/${userId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ enabled: enable })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            alert(data.error || 'Request failed');
+            btn.textContent = orig;
+            btn.disabled = false;
+            return;
+        }
+
+        // Update badge
+        const badge = document.getElementById(`badge-${userId}`);
+        if (enable) {
+            badge.textContent = 'Access';
+            badge.className = 'access-badge access-yes';
+            btn.textContent = 'Revoke';
+            btn.className = 'btn-toggle btn-revoke';
+            btn.onclick = () => setAccess(userId, featureName, false, btn);
+        } else {
+            badge.textContent = 'No Access';
+            badge.className = 'access-badge access-no';
+            btn.textContent = 'Grant';
+            btn.className = 'btn-toggle btn-grant';
+            btn.onclick = () => setAccess(userId, featureName, true, btn);
+        }
+        btn.disabled = false;
+
+    } catch (err) {
+        alert('Network error: ' + err.message);
+        btn.textContent = orig;
+        btn.disabled = false;
+    }
+}
+
+function filterUsers(query) {
+    const q = query.toLowerCase().trim();
+    document.querySelectorAll('#usersTable tbody tr').forEach(row => {
+        const login = row.dataset.login || '';
+        row.classList.toggle('hidden-row', q.length > 0 && !login.includes(q));
+    });
+}
+</script>
+{% endblock %}

@@ -196,6 +196,78 @@
         opacity: 0.4;
         cursor: not-allowed;
     }
+    /* Feature access section */
+    .feature-access-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 0.75rem;
+    }
+    .feature-access-card {
+        border: 1px solid var(--border-color, rgba(255,255,255,0.08));
+        border-radius: 6px;
+        padding: 0.75rem 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+    .feature-access-card.has-access {
+        border-color: #3fb950;
+    }
+    .feature-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        flex: 1;
+        min-width: 0;
+    }
+    .feature-display-name {
+        font-size: 0.875rem;
+        color: var(--text-primary, #fff);
+        font-weight: 500;
+    }
+    .feature-name-tag {
+        font-size: 0.7rem;
+        font-family: monospace;
+        color: var(--text-muted, #666);
+    }
+    .feature-granted-by {
+        font-size: 0.7rem;
+        color: var(--text-muted, #666);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .btn-feature-grant {
+        background: transparent;
+        color: #3fb950;
+        border: 1px solid #3fb950;
+        border-radius: 4px;
+        padding: 0.2rem 0.6rem;
+        font-size: 0.75rem;
+        font-family: monospace;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background 150ms ease;
+    }
+    .btn-feature-grant:hover { background: rgba(63,185,80,0.08); }
+    .btn-feature-revoke {
+        background: transparent;
+        color: #e05252;
+        border: 1px solid #e05252;
+        border-radius: 4px;
+        padding: 0.2rem 0.6rem;
+        font-size: 0.75rem;
+        font-family: monospace;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background 150ms ease;
+    }
+    .btn-feature-revoke:hover { background: rgba(224,82,82,0.1); }
+    .btn-feature-grant:disabled, .btn-feature-revoke:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
 </style>
 {% endblock %}
 
@@ -367,6 +439,48 @@
         <p style="color: var(--text-secondary);">No agents</p>
         {% endif %}
     </div>
+
+    <!-- Beta Feature Access -->
+    <div class="section">
+        <h2 style="display:flex; align-items:center; justify-content:space-between;">
+            Beta Feature Access
+            <a href="{{ url_for('admin.features') }}" style="font-size:0.75rem; color: var(--text-muted); text-decoration:none; font-weight:400;">
+                Manage All Features →
+            </a>
+        </h2>
+        {% if profile.feature_access %}
+        <div class="feature-access-grid" id="featureAccessGrid">
+            {% for fa in profile.feature_access %}
+            <div class="feature-access-card {% if fa.enabled %}has-access{% endif %}"
+                 id="facard-{{ fa.feature_name }}">
+                <div class="feature-info">
+                    <span class="feature-display-name">{{ fa.display_name }}</span>
+                    <span class="feature-name-tag">{{ fa.feature_name }}</span>
+                    {% if fa.enabled and fa.granted_by %}
+                    <span class="feature-granted-by">via {{ fa.granted_by }}</span>
+                    {% endif %}
+                </div>
+                {% if fa.enabled %}
+                <button class="btn-feature-revoke"
+                        id="fabtn-{{ fa.feature_name }}"
+                        onclick="setFeatureAccess('{{ fa.feature_name }}', false, this)">
+                    Revoke
+                </button>
+                {% else %}
+                <button class="btn-feature-grant"
+                        id="fabtn-{{ fa.feature_name }}"
+                        onclick="setFeatureAccess('{{ fa.feature_name }}', true, this)">
+                    Grant
+                </button>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color: var(--text-secondary);">No beta features registered.</p>
+        {% endif %}
+        <div id="feature-status" style="margin-top:0.75rem; font-size:0.8rem;"></div>
+    </div>
 </div>
 
 <script>
@@ -418,6 +532,56 @@ async function deleteUser() {
         window.location.href = '/admin/';
     } catch (e) {
         alert('Error: ' + e.message);
+    }
+}
+
+async function setFeatureAccess(featureName, enable, btn) {
+    btn.disabled = true;
+    const orig = btn.textContent;
+    btn.textContent = '...';
+
+    try {
+        const res = await fetch(`/admin/api/features/${featureName}/access/{{ profile.user_id }}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ enabled: enable })
+        });
+        const data = await res.json();
+        const statusEl = document.getElementById('feature-status');
+
+        if (!res.ok) {
+            statusEl.textContent = 'Error: ' + (data.error || 'Unknown error');
+            statusEl.style.color = '#e05252';
+            btn.textContent = orig;
+            btn.disabled = false;
+            return;
+        }
+
+        const card = document.getElementById(`facard-${featureName}`);
+        if (enable) {
+            card.classList.add('has-access');
+            btn.textContent = 'Revoke';
+            btn.className = 'btn-feature-revoke';
+            btn.onclick = () => setFeatureAccess(featureName, false, btn);
+            statusEl.textContent = `✓ Granted '${featureName}' access to ${data.github_login}`;
+            statusEl.style.color = '#3fb950';
+        } else {
+            card.classList.remove('has-access');
+            btn.textContent = 'Grant';
+            btn.className = 'btn-feature-grant';
+            btn.onclick = () => setFeatureAccess(featureName, true, btn);
+            statusEl.textContent = `Revoked '${featureName}' access from ${data.github_login}`;
+            statusEl.style.color = '#aaaaaa';
+        }
+        btn.disabled = false;
+        setTimeout(() => { statusEl.textContent = ''; }, 3000);
+
+    } catch (e) {
+        const statusEl = document.getElementById('feature-status');
+        statusEl.textContent = 'Error: ' + e.message;
+        statusEl.style.color = '#e05252';
+        btn.textContent = orig;
+        btn.disabled = false;
     }
 }
 

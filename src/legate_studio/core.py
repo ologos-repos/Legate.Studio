@@ -817,13 +817,17 @@ def library_required(f):
 
 
 def beta_gate(feature_name: str):
-    """Decorator to gate a feature behind beta.
+    """Decorator to gate a feature behind per-user beta entitlement.
 
-    If the feature is released (feature_flags.is_released = 1), allow everyone.
-    If not released, only allow users with is_beta = True.
+    Access is granted only if the current user has an enabled=1 row in
+    user_feature_access for this feature_name.
+
+    If feature_name is not registered in feature_flags at all, access is
+    DENIED (fail-closed) — unknown features are always gated.
 
     Usage: @beta_gate("chat")
     Must be used after @login_required.
+    Stack order: @route → @login_required → @paid_required → @beta_gate(...)
     """
 
     def decorator(f):
@@ -833,27 +837,22 @@ def beta_gate(feature_name: str):
                 flash("Please log in to access this page.", "warning")
                 return redirect(url_for("auth.login"))
 
-            # Check if feature is released
+            user = session["user"]
+            user_id = user.get("user_id")
+
+            # Check per-user entitlement in user_feature_access
             from legate_studio.rag.database import init_db
 
             db = init_db()
             row = db.execute(
-                "SELECT is_released FROM feature_flags WHERE feature_name = ?",
-                (feature_name,),
+                "SELECT enabled FROM user_feature_access WHERE user_id = ? AND feature_name = ?",
+                (user_id, feature_name),
             ).fetchone()
 
-            # If feature doesn't exist in DB or is released, allow access
-            if row is None or row["is_released"]:
+            if row and row["enabled"]:
                 return f(*args, **kwargs)
 
-            # Feature is beta-gated — check if user is a beta tester
-            user = session["user"]
-            is_beta = user.get("is_beta", False)
-
-            if is_beta:
-                return f(*args, **kwargs)
-
-            # Not released and not beta — deny access
+            # No entitlement — deny access
             if (
                 request.path.startswith("/api/")
                 or request.is_json
@@ -861,7 +860,7 @@ def beta_gate(feature_name: str):
             ):
                 return jsonify(
                     {
-                        "error": f"The {feature_name} feature is currently in beta.",
+                        "error": f"The {feature_name} feature is currently in beta. Contact an admin for access.",
                         "beta_required": True,
                         "feature": feature_name,
                     }
@@ -870,7 +869,7 @@ def beta_gate(feature_name: str):
                 flash("This feature is currently in beta. Contact an admin for access.", "warning")
                 return redirect(url_for("dashboard.index"))
 
-        decorated_function._beta_feature = feature_name  # tag for template helpers
+        decorated_function._beta_feature = feature_name  # tag for introspection
         return decorated_function
 
     return decorator
@@ -879,26 +878,28 @@ def beta_gate(feature_name: str):
 def is_feature_available(feature_name: str, user: dict = None) -> bool:
     """Check if a feature is available to the current user.
 
-    Returns True if:
-    - Feature is released (is_released = 1), OR
-    - User has is_beta = True
+    Returns True ONLY if the user has an enabled=1 row in user_feature_access
+    for this feature. No global release flag — access is always per-user.
 
     Use in Jinja templates: {{ is_feature_available('chat') }}
+    Use in Python: is_feature_available('chat', user_dict)
     """
+    if user is None:
+        user = session.get("user", {})
+
+    user_id = user.get("user_id")
+    if not user_id:
+        return False
+
     from legate_studio.rag.database import init_db
 
     db = init_db()
     row = db.execute(
-        "SELECT is_released FROM feature_flags WHERE feature_name = ?",
-        (feature_name,),
+        "SELECT enabled FROM user_feature_access WHERE user_id = ? AND feature_name = ?",
+        (user_id, feature_name),
     ).fetchone()
 
-    if row is None or row["is_released"]:
-        return True
-
-    if user is None:
-        user = session.get("user", {})
-    return bool(user.get("is_beta", False))
+    return bool(row and row["enabled"])
 
 
 def copilot_required(f):

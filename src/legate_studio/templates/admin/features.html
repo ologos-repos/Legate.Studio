@@ -50,13 +50,12 @@
         margin-bottom: 2rem;
     }
     .add-feature-card h2 {
-        color: var(--text-primary);
-        font-size: 1rem;
+        color: var(--text-muted);
+        font-size: 0.75rem;
         font-family: var(--font-mono);
         text-transform: uppercase;
         letter-spacing: 0.06em;
         margin: 0 0 1rem 0;
-        color: var(--text-muted);
     }
     .add-feature-form {
         display: flex;
@@ -94,8 +93,8 @@
     }
     .btn-add {
         background: transparent;
-        color: var(--accent-green);
-        border: 1px solid var(--accent-green);
+        color: #a6e3a1;
+        border: 1px solid #a6e3a1;
         border-radius: 4px;
         padding: 0.4rem 1rem;
         font-size: 0.875rem;
@@ -106,11 +105,11 @@
         align-self: flex-end;
     }
     .btn-add:hover {
-        background: var(--accent-green);
+        background: #a6e3a1;
         color: var(--bg-primary);
     }
 
-    /* Feature flags table */
+    /* Features table */
     .section-title {
         font-size: 0.75rem;
         font-family: var(--font-mono);
@@ -150,78 +149,47 @@
     .features-table tr:hover td {
         background: var(--hover-tint);
     }
-
-    /* Feature name monospace */
-    .feature-name {
+    .feature-name-mono {
         font-family: var(--font-mono);
         font-size: 0.875rem;
-        color: var(--text-primary);
     }
-
-    /* Status badges */
-    .status-badge {
+    .access-count {
         display: inline-block;
-        padding: 0.2rem 0.6rem;
+        padding: 0.15rem 0.5rem;
         border-radius: 999px;
         font-size: 0.7rem;
         font-family: var(--font-mono);
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        border: 1px solid;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
     }
-    .status-released {
+    .access-count.has-users {
         border-color: #a6e3a1;
         color: #a6e3a1;
     }
-    .status-beta {
-        border-color: #f9e2af;
-        color: #f9e2af;
-    }
-
-    /* Toggle button */
-    .btn-toggle {
+    .btn-manage {
         background: transparent;
-        border: 1px solid var(--border-color);
         color: var(--text-secondary);
+        border: 1px solid var(--border-color);
         border-radius: 4px;
         padding: 0.25rem 0.75rem;
         font-size: 0.8rem;
         font-family: var(--font-mono);
         cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
         transition: var(--transition);
     }
-    .btn-toggle:hover {
+    .btn-manage:hover {
         background: var(--hover-tint);
         color: var(--text-primary);
         border-color: var(--border-strong);
     }
-    .btn-toggle.releasing {
-        border-color: #a6e3a1;
-        color: #a6e3a1;
-    }
-    .btn-toggle.releasing:hover {
-        background: #a6e3a1;
-        color: var(--bg-primary);
-    }
-    .btn-toggle.gating {
-        border-color: #f38ba8;
-        color: #f38ba8;
-    }
-    .btn-toggle.gating:hover {
-        background: #f38ba8;
-        color: var(--bg-primary);
-    }
-
-    /* Updated timestamp */
     .ts {
         font-size: 0.75rem;
         font-family: var(--font-mono);
         color: var(--text-muted);
     }
-
-    /* Flash/status messages */
-    .table-msg {
+    .form-msg {
         padding: 0.5rem 1rem;
         font-size: 0.8rem;
         font-family: var(--font-mono);
@@ -229,9 +197,8 @@
         margin-top: 0.5rem;
         display: none;
     }
-    .table-msg.success { background: rgba(166, 227, 161, 0.1); color: #a6e3a1; border: 1px solid #a6e3a1; }
-    .table-msg.error   { background: rgba(243, 139, 168, 0.1); color: #f38ba8; border: 1px solid #f38ba8; }
-
+    .form-msg.success { background: rgba(166, 227, 161, 0.08); color: #a6e3a1; border: 1px solid #a6e3a1; }
+    .form-msg.error   { background: rgba(243, 139, 168, 0.08); color: #f38ba8; border: 1px solid #f38ba8; }
     .empty-state {
         text-align: center;
         padding: 3rem;
@@ -255,9 +222,14 @@
         </nav>
     </div>
 
+    <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 2rem;">
+        Access is <strong>per-user, per-feature</strong>. Click a feature to manage which users can access it.
+        To release a feature to everyone, remove <code style="font-size: 0.8rem; font-family: var(--font-mono);">@beta_gate</code> from its routes.
+    </p>
+
     <!-- Add Feature Card -->
     <div class="add-feature-card">
-        <h2>Add Feature Flag</h2>
+        <h2>Register New Feature</h2>
         <div class="add-feature-form">
             <div class="form-group">
                 <label for="newFeatureName">Feature Name</label>
@@ -271,94 +243,53 @@
                 <label for="newDescription">Description</label>
                 <input type="text" id="newDescription" placeholder="What this feature does" autocomplete="off">
             </div>
-            <button class="btn-add" onclick="createFeature()">+ Add</button>
+            <button class="btn-add" onclick="createFeature()">+ Register</button>
         </div>
-        <div id="addMsg" class="table-msg"></div>
+        <div id="addMsg" class="form-msg"></div>
     </div>
 
-    <!-- Feature Flags Table -->
-    <h2 class="section-title">All Feature Flags</h2>
+    <!-- Features Table -->
+    <h2 class="section-title">Registered Features</h2>
 
     {% if features %}
-    <table class="features-table" id="featuresTable">
+    <table class="features-table">
         <thead>
             <tr>
                 <th>Feature Name</th>
                 <th>Display Name</th>
                 <th>Description</th>
-                <th>Status</th>
-                <th>Updated</th>
-                <th>Action</th>
+                <th>Users with Access</th>
+                <th>Registered</th>
+                <th>Manage Access</th>
             </tr>
         </thead>
         <tbody>
             {% for f in features %}
-            <tr id="row-{{ f.feature_name }}">
-                <td><span class="feature-name">{{ f.feature_name }}</span></td>
+            <tr>
+                <td><span class="feature-name-mono">{{ f.feature_name }}</span></td>
                 <td>{{ f.display_name }}</td>
                 <td style="color: var(--text-secondary);">{{ f.description or '—' }}</td>
                 <td>
-                    <span class="status-badge {% if f.is_released %}status-released{% else %}status-beta{% endif %}"
-                          id="badge-{{ f.feature_name }}">
-                        {% if f.is_released %}Released{% else %}Beta{% endif %}
+                    <span class="access-count {% if f.access_count > 0 %}has-users{% endif %}">
+                        {{ f.access_count }} user{% if f.access_count != 1 %}s{% endif %}
                     </span>
                 </td>
-                <td><span class="ts">{{ f.updated_at[:16] if f.updated_at else '—' }}</span></td>
+                <td><span class="ts">{{ f.created_at[:10] if f.created_at else '—' }}</span></td>
                 <td>
-                    <button class="btn-toggle {% if f.is_released %}gating{% else %}releasing{% endif %}"
-                            id="btn-{{ f.feature_name }}"
-                            onclick="toggleFeature('{{ f.feature_name }}', this)">
-                        {% if f.is_released %}Gate (Beta){% else %}Release{% endif %}
-                    </button>
+                    <a href="{{ url_for('admin.feature_detail', feature_name=f.feature_name) }}" class="btn-manage">
+                        Manage Users →
+                    </a>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
     {% else %}
-    <div class="empty-state">No feature flags defined yet. Add one above.</div>
+    <div class="empty-state">No feature flags registered yet. Add one above.</div>
     {% endif %}
 </div>
 
 <script>
-async function toggleFeature(featureName, btn) {
-    btn.disabled = true;
-    const originalText = btn.textContent;
-    btn.textContent = '...';
-
-    try {
-        const res = await fetch(`/admin/api/features/${featureName}/toggle`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-        });
-        const data = await res.json();
-
-        if (!res.ok) {
-            alert(data.error || 'Toggle failed');
-            btn.textContent = originalText;
-            btn.disabled = false;
-            return;
-        }
-
-        const isReleased = data.is_released;
-        const badge = document.getElementById(`badge-${featureName}`);
-
-        // Update badge
-        badge.textContent = isReleased ? 'Released' : 'Beta';
-        badge.className = `status-badge ${isReleased ? 'status-released' : 'status-beta'}`;
-
-        // Update button
-        btn.textContent = isReleased ? 'Gate (Beta)' : 'Release';
-        btn.className = `btn-toggle ${isReleased ? 'gating' : 'releasing'}`;
-        btn.disabled = false;
-
-    } catch (err) {
-        alert('Network error: ' + err.message);
-        btn.textContent = originalText;
-        btn.disabled = false;
-    }
-}
-
 async function createFeature() {
     const nameInput = document.getElementById('newFeatureName');
     const displayInput = document.getElementById('newDisplayName');
@@ -387,7 +318,7 @@ async function createFeature() {
             return;
         }
 
-        showMsg(msg, `Feature '${data.feature}' created. Refreshing...`, 'success');
+        showMsg(msg, `Feature '${data.feature}' registered. Refreshing...`, 'success');
         setTimeout(() => window.location.reload(), 800);
 
     } catch (err) {
@@ -397,12 +328,11 @@ async function createFeature() {
 
 function showMsg(el, text, type) {
     el.textContent = text;
-    el.className = `table-msg ${type}`;
+    el.className = `form-msg ${type}`;
     el.style.display = 'block';
     setTimeout(() => { el.style.display = 'none'; }, 4000);
 }
 
-// Allow pressing Enter in the add form
 ['newFeatureName', 'newDisplayName', 'newDescription'].forEach(id => {
     document.getElementById(id).addEventListener('keydown', e => {
         if (e.key === 'Enter') createFeature();
