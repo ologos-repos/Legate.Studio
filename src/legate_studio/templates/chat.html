@@ -614,7 +614,11 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
     // Tier passed from Flask — used to decide whether to show credit usage UI
+    // Possible values: 'managed_lite', 'managed_standard', 'managed_plus',
+    //                  'byok', 'trial', 'single-tenant'
     const CURRENT_TIER = {{ tier | tojson }};
+    // True for any platform-managed tier (has credit cap + usage tracking)
+    const IS_MANAGED_TIER = CURRENT_TIER.startsWith('managed');
 
     // Configure marked for safe rendering
     marked.setOptions({
@@ -812,7 +816,7 @@
             if (response.ok) {
                 addMessage('assistant', data.response, data.context);
                 // Refresh usage after a successful response (managed tier)
-                if (CURRENT_TIER === 'managed') {
+                if (IS_MANAGED_TIER) {
                     fetchUsage();
                 }
             } else if (response.status === 429 && data.credit_cap_reached) {
@@ -984,7 +988,7 @@
     const creditCapBanner = document.getElementById('creditCapBanner');
 
     async function fetchUsage() {
-        if (CURRENT_TIER !== 'managed') return;
+        if (!IS_MANAGED_TIER) return;
 
         try {
             const resp = await fetch('/chat/api/usage');
@@ -1056,7 +1060,7 @@
     }
 
     // Fetch usage on page load if managed tier
-    if (CURRENT_TIER === 'managed') {
+    if (IS_MANAGED_TIER) {
         fetchUsage();
     }
 </script>

@@ -5,9 +5,12 @@ Provides web UI and API for chatting with the knowledge base.
 Uses ChatSessionManager for in-memory buffering with periodic flush.
 
 Subscription awareness:
-  - Managed tier: uses platform API keys, token usage tracked, $4.50/mo cap enforced
-  - BYOK tier: uses user's own API keys, no tracking (they pay their provider directly)
-  - Single-tenant mode: always uses env vars, no cap enforcement
+  - managed_lite ($5/mo):     platform keys, $4.50/mo token credits, cap enforced
+  - managed_standard ($10/mo): platform keys, $9.00/mo token credits, cap enforced
+  - managed_plus ($20/mo):    platform keys, $18.00/mo token credits, cap enforced
+  - byok ($0.99/mo):          user's own keys, no cap (they pay provider directly)
+  - trial:                    limited access, no managed keys
+  - single-tenant mode:       always uses env vars, no cap enforcement
 """
 
 import logging
@@ -258,8 +261,10 @@ def send_message():
         # ── Resolve API key & tier ────────────────────────────────────────────
         api_key, tier = _resolve_api_key(effective_provider.value)
 
-        # BYOK check: if multi-tenant and BYOK tier has no key, reject with clear message
-        if _is_multi_tenant() and tier not in ("managed", "single-tenant") and not api_key:
+        # BYOK check: if multi-tenant and NOT a managed tier and NOT single-tenant, user must
+        # have their own key stored. Managed tiers use platform keys (already resolved above).
+        from .rag.usage import is_managed_tier as _is_managed_tier
+        if _is_multi_tenant() and tier != "single-tenant" and not _is_managed_tier(tier) and not api_key:
             return jsonify({
                 "error": (
                     f"No API key configured for {effective_provider.value}. "
@@ -394,22 +399,22 @@ def get_usage():
     Only meaningful for Managed-tier users in multi-tenant mode.
     For other tiers/modes, returns a no-tracking response.
 
-    Response (managed tier):
+    Response (managed tier — example for managed_standard):
     {
         "tracked": true,
-        "tier": "managed",
+        "tier": "managed_standard",
         "tokens_in": 12345,
         "tokens_out": 5678,
         "cost_microdollars": 123456,
         "cost_dollars": 0.1235,
-        "base_cap_microdollars": 4500000,
+        "base_cap_microdollars": 9000000,
         "topup_credits_microdollars": 0,
-        "effective_cap_microdollars": 4500000,
-        "remaining_microdollars": 4376544,
-        "remaining_dollars": 4.3765,
-        "cap_dollars": 4.5,
+        "effective_cap_microdollars": 9000000,
+        "remaining_microdollars": 8876544,
+        "remaining_dollars": 8.8765,
+        "cap_dollars": 9.0,
         "period": "2026-03",
-        "percent_used": 2.7,
+        "percent_used": 1.4,
         "topup_price_dollars": 5.0,
         "topup_credits_dollars": 4.5
     }

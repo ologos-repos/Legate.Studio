@@ -660,10 +660,18 @@ def is_trial_expired(user_id: str) -> bool:
 
 
 def get_effective_tier(user_id: str) -> str:
-    """Get effective tier considering beta status.
+    """Get effective subscription tier for a user.
 
-    Beta users get 'managed' tier free.
-    Returns: 'trial', 'byok', or 'managed'
+    Supported tier strings:
+      'trial'            — free/unsubscribed
+      'byok'             — BYOK ($0.99/mo), unlimited, user provides own keys
+      'managed_lite'     — Managed $5/mo, $4.50 token credits
+      'managed_standard' — Managed $10/mo, $9.00 token credits
+      'managed_plus'     — Managed $20/mo, $18.00 token credits
+
+    Legacy values in the DB are mapped for backward compat:
+      'managed' / 'beta' → 'managed_lite'
+      'beta' flag (is_beta=1) → 'managed_lite'
     """
     from .rag.database import init_db
 
@@ -676,27 +684,36 @@ def get_effective_tier(user_id: str) -> str:
     if not row:
         return "trial"
 
-    # Beta users get managed tier free
-    # Check both is_beta flag AND legacy tier='beta' for backwards compatibility
+    # Beta flag → managed_lite (free managed access for beta testers)
     if row["is_beta"] or row["tier"] == "beta":
-        return "managed"
+        return "managed_lite"
 
-    # Return actual tier
     tier = row["tier"] or "trial"
-    return tier if tier in ("trial", "byok", "managed") else "trial"
+
+    # New granular managed tiers — pass through directly
+    if tier in ("trial", "byok", "managed_lite", "managed_standard", "managed_plus"):
+        return tier
+
+    # Legacy 'managed' → managed_lite for backward compat
+    if tier == "managed":
+        return "managed_lite"
+
+    # Anything else (unknown/corrupt) → trial
+    return "trial"
 
 
 def can_use_platform_keys(user_id: str) -> bool:
-    """Check if user can use platform API keys (managed tier or beta)."""
-    return get_effective_tier(user_id) == "managed"
+    """Check if user can use platform API keys (any managed tier or beta)."""
+    from .rag.usage import is_managed_tier
+    return is_managed_tier(get_effective_tier(user_id))
 
 
 def get_api_key_for_user(user_id: str, provider: str) -> str:
-    """Get API key for user - platform key or their own BYOK key.
+    """Get API key for user — platform key (managed tiers) or their own BYOK key.
 
     Args:
         user_id: User's ID
-        provider: 'anthropic' or 'openai'
+        provider: 'anthropic', 'openai', or 'gemini'
 
     Returns:
         API key string or None if not available
@@ -704,15 +721,16 @@ def get_api_key_for_user(user_id: str, provider: str) -> str:
     import os
 
     from .auth import get_user_api_key
+    from .rag.usage import is_managed_tier
 
     tier = get_effective_tier(user_id)
 
-    if tier == "managed":
-        # Return platform key from environment
+    if is_managed_tier(tier):
+        # All managed tiers use platform keys from environment
         env_key = f"{provider.upper()}_API_KEY"
         return os.environ.get(env_key)
     else:
-        # Return user's BYOK key
+        # BYOK / trial — return user's own stored key (may be None)
         return get_user_api_key(user_id, provider)
 
 

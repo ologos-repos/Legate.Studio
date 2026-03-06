@@ -9,10 +9,19 @@ Tables used (created by database.py init_db):
   - usage_meters: per-user per-period aggregate meters (upserted)
   - credit_topups: purchased top-up credits for managed users (created here if missing)
 
-Credit model:
-  - Managed tier base: $4.50/month (4,500,000 microdollars) included in $5/mo subscription
-  - Top-ups: $5 purchase → +$4.50 in token credits (+4,500,000 microdollars)
+Credit model (10% platform margin, 90% → token credits):
+  ┌──────────────────┬──────────┬──────────────────┬──────────────────┐
+  │ Tier             │ Price/mo │ Token credits/mo │ Platform margin  │
+  ├──────────────────┼──────────┼──────────────────┼──────────────────┤
+  │ managed_lite     │ $5.00    │ $4.50            │ $0.50            │
+  │ managed_standard │ $10.00   │ $9.00            │ $1.00            │
+  │ managed_plus     │ $20.00   │ $18.00           │ $2.00            │
+  └──────────────────┴──────────┴──────────────────┴──────────────────┘
+  - Top-ups: $5 purchase → +$4.50 in token credits (same 10% margin)
+  - BYOK: unlimited — users pay their provider directly, no cap
   - Billing period: calendar month (YYYY-MM)
+
+Legacy 'managed' tier (beta users) maps to managed_lite cap for backward compat.
 """
 
 import logging
@@ -20,11 +29,38 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-# Base monthly credit cap for Managed tier: $4.50
-BASE_CAP_MICRODOLLARS = 4_500_000
+# Per-tier base monthly token credit caps (microdollars, 90% of subscription price)
+TIER_CAP_MICRODOLLARS: dict[str, int] = {
+    "managed_lite":     4_500_000,   # $4.50 / month  (from $5 subscription)
+    "managed_standard": 9_000_000,   # $9.00 / month  (from $10 subscription)
+    "managed_plus":     18_000_000,  # $18.00 / month (from $20 subscription)
+    # Legacy alias — beta users were on the original single "managed" tier
+    "managed":          4_500_000,   # treat same as managed_lite
+}
 
-# Each $5 top-up purchase adds this many token microdollars
+# Convenience: the set of tier strings that are managed (platform-key, credit-capped)
+MANAGED_TIERS: frozenset[str] = frozenset(TIER_CAP_MICRODOLLARS.keys())
+
+# Each $5 top-up purchase adds this many token microdollars (90% of $5)
 TOPUP_CREDIT_MICRODOLLARS = 4_500_000
+TOPUP_PRICE_CENTS = 500  # $5.00
+
+# Kept for backward compat — resolves to managed_lite cap
+BASE_CAP_MICRODOLLARS = TIER_CAP_MICRODOLLARS["managed_lite"]
+
+
+def is_managed_tier(tier: str) -> bool:
+    """Return True for any managed (platform-key, credit-capped) tier."""
+    return tier in MANAGED_TIERS
+
+
+def get_cap_for_tier(tier: str) -> int:
+    """Return the base monthly credit cap in microdollars for a given tier.
+
+    Returns 0 for non-managed tiers (BYOK / trial) — callers should not
+    enforce a cap for those tiers at all.
+    """
+    return TIER_CAP_MICRODOLLARS.get(tier, 0)
 
 # Approximate cost in microdollars per token (per million tokens)
 # microdollars_per_token = dollars_per_million / 1_000_000 * 1_000_000 = dollars_per_million
@@ -253,25 +289,30 @@ def get_purchased_topup_credits(user_id: str) -> int:
 
 def check_credit_cap(
     user_id: str,
-    cap_microdollars: int = BASE_CAP_MICRODOLLARS,
+    tier: str = "managed_lite",
+    cap_microdollars: int | None = None,
 ) -> tuple[bool, int]:
     """Check if user is under their effective monthly credit cap.
 
-    The effective cap = base_cap + purchased top-up credits for this period.
+    The effective cap = tier_base_cap + purchased top-up credits for this period.
 
     Args:
         user_id: User's ID
-        cap_microdollars: Base monthly cap (default $4.50 = 4_500_000)
+        tier: Subscription tier string (e.g. 'managed_lite', 'managed_standard',
+              'managed_plus', or legacy 'managed').  Used to look up base cap.
+        cap_microdollars: Explicit override for base cap (microdollars).
+              If None, the cap is derived from `tier` via get_cap_for_tier().
 
     Returns:
         Tuple of (allowed: bool, remaining_microdollars: int)
           - allowed: True if user has remaining credits
-          - remaining_microdollars: How many microdollars remain (may be 0 or negative)
+          - remaining_microdollars: How many microdollars remain (>= 0)
     """
+    base_cap = cap_microdollars if cap_microdollars is not None else get_cap_for_tier(tier)
     usage = get_monthly_usage(user_id)
     topup_credits = get_purchased_topup_credits(user_id)
 
-    effective_cap = cap_microdollars + topup_credits
+    effective_cap = base_cap + topup_credits
     spent = usage["cost_microdollars"]
     remaining = effective_cap - spent
 
@@ -325,8 +366,13 @@ def record_credit_topup(
         return False
 
 
-def get_usage_summary(user_id: str) -> dict:
+def get_usage_summary(user_id: str, tier: str = "managed_lite") -> dict:
     """Get a full usage summary for the current period, suitable for API responses.
+
+    Args:
+        user_id: User's ID
+        tier: Subscription tier string — used to compute the correct base cap.
+              Defaults to 'managed_lite' for backward compat.
 
     Returns:
         Dict with:
@@ -334,7 +380,8 @@ def get_usage_summary(user_id: str) -> dict:
           - tokens_out: int
           - cost_microdollars: int
           - cost_dollars: float  (rounded to 4 decimal places)
-          - base_cap_microdollars: int
+          - tier: str
+          - base_cap_microdollars: int   (tier-based base, before top-ups)
           - topup_credits_microdollars: int
           - effective_cap_microdollars: int
           - remaining_microdollars: int
@@ -343,9 +390,10 @@ def get_usage_summary(user_id: str) -> dict:
           - period: str (YYYY-MM)
           - percent_used: float (0–100+)
     """
+    base_cap = get_cap_for_tier(tier)
     usage = get_monthly_usage(user_id)
     topup = get_purchased_topup_credits(user_id)
-    effective_cap = BASE_CAP_MICRODOLLARS + topup
+    effective_cap = base_cap + topup
     spent = usage["cost_microdollars"]
     remaining = max(0, effective_cap - spent)
     percent = (spent / effective_cap * 100) if effective_cap > 0 else 0
@@ -355,7 +403,8 @@ def get_usage_summary(user_id: str) -> dict:
         "tokens_out": usage["tokens_out"],
         "cost_microdollars": spent,
         "cost_dollars": round(spent / 1_000_000, 4),
-        "base_cap_microdollars": BASE_CAP_MICRODOLLARS,
+        "tier": tier,
+        "base_cap_microdollars": base_cap,
         "topup_credits_microdollars": topup,
         "effective_cap_microdollars": effective_cap,
         "remaining_microdollars": remaining,
