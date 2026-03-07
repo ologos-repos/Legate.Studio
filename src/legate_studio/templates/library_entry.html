@@ -399,6 +399,119 @@
         border-color: var(--border-strong);
     }
 
+    /* Publish toggle button */
+    .action-btn.btn-publish {
+        color: var(--text-secondary);
+    }
+
+    .action-btn.btn-publish:hover {
+        background: rgba(124, 106, 247, 0.08);
+        color: #a5b4fc;
+        border-color: #7c6af7;
+    }
+
+    .action-btn.btn-publish.published {
+        color: #34d399;
+    }
+
+    .action-btn.btn-publish.published:hover {
+        background: rgba(52, 211, 153, 0.08);
+        color: #34d399;
+        border-color: #34d399;
+    }
+
+    /* Published badge in entry header */
+    .published-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 999px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        background: rgba(52, 211, 153, 0.1);
+        color: #34d399;
+        border: 1px solid rgba(52, 211, 153, 0.3);
+        font-family: var(--font-mono);
+    }
+
+    .published-badge .badge-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: currentColor;
+        flex-shrink: 0;
+    }
+
+    /* Public URL bar */
+    .public-url-bar {
+        display: none;
+        margin-top: 0.75rem;
+        padding: 0.625rem 0.875rem;
+        background: rgba(52, 211, 153, 0.06);
+        border: 1px solid rgba(52, 211, 153, 0.2);
+        border-radius: 6px;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .public-url-bar.visible {
+        display: flex;
+    }
+
+    .public-url-label {
+        font-size: 0.75rem;
+        color: #34d399;
+        font-weight: 600;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .public-url-link {
+        flex: 1;
+        font-size: 0.8rem;
+        color: #a5b4fc;
+        text-decoration: none;
+        font-family: var(--font-mono);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 0;
+    }
+
+    .public-url-link:hover {
+        text-decoration: underline;
+    }
+
+    .btn-copy-url {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.25rem 0.625rem;
+        background: transparent;
+        border: 1px solid rgba(52, 211, 153, 0.3);
+        border-radius: 4px;
+        color: #34d399;
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background 0.15s;
+        flex-shrink: 0;
+    }
+
+    .btn-copy-url:hover {
+        background: rgba(52, 211, 153, 0.1);
+    }
+
+    .btn-copy-url svg {
+        width: 12px;
+        height: 12px;
+    }
+
     .action-btn svg {
         width: 16px;
         height: 16px;
@@ -598,6 +711,12 @@
                         </div>
                         {% endif %}
                         <span class="entry-date">{{ entry.created_at[:10] }}</span>
+                        {% if entry.published %}
+                        <span class="published-badge">
+                            <span class="badge-dot"></span>
+                            Published
+                        </span>
+                        {% endif %}
                     </div>
                 </header>
 
@@ -679,6 +798,19 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
                         <span>Delete</span>
                     </button>
+                    <button type="button"
+                            class="action-btn btn-publish {% if entry.published %}published{% endif %}"
+                            id="publishBtn"
+                            onclick="togglePublish()"
+                            title="{% if entry.published %}Unpublish note{% else %}Publish note publicly{% endif %}">
+                        {% if entry.published %}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <span id="publishBtnLabel">Unpublish</span>
+                        {% else %}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+                        <span id="publishBtnLabel">Publish</span>
+                        {% endif %}
+                    </button>
                 </div>
                 {% if entry.chord %}
                 <a href="{{ entry.chord.url }}" target="_blank" class="action-btn btn-view" title="View linked chord repository">
@@ -687,6 +819,23 @@
                 </a>
                 {% endif %}
             </div>
+
+            <!-- Public URL bar (shown after publishing) -->
+            <div class="public-url-bar {% if entry.published and entry.slug %}visible{% endif %}" id="publicUrlBar">
+                <span class="public-url-label">Public URL</span>
+                <a class="public-url-link" id="publicUrlLink"
+                   href="{% if entry.published and entry.slug %}https://legate.studio/pub/{{ user.username }}/{{ entry.slug }}{% else %}#{% endif %}"
+                   target="_blank" rel="noopener"
+                   >{% if entry.published and entry.slug %}https://legate.studio/pub/{{ user.username }}/{{ entry.slug }}{% endif %}</a>
+                <button class="btn-copy-url" onclick="copyPublicUrl()" title="Copy public URL">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>
+                    </svg>
+                    Copy
+                </button>
+            </div>
+
             <div id="deleteConfirm" style="display: none; margin-top: 0.5rem;">
                 <button type="button" class="action-btn confirming" id="confirmDeleteBtn" onclick="confirmDelete()">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
@@ -1078,6 +1227,111 @@
             'done': 'Done'
         };
         return labels[status] || status;
+    }
+
+    // ===== Publish toggle =====
+    let isPublished = {{ 'true' if entry.published else 'false' }};
+
+    async function togglePublish() {
+        const btn = document.getElementById('publishBtn');
+        const label = document.getElementById('publishBtnLabel');
+        const originalLabel = label.textContent;
+
+        btn.disabled = true;
+        label.textContent = isPublished ? 'Unpublishing…' : 'Publishing…';
+
+        try {
+            const response = await fetch(`/library/api/entry/${entryId}/publish`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            const data = await response.json();
+
+            if (response.ok && (data.status === 'published' || data.status === 'unpublished')) {
+                isPublished = (data.status === 'published');
+                updatePublishUI(data);
+            } else {
+                showError(data.error || 'Failed to update publish state');
+                label.textContent = originalLabel;
+            }
+        } catch (error) {
+            showError(error.message);
+            label.textContent = originalLabel;
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    function updatePublishUI(data) {
+        const btn = document.getElementById('publishBtn');
+        const label = document.getElementById('publishBtnLabel');
+        const urlBar = document.getElementById('publicUrlBar');
+        const urlLink = document.getElementById('publicUrlLink');
+
+        // Update button appearance
+        if (isPublished) {
+            btn.classList.add('published');
+            label.textContent = 'Unpublish';
+            btn.title = 'Unpublish note';
+
+            // Show URL bar
+            const publicUrl = data.public_url || '';
+            urlLink.href = publicUrl;
+            urlLink.textContent = publicUrl;
+            urlBar.classList.add('visible');
+
+            // Show/update published badge in header
+            let badge = document.querySelector('.published-badge');
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'published-badge';
+                badge.innerHTML = '<span class="badge-dot"></span> Published';
+                const metaDiv = document.querySelector('.entry-meta');
+                if (metaDiv) metaDiv.appendChild(badge);
+            }
+
+            showSuccess('Note published! Public URL is ready.');
+        } else {
+            btn.classList.remove('published');
+            label.textContent = 'Publish';
+            btn.title = 'Publish note publicly';
+
+            // Hide URL bar
+            urlBar.classList.remove('visible');
+            if (urlLink) {
+                urlLink.href = '#';
+                urlLink.textContent = '';
+            }
+
+            // Remove published badge
+            const badge = document.querySelector('.published-badge');
+            if (badge) badge.remove();
+
+            showSuccess('Note unpublished.');
+        }
+    }
+
+    function copyPublicUrl() {
+        const urlLink = document.getElementById('publicUrlLink');
+        if (!urlLink || !urlLink.textContent) return;
+
+        navigator.clipboard.writeText(urlLink.textContent).then(() => {
+            const btn = event.target.closest('.btn-copy-url');
+            if (btn) {
+                const original = btn.innerHTML;
+                btn.innerHTML = '✓ Copied';
+                setTimeout(() => { btn.innerHTML = original; }, 1500);
+            }
+        }).catch(() => {
+            // Fallback for browsers without clipboard API
+            const range = document.createRange();
+            range.selectNode(urlLink);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            document.execCommand('copy');
+            window.getSelection().removeAllRanges();
+        });
     }
 </script>
 {% endblock %}
