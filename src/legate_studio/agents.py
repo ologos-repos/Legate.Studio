@@ -16,7 +16,7 @@ from datetime import datetime
 import requests
 from flask import Blueprint, current_app, g, jsonify, render_template, request, session
 
-from .core import beta_gate, copilot_required, library_required, login_required, paid_required
+from .core import beta_gate, library_required, login_required, paid_required
 
 logger = logging.getLogger(__name__)
 

@@ -10,7 +10,7 @@ import logging
 import requests
 from flask import Blueprint, current_app, jsonify, render_template
 
-from .core import beta_gate, copilot_required, library_required, login_required
+from .core import beta_gate, library_required, login_required
 
 logger = logging.getLogger(__name__)
 

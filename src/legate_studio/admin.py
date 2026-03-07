@@ -744,7 +744,8 @@ def api_set_user_feature_access(feature_name: str, user_id: str):
         db.execute(
             """INSERT INTO user_feature_access (user_id, feature_name, enabled, granted_by)
                VALUES (?, ?, 1, ?)
-               ON CONFLICT(user_id, feature_name) DO UPDATE SET enabled=1, granted_by=?, granted_at=CURRENT_TIMESTAMP""",
+               ON CONFLICT(user_id, feature_name)
+               DO UPDATE SET enabled=1, granted_by=?, granted_at=CURRENT_TIMESTAMP""",
             (user_id, feature_name, granted_by, granted_by),
         )
         logger.info(f"Admin '{granted_by}' granted '{feature_name}' access to {user['github_login']}")
@@ -752,7 +753,8 @@ def api_set_user_feature_access(feature_name: str, user_id: str):
         db.execute(
             """INSERT INTO user_feature_access (user_id, feature_name, enabled, granted_by)
                VALUES (?, ?, 0, ?)
-               ON CONFLICT(user_id, feature_name) DO UPDATE SET enabled=0, granted_by=?, granted_at=CURRENT_TIMESTAMP""",
+               ON CONFLICT(user_id, feature_name)
+               DO UPDATE SET enabled=0, granted_by=?, granted_at=CURRENT_TIMESTAMP""",
             (user_id, feature_name, granted_by, granted_by),
         )
         logger.info(f"Admin '{granted_by}' revoked '{feature_name}' access from {user['github_login']}")
