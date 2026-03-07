@@ -223,6 +223,201 @@
     </details>
     {% endif %}
 
+    <!-- Public Profile -->
+    {% if is_configured %}
+    <div class="setup-section" id="profile-settings-section">
+        <h2>Public Profile</h2>
+        <p class="help-text" style="margin-bottom: 1.25rem; color: var(--text-secondary); font-size: 0.875rem;">
+            Customize how you appear on your public profile at
+            <a href="/pub/{{ session.user.username }}" target="_blank" style="color: var(--accent);">/pub/{{ session.user.username }}</a>.
+        </p>
+
+        <form id="profile-form">
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label for="display_name" style="display:block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.375rem; color: var(--text-secondary);">Display Name</label>
+                <input type="text" id="display_name" name="display_name"
+                       maxlength="50"
+                       placeholder="{{ user.name or user.username }}"
+                       style="width: 100%; padding: 0.5rem 0.75rem; background: var(--bg-tertiary, #21262d); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 0.875rem; outline: none;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label for="bio" style="display:block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.375rem; color: var(--text-secondary);">Bio <span style="color: var(--text-muted); font-weight: 400;">(max 500 chars)</span></label>
+                <textarea id="bio" name="bio" rows="3" maxlength="500"
+                          placeholder="A short bio visible on your public profile…"
+                          style="width: 100%; padding: 0.5rem 0.75rem; background: var(--bg-tertiary, #21262d); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 0.875rem; resize: vertical; outline: none; font-family: inherit; line-height: 1.5;"></textarea>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label style="display:block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.375rem; color: var(--text-secondary);">Accent Color</label>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <input type="color" id="accent_color" name="accent_color" value="#a855f7"
+                           style="width: 40px; height: 36px; padding: 2px; background: var(--bg-tertiary, #21262d); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer;">
+                    <input type="text" id="accent_color_text" maxlength="7" value="#a855f7"
+                           style="width: 90px; padding: 0.5rem 0.75rem; background: var(--bg-tertiary, #21262d); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 0.875rem; font-family: monospace; outline: none;">
+                    <div id="accent-preview" style="flex: 1; height: 36px; border-radius: 6px; border: 1px solid var(--border-color); background: #a855f7; transition: background 0.15s;"></div>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label style="display:block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-secondary);">Layout</label>
+                <div style="display: flex; gap: 1rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.875rem; color: var(--text-secondary);">
+                        <input type="radio" name="layout_pref" value="grid" checked style="accent-color: var(--accent, #a855f7);">
+                        Grid
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.875rem; color: var(--text-secondary);">
+                        <input type="radio" name="layout_pref" value="list" style="accent-color: var(--accent, #a855f7);">
+                        List
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.25rem;">
+                <label style="display:block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-secondary);">Custom Links <span style="color: var(--text-muted); font-weight: 400;">(up to 3)</span></label>
+                <div id="custom-links-container" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <div class="custom-link-row" style="display: flex; gap: 0.5rem; align-items: center;">
+                        <input type="text" name="link_label_0" placeholder="Label" maxlength="30"
+                               style="width: 130px; padding: 0.5rem 0.625rem; background: var(--bg-tertiary, #21262d); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 0.8125rem; outline: none; flex-shrink: 0;">
+                        <input type="url" name="link_url_0" placeholder="https://…"
+                               style="flex: 1; padding: 0.5rem 0.625rem; background: var(--bg-tertiary, #21262d); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 0.8125rem; outline: none;">
+                    </div>
+                    <div class="custom-link-row" style="display: flex; gap: 0.5rem; align-items: center;">
+                        <input type="text" name="link_label_1" placeholder="Label" maxlength="30"
+                               style="width: 130px; padding: 0.5rem 0.625rem; background: var(--bg-tertiary, #21262d); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 0.8125rem; outline: none; flex-shrink: 0;">
+                        <input type="url" name="link_url_1" placeholder="https://…"
+                               style="flex: 1; padding: 0.5rem 0.625rem; background: var(--bg-tertiary, #21262d); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 0.8125rem; outline: none;">
+                    </div>
+                    <div class="custom-link-row" style="display: flex; gap: 0.5rem; align-items: center;">
+                        <input type="text" name="link_label_2" placeholder="Label" maxlength="30"
+                               style="width: 130px; padding: 0.5rem 0.625rem; background: var(--bg-tertiary, #21262d); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 0.8125rem; outline: none; flex-shrink: 0;">
+                        <input type="url" name="link_url_2" placeholder="https://…"
+                               style="flex: 1; padding: 0.5rem 0.625rem; background: var(--bg-tertiary, #21262d); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 0.8125rem; outline: none;">
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-sm" id="profile-save-btn">Save Profile</button>
+        </form>
+
+        <!-- Toast notification -->
+        <div id="profile-toast" style="display:none; margin-top: 0.875rem; padding: 0.625rem 1rem; border-radius: 6px; font-size: 0.8125rem; font-weight: 500;"></div>
+    </div>
+
+    <script>
+    (function() {
+        // Live accent color preview
+        var colorPicker = document.getElementById('accent_color');
+        var colorText = document.getElementById('accent_color_text');
+        var preview = document.getElementById('accent-preview');
+
+        function syncColor(hex) {
+            colorPicker.value = hex;
+            colorText.value = hex;
+            preview.style.background = hex;
+        }
+
+        colorPicker.addEventListener('input', function() {
+            syncColor(this.value);
+        });
+
+        colorText.addEventListener('input', function() {
+            var val = this.value.trim();
+            if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+                syncColor(val);
+            }
+        });
+
+        // Load existing profile
+        fetch('/settings/profile')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.display_name) document.getElementById('display_name').value = data.display_name;
+                if (data.bio) document.getElementById('bio').value = data.bio;
+                if (data.accent_color) syncColor(data.accent_color);
+                if (data.layout_pref) {
+                    var radios = document.querySelectorAll('input[name="layout_pref"]');
+                    radios.forEach(function(r) { r.checked = (r.value === data.layout_pref); });
+                }
+                if (data.custom_links && Array.isArray(data.custom_links)) {
+                    data.custom_links.forEach(function(link, i) {
+                        if (i < 3) {
+                            var labelEl = document.querySelector('input[name="link_label_' + i + '"]');
+                            var urlEl = document.querySelector('input[name="link_url_' + i + '"]');
+                            if (labelEl) labelEl.value = link.label || '';
+                            if (urlEl) urlEl.value = link.url || '';
+                        }
+                    });
+                }
+            })
+            .catch(function() {});
+
+        // Form submission
+        document.getElementById('profile-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var btn = document.getElementById('profile-save-btn');
+            btn.disabled = true;
+            btn.textContent = 'Saving…';
+
+            // Build custom_links array
+            var links = [];
+            for (var i = 0; i < 3; i++) {
+                var label = (document.querySelector('input[name="link_label_' + i + '"]').value || '').trim();
+                var url = (document.querySelector('input[name="link_url_' + i + '"]').value || '').trim();
+                if (label && url) links.push({ label: label, url: url });
+            }
+
+            var layoutPref = document.querySelector('input[name="layout_pref"]:checked');
+
+            var payload = {
+                display_name: document.getElementById('display_name').value.trim(),
+                bio: document.getElementById('bio').value.trim(),
+                accent_color: document.getElementById('accent_color').value,
+                layout_pref: layoutPref ? layoutPref.value : 'grid',
+                custom_links: links
+            };
+
+            fetch('/settings/profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+            .then(function(result) {
+                var toast = document.getElementById('profile-toast');
+                if (result.ok) {
+                    toast.textContent = '✓ Profile saved successfully.';
+                    toast.style.display = 'block';
+                    toast.style.background = 'rgba(34, 197, 94, 0.12)';
+                    toast.style.border = '1px solid rgba(34, 197, 94, 0.3)';
+                    toast.style.color = '#4ade80';
+                } else {
+                    toast.textContent = '✗ ' + (result.data.error || 'Failed to save profile.');
+                    toast.style.display = 'block';
+                    toast.style.background = 'rgba(248, 113, 113, 0.12)';
+                    toast.style.border = '1px solid rgba(248, 113, 113, 0.3)';
+                    toast.style.color = '#f87171';
+                }
+                setTimeout(function() { toast.style.display = 'none'; }, 4000);
+            })
+            .catch(function() {
+                var toast = document.getElementById('profile-toast');
+                toast.textContent = '✗ Network error — please try again.';
+                toast.style.display = 'block';
+                toast.style.background = 'rgba(248, 113, 113, 0.12)';
+                toast.style.border = '1px solid rgba(248, 113, 113, 0.3)';
+                toast.style.color = '#f87171';
+                setTimeout(function() { toast.style.display = 'none'; }, 4000);
+            })
+            .finally(function() {
+                btn.disabled = false;
+                btn.textContent = 'Save Profile';
+            });
+        });
+    })();
+    </script>
+    {% endif %}
+
     <!-- Navigation -->
     <div class="setup-section setup-actions">
         {% if is_configured %}
