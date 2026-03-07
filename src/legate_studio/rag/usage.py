@@ -13,11 +13,11 @@ Credit model (10% platform margin, 90% → token credits):
   ┌──────────────────┬──────────┬──────────────────┬──────────────────┐
   │ Tier             │ Price/mo │ Token credits/mo │ Platform margin  │
   ├──────────────────┼──────────┼──────────────────┼──────────────────┤
-  │ managed_lite     │ $5.00    │ $4.50            │ $0.50            │
+  │ managed_lite     │ $2.99    │ $2.69            │ $0.30            │
   │ managed_standard │ $10.00   │ $9.00            │ $1.00            │
   │ managed_plus     │ $20.00   │ $18.00           │ $2.00            │
   └──────────────────┴──────────┴──────────────────┴──────────────────┘
-  - Top-ups: $5 purchase → +$4.50 in token credits (same 10% margin)
+  - Top-ups: $2.99 purchase → +$2.69 in token credits (same 10% margin)
   - BYOK: unlimited — users pay their provider directly, no cap
   - Billing period: calendar month (YYYY-MM)
 
@@ -31,19 +31,19 @@ logger = logging.getLogger(__name__)
 
 # Per-tier base monthly token credit caps (microdollars, 90% of subscription price)
 TIER_CAP_MICRODOLLARS: dict[str, int] = {
-    "managed_lite":     4_500_000,   # $4.50 / month  (from $5 subscription)
+    "managed_lite":     2_690_000,   # $2.69 / month  (from $2.99 subscription)
     "managed_standard": 9_000_000,   # $9.00 / month  (from $10 subscription)
     "managed_plus":     18_000_000,  # $18.00 / month (from $20 subscription)
     # Legacy alias — beta users were on the original single "managed" tier
-    "managed":          4_500_000,   # treat same as managed_lite
+    "managed":          2_690_000,   # treat same as managed_lite
 }
 
 # Convenience: the set of tier strings that are managed (platform-key, credit-capped)
 MANAGED_TIERS: frozenset[str] = frozenset(TIER_CAP_MICRODOLLARS.keys())
 
-# Each $5 top-up purchase adds this many token microdollars (90% of $5)
-TOPUP_CREDIT_MICRODOLLARS = 4_500_000
-TOPUP_PRICE_CENTS = 500  # $5.00
+# Each $2.99 top-up purchase adds this many token microdollars (90% of $2.99)
+TOPUP_CREDIT_MICRODOLLARS = 2_690_000
+TOPUP_PRICE_CENTS = 299  # $2.99
 
 # Kept for backward compat — resolves to managed_lite cap
 BASE_CAP_MICRODOLLARS = TIER_CAP_MICRODOLLARS["managed_lite"]
@@ -131,8 +131,8 @@ def _ensure_topup_table(conn) -> None:
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id TEXT NOT NULL,
             period TEXT NOT NULL,
-            topup_microdollars INTEGER NOT NULL DEFAULT 4500000,
-            purchase_amount_cents INTEGER NOT NULL DEFAULT 500,
+            topup_microdollars INTEGER NOT NULL DEFAULT 2690000,
+            purchase_amount_cents INTEGER NOT NULL DEFAULT 299,
             stripe_payment_intent_id TEXT,
             status TEXT NOT NULL DEFAULT 'completed',
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -323,7 +323,7 @@ def record_credit_topup(
     user_id: str,
     stripe_payment_intent_id: str | None = None,
     topup_microdollars: int = TOPUP_CREDIT_MICRODOLLARS,
-    purchase_amount_cents: int = 500,
+    purchase_amount_cents: int = 299,
 ) -> bool:
     """Record a credit top-up purchase for a user.
 
@@ -333,8 +333,8 @@ def record_credit_topup(
     Args:
         user_id: User's ID
         stripe_payment_intent_id: Stripe PaymentIntent ID (for audit trail)
-        topup_microdollars: Token credits added (default: 4_500_000 = $4.50)
-        purchase_amount_cents: Amount paid in cents (default: 500 = $5.00)
+        topup_microdollars: Token credits added (default: 2_690_000 = $2.69)
+        purchase_amount_cents: Amount paid in cents (default: 299 = $2.99)
 
     Returns:
         True if recorded successfully, False on error

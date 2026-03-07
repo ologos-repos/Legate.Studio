@@ -3,7 +3,7 @@ Stripe Billing Integration for Legato.Pit
 
 Handles subscriptions, checkout, and webhooks for:
 - BYOK tier ($0.99/month) - Bring your own API keys
-- Managed tier ($5/month) - Platform API keys included
+- Managed tier ($2.99/month) - Platform API keys included
 """
 
 import logging
@@ -39,8 +39,8 @@ STRIPE_PRODUCTS = {
     },
     "managed": {
         "name": "Legate Studio Managed",
-        "description": "AI keys included - full features + AI chat with $4.50/mo token credits",
-        "price_cents": 500,
+        "description": "AI keys included - full features + AI chat with $2.69/mo token credits",
+        "price_cents": 299,
         "interval": "month",
         "tier": "managed",
     },

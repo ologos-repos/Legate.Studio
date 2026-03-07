@@ -359,7 +359,7 @@
         <div class="plan-card recommended {% if tier == 'managed' and not is_beta %}current{% endif %}">
             <div class="plan-name">Managed</div>
             <div class="plan-price">
-                $5
+                $2<span class="cents">.99</span>
                 <span class="period">/ month</span>
             </div>
             <p class="plan-description">We handle the API keys - just use Legate Studio without any setup</p>
@@ -413,7 +413,7 @@
             <form action="{{ url_for('billing.switch') }}" method="POST">
                 <input type="hidden" name="tier" value="managed">
                 <button type="submit" class="plan-button primary" style="width: auto; padding: 0.5rem 1.5rem;">
-                    Upgrade to Managed ($5/mo)
+                    Upgrade to Managed ($2.99/mo)
                 </button>
             </form>
             {% endif %}

@@ -668,7 +668,7 @@ def get_effective_tier(user_id: str) -> str:
     Supported tier strings:
       'trial'            — free/unsubscribed
       'byok'             — BYOK ($0.99/mo), unlimited, user provides own keys
-      'managed_lite'     — Managed $5/mo, $4.50 token credits
+      'managed_lite'     — Managed $2.99/mo, $2.69 token credits
       'managed_standard' — Managed $10/mo, $9.00 token credits
       'managed_plus'     — Managed $20/mo, $18.00 token credits
 

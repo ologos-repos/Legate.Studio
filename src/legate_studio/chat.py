@@ -5,7 +5,7 @@ Provides web UI and API for chatting with the knowledge base.
 Uses ChatSessionManager for in-memory buffering with periodic flush.
 
 Subscription awareness:
-  - managed_lite ($5/mo):     platform keys, $4.50/mo token credits, cap enforced
+  - managed_lite ($2.99/mo):   platform keys, $2.69/mo token credits, cap enforced
   - managed_standard ($10/mo): platform keys, $9.00/mo token credits, cap enforced
   - managed_plus ($20/mo):    platform keys, $18.00/mo token credits, cap enforced
   - byok ($0.99/mo):          user's own keys, no cap (they pay provider directly)
@@ -459,13 +459,13 @@ def buy_credits():
     For now, it returns the information needed to show the purchase UI and
     records a stub top-up for testing (only in non-production environments).
 
-    Request body: {} (empty — fixed $5 top-up)
+    Request body: {} (empty — fixed $2.99 top-up)
 
     Response:
     {
-        "topup_price_dollars": 5.0,
-        "topup_credits_dollars": 4.5,
-        "topup_credits_microdollars": 4500000,
+        "topup_price_dollars": 2.99,
+        "topup_credits_dollars": 2.69,
+        "topup_credits_microdollars": 2690000,
         "stub": true,  # Present in non-production environments
         "message": "Stripe integration coming soon. Contact support to purchase credits."
     }
@@ -489,9 +489,9 @@ def buy_credits():
     # On payment success, call record_credit_topup() from a Stripe webhook handler.
 
     return jsonify({
-        "topup_price_dollars": 5.0,
-        "topup_credits_dollars": 4.5,
-        "topup_credits_microdollars": 4_500_000,
+        "topup_price_dollars": 2.99,
+        "topup_credits_dollars": 2.69,
+        "topup_credits_microdollars": 2_690_000,
         "stub": True,
         "message": (
             "Credit top-ups are coming soon. "

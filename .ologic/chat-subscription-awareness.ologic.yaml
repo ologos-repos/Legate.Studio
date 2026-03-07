@@ -6,7 +6,7 @@
 #   REQ-LCSA-002: Token usage tracking (usage_events + usage_meters tables)
 #   REQ-LCSA-003: Credit cap enforcement — 429 when monthly cap exceeded
 #   REQ-LCSA-004: Chat UI credit usage bar (progress + cap-reached banner)
-#   REQ-LCSA-005: Credit top-up purchasing — $5 increments ($4.50 credits + $0.50 margin)
+#   REQ-LCSA-005: Credit top-up purchasing — $2.99 increments ($2.69 credits + $0.30 margin)
 #
 # Coverage: 100% — all 5 requirements traced to at least one implementing node.
 
@@ -225,10 +225,10 @@ logic:
                   type: input
                   title: Buy Credits Button (chat.html)
                   description: >
-                    "Buy Credits ($5)" button in chat.html, shown when cap is
+                    "Buy Credits ($2.99)" button in chat.html, shown when cap is
                     reached or from the usage bar. Triggers a POST to
                     /chat/api/buy-credits with provider=stripe.
-                    $5 purchase = $4.50 token credits + $0.50 platform margin.
+                    $2.99 purchase = $2.69 token credits + $0.30 platform margin.
                   requirements:
                     - REQ-LCSA-005
                   outputs: [buy-credits-api]
@@ -238,9 +238,9 @@ logic:
                   title: POST /chat/api/buy-credits
                   description: >
                     Flask endpoint in chat.py. Validates the user is Managed tier.
-                    Creates a Stripe PaymentIntent for $5 (500 cents).
+                    Creates a Stripe PaymentIntent for $2.99 (299 cents).
                     On success, calls record_credit_topup(user_id, stripe_pi_id,
-                    topup_microdollars=4_500_000, purchase_amount_cents=500).
+                    topup_microdollars=2_690_000, purchase_amount_cents=299).
                     Returns updated usage summary with new effective cap.
                   requirements:
                     - REQ-LCSA-005
@@ -251,8 +251,8 @@ logic:
                   title: Top-Up Accounting (record_credit_topup)
                   description: >
                     record_credit_topup() in usage.py. Inserts a row into
-                    credit_topups with topup_microdollars=4_500_000 ($4.50),
-                    purchase_amount_cents=500 ($5.00), and the Stripe PI ID.
+                    credit_topups with topup_microdollars=2_690_000 ($2.69),
+                    purchase_amount_cents=299 ($2.99), and the Stripe PI ID.
                     check_credit_cap() reads this table to compute effective_cap
                     = base_cap + SUM(topup_microdollars) for the period.
                   requirements:
@@ -264,7 +264,7 @@ logic:
                   title: Stripe Payment Gateway
                   description: >
                     External Stripe API. Receives PaymentIntent creation request
-                    ($5 / 500 cents, currency=usd). Returns payment_intent_id
+                    ($2.99 / 299 cents, currency=usd). Returns payment_intent_id
                     used as the audit trail in credit_topups table.
                   requirements:
                     - REQ-LCSA-005
