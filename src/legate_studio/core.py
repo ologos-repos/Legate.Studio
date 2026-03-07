@@ -647,10 +647,9 @@ def create_app():
             )
         ]
 
-        # Include published notes from all user DBs
+        # Include published notes and profile pages from all user DBs
         try:
-            # Find all user DB files (legato_<user_id>.db pattern)
-            db_dir = get_db_dir()
+            import sqlite3
             shared_db = init_db()  # shared db has users table with github_login
             users = shared_db.execute("SELECT user_id, github_login FROM users").fetchall()
             for user_row in users:
@@ -659,7 +658,6 @@ def create_app():
                 if not github_login:
                     continue
                 try:
-                    import sqlite3
                     user_db_path = get_user_db_path(user_id)
                     if not user_db_path.exists():
                         continue
@@ -669,6 +667,17 @@ def create_app():
                         "SELECT slug, updated_at FROM knowledge_entries WHERE published = 1 AND slug IS NOT NULL"
                     ).fetchall()
                     uconn.close()
+                    if not notes:
+                        continue
+                    # Profile page — priority 0.7 (higher than individual notes)
+                    profile_lastmod = max((n["updated_at"] or today)[:10] for n in notes)
+                    urls.append((
+                        f"https://legate.studio/pub/{github_login}",
+                        profile_lastmod,
+                        "weekly",
+                        "0.7",
+                    ))
+                    # Individual note pages — priority 0.6
                     for note in notes:
                         slug = note["slug"]
                         lastmod = (note["updated_at"] or today)[:10]
@@ -696,6 +705,149 @@ def create_app():
         xml = "\n".join(lines) + "\n"
         return xml, 200, {"Content-Type": "application/xml; charset=utf-8"}
 
+    # ============ Public profile routes (no auth) ============
+
+    @app.route("/pub/<username>")
+    def pub_profile(username: str):
+        """Render a public profile page for a user. No authentication required."""
+        import json
+        import sqlite3
+
+        from .rag.database import get_public_profile, get_user_db_path, init_db
+
+        # Look up user by github_login
+        profile = get_public_profile(username)
+        if not profile:
+            return render_template("error.html", title="Not Found", message="User not found"), 404
+
+        user_id = profile["user_id"]
+        user_db_path = get_user_db_path(user_id)
+
+        if not user_db_path.exists():
+            return render_template("error.html", title="Not Found", message="No published notes"), 404
+
+        # Query per-user DB for all published notes
+        try:
+            uconn = sqlite3.connect(str(user_db_path))
+            uconn.row_factory = sqlite3.Row
+            notes_rows = uconn.execute(
+                """
+                SELECT title, slug, published_at, category, content
+                FROM knowledge_entries
+                WHERE published = 1 AND slug IS NOT NULL
+                ORDER BY published_at DESC
+                """
+            ).fetchall()
+            uconn.close()
+        except Exception as e:
+            logger.error(f"pub_profile: failed to query user DB for {username}: {e}")
+            return render_template("error.html", title="Server Error", message="An error occurred"), 500
+
+        if not notes_rows:
+            return render_template("error.html", title="Not Found", message="No published notes"), 404
+
+        # Build note summaries (first 200 chars of content as preview)
+        notes = []
+        for row in notes_rows:
+            d = dict(row)
+            content = d.get("content") or ""
+            d["preview"] = content[:200].replace("\n", " ").strip()
+            notes.append(d)
+
+        # Parse custom_links JSON
+        custom_links = []
+        try:
+            custom_links = json.loads(profile.get("custom_links") or "[]")
+        except (json.JSONDecodeError, TypeError):
+            custom_links = []
+
+        canonical_url = f"https://legate.studio/pub/{username}"
+
+        return render_template(
+            "profile.html",
+            profile=profile,
+            username=username,
+            notes=notes,
+            custom_links=custom_links,
+            accent_color=profile.get("accent_color", "#a855f7"),
+            layout_pref=profile.get("layout_pref", "grid"),
+            canonical_url=canonical_url,
+            # OG/SEO
+            og_title=f"{profile.get('display_name') or username} — Legate Studio",
+            og_description=profile.get("bio") or f"Published notes by {username} on Legate Studio.",
+            og_image=profile.get("avatar_url") or "https://legate.studio/static/img/og-share.png",
+            og_url=canonical_url,
+        )
+
+    # ============ Profile settings API (auth required) ============
+
+    @app.route("/settings/profile", methods=["GET", "POST"])
+    @login_required
+    def settings_profile():
+        """Get or update the current user's profile settings."""
+        import json
+        import re
+
+        from .rag.database import get_user_profile, update_user_profile
+
+        user = session.get("user", {})
+        user_id = user.get("user_id")
+
+        if request.method == "GET":
+            profile = get_user_profile(user_id)
+            return jsonify(profile)
+
+        # POST — validate and upsert
+        data = request.get_json(silent=True) or {}
+
+        updates = {}
+
+        # display_name: max 50 chars
+        if "display_name" in data:
+            dn = str(data["display_name"]).strip()[:50] if data["display_name"] else None
+            updates["display_name"] = dn
+
+        # bio: max 500 chars
+        if "bio" in data:
+            bio = str(data["bio"]).strip()[:500] if data["bio"] else None
+            updates["bio"] = bio
+
+        # accent_color: must be a valid hex color
+        if "accent_color" in data:
+            color = str(data["accent_color"]).strip()
+            if re.match(r'^#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?$', color):
+                updates["accent_color"] = color
+            else:
+                return jsonify({"error": "Invalid accent_color. Must be a hex color like #a855f7."}), 400
+
+        # layout_pref: grid or list
+        if "layout_pref" in data:
+            lp = str(data["layout_pref"]).strip()
+            if lp in ("grid", "list"):
+                updates["layout_pref"] = lp
+            else:
+                return jsonify({"error": "layout_pref must be 'grid' or 'list'."}), 400
+
+        # custom_links: JSON array, max 3 items, each {label, url}
+        if "custom_links" in data:
+            links = data["custom_links"]
+            if not isinstance(links, list):
+                return jsonify({"error": "custom_links must be a JSON array."}), 400
+            links = links[:3]  # enforce max 3
+            clean = []
+            for item in links:
+                if isinstance(item, dict) and "label" in item and "url" in item:
+                    clean.append({
+                        "label": str(item["label"])[:50],
+                        "url": str(item["url"])[:500],
+                    })
+            updates["custom_links"] = json.dumps(clean)
+
+        if updates:
+            update_user_profile(user_id, **updates)
+
+        return jsonify({"ok": True, "updated": list(updates.keys())})
+
     # ============ Public note routes (no auth) ============
 
     @app.route("/pub/<username>/<slug>")
@@ -707,17 +859,14 @@ def create_app():
         import markdown
         import nh3
 
-        from .rag.database import get_user_db_path, init_db
+        from .rag.database import get_public_profile, get_user_db_path, init_db
 
-        # Look up user by github_login in shared DB
-        shared_db = init_db()
-        user_row = shared_db.execute(
-            "SELECT user_id, github_login FROM users WHERE github_login = ?", (username,)
-        ).fetchone()
-        if not user_row:
+        # Look up user by github_login in shared DB (and get their profile)
+        profile = get_public_profile(username)
+        if not profile:
             return render_template("error.html", title="Not Found", message="User not found"), 404
 
-        user_id = user_row["user_id"]
+        user_id = profile["user_id"]
         user_db_path = get_user_db_path(user_id)
         if not user_db_path.exists():
             return render_template("error.html", title="Not Found", message="Note not found"), 404
@@ -763,6 +912,11 @@ def create_app():
         published_at = note_dict.get("published_at") or note_dict.get("created_at", "")
         updated_at = note_dict.get("updated_at") or published_at
 
+        # Author profile fields (accent_color, display_name for the template)
+        accent_color = profile.get("accent_color") or "#a855f7"
+        author_display_name = profile.get("display_name") or username
+        author_profile_url = f"/pub/{username}"
+
         return render_template(
             "published_note.html",
             note=note_dict,
@@ -775,6 +929,10 @@ def create_app():
             published_at=published_at,
             updated_at=updated_at,
             report_url=f"/pub/{username}/{slug}/report",
+            # Author profile
+            accent_color=accent_color,
+            author_display_name=author_display_name,
+            author_profile_url=author_profile_url,
             # OG / SEO vars
             og_title=note_dict.get("title", "Note"),
             og_description=(note_dict.get("content", "")[:160].replace("\n", " ") if note_dict.get("content") else ""),

@@ -851,6 +851,23 @@ def init_db(db_path: Path | None = None, user_id: str | None = None) -> sqlite3.
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_content_reports_slug ON content_reports(reported_username, slug)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_content_reports_status ON content_reports(status)")
 
+    # User profile customization (accent color, bio, display name, etc.)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS user_profiles (
+            user_id TEXT PRIMARY KEY,
+            display_name TEXT,
+            bio TEXT,
+            accent_color TEXT DEFAULT '#a855f7',
+            banner_url TEXT,
+            layout_pref TEXT DEFAULT 'grid',
+            custom_links TEXT DEFAULT '[]',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(user_id)
+        )
+    """)
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_user_profiles_user ON user_profiles(user_id)")
+
     # Multi-tenant indexes
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_users_github ON users(github_id)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_users_login ON users(github_login)")
@@ -1284,6 +1301,120 @@ def get_user_legato_db():
     g.user_legato_db.execute("PRAGMA wal_checkpoint(RESTART)")
 
     return g.user_legato_db
+
+
+# ============ User Profile Helpers ============
+
+
+def get_user_profile(user_id: str) -> dict:
+    """Get a user's profile from user_profiles, returning defaults if not set.
+
+    Args:
+        user_id: The user's unique ID
+
+    Returns:
+        Dict with profile fields (always returns something, never None)
+    """
+    conn = get_connection(get_db_path("legato.db"))
+    row = conn.execute(
+        "SELECT * FROM user_profiles WHERE user_id = ?", (user_id,)
+    ).fetchone()
+    conn.close()
+
+    if row:
+        return dict(row)
+
+    # Return defaults for users without a profile record
+    return {
+        "user_id": user_id,
+        "display_name": None,
+        "bio": None,
+        "accent_color": "#a855f7",
+        "banner_url": None,
+        "layout_pref": "grid",
+        "custom_links": "[]",
+        "created_at": None,
+        "updated_at": None,
+    }
+
+
+def update_user_profile(user_id: str, **kwargs) -> None:
+    """Upsert a user's profile fields.
+
+    Only updates the fields passed as keyword arguments.
+    Allowed fields: display_name, bio, accent_color, banner_url, layout_pref, custom_links
+
+    Args:
+        user_id: The user's unique ID
+        **kwargs: Profile fields to update
+    """
+    allowed = {"display_name", "bio", "accent_color", "banner_url", "layout_pref", "custom_links"}
+    updates = {k: v for k, v in kwargs.items() if k in allowed}
+    if not updates:
+        return
+
+    conn = get_connection(get_db_path("legato.db"))
+
+    # Check if profile exists
+    existing = conn.execute(
+        "SELECT user_id FROM user_profiles WHERE user_id = ?", (user_id,)
+    ).fetchone()
+
+    if existing:
+        set_clauses = ", ".join(f"{k} = ?" for k in updates)
+        values = list(updates.values()) + [user_id]
+        conn.execute(
+            f"UPDATE user_profiles SET {set_clauses}, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?",
+            values,
+        )
+    else:
+        fields = ["user_id"] + list(updates.keys())
+        placeholders = ", ".join("?" for _ in fields)
+        col_names = ", ".join(fields)
+        values = [user_id] + list(updates.values())
+        conn.execute(
+            f"INSERT INTO user_profiles ({col_names}) VALUES ({placeholders})",
+            values,
+        )
+
+    conn.commit()
+    conn.close()
+
+
+def get_public_profile(github_login: str) -> dict | None:
+    """Get a user's public profile by joining users + user_profiles.
+
+    Args:
+        github_login: The user's GitHub username
+
+    Returns:
+        Dict with merged user + profile fields, or None if user not found
+    """
+    conn = get_connection(get_db_path("legato.db"))
+    row = conn.execute(
+        """
+        SELECT
+            u.user_id,
+            u.github_login,
+            u.name,
+            u.avatar_url,
+            COALESCE(p.display_name, u.name, u.github_login) AS display_name,
+            p.bio,
+            COALESCE(p.accent_color, '#a855f7') AS accent_color,
+            p.banner_url,
+            COALESCE(p.layout_pref, 'grid') AS layout_pref,
+            COALESCE(p.custom_links, '[]') AS custom_links
+        FROM users u
+        LEFT JOIN user_profiles p ON u.user_id = p.user_id
+        WHERE u.github_login = ?
+        """,
+        (github_login,),
+    ).fetchone()
+    conn.close()
+
+    if not row:
+        return None
+    return dict(row)
 
 
 def delete_user_data(user_id: str) -> dict:
