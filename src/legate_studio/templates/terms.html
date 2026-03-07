@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Legate Studio Terms of Service — the rules for using the platform, your rights and ours, payment terms, and what happens if things go wrong.">
+    <meta name="theme-color" content="#0d1117">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Terms of Service | Legate Studio">
+    <meta property="og:description" content="Legate Studio Terms of Service — your rights, our obligations, and the rules for using the platform.">
+    <meta property="og:image" content="https://legate.studio/static/img/og-share.png">
+    <meta property="og:url" content="https://legate.studio/terms">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Legate Studio">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Terms of Service | Legate Studio">
+    <meta name="twitter:description" content="Legate Studio Terms of Service — your rights, our obligations, and the rules for using the platform.">
+    <meta name="twitter:image" content="https://legate.studio/static/img/og-share.png">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://legate.studio/terms">
+
+    <title>Terms of Service | Legate Studio</title>
+
+    {% from "marketing_base.html" import marketing_page_styles, marketing_head_common %}
+    {{ marketing_page_styles() }}
+    {{ marketing_head_common() }}
+
+    <style>
+        .legal-last-updated {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+    </style>
+
+    <!-- BreadcrumbList JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://legate.studio/"},
+        {"@type": "ListItem", "position": 2, "name": "Terms of Service", "item": "https://legate.studio/terms"}
+      ]
+    }
+    </script>
+</head>
+<body>
+
+{% from "marketing_base.html" import marketing_nav, marketing_footer, marketing_scripts %}
+{{ marketing_nav(active_page="terms") }}
+
+<main class="landing-main">
+
+    <!-- ===== Page Hero ===== -->
+    <div class="page-hero">
+        <div class="page-hero-label">Legal</div>
+        <h1>Terms of Service</h1>
+        <p class="page-hero-sub">
+            The rules for using Legate Studio — your rights, our obligations, and what we each agree to.
+        </p>
+    </div>
+
+    <section>
+        <div class="section">
+            <p class="legal-last-updated">Last updated: January 2025</p>
+
+            <div class="prose">
+
+                <h2>1. Agreement to Terms</h2>
+                <p>
+                    By accessing or using Legate Studio ("the Service"), you agree to be bound by these Terms of Service ("Terms"). If you disagree with any part of these terms, you may not use the Service. These Terms apply to all visitors, users, and subscribers.
+                </p>
+                <p>
+                    The Service is operated by ThinxAI ("we," "us," "our"). By using the Service you confirm that you are at least 13 years old and have the legal capacity to enter into this agreement.
+                </p>
+
+                <h2>2. Your Account</h2>
+                <p>
+                    You access Legate Studio by authenticating through GitHub. You are responsible for your account and all activity that occurs under it. Keep your GitHub account secure — if someone else gains access to your GitHub account, they can access your Legate Studio data.
+                </p>
+                <p>
+                    You must provide accurate information when you set up your profile. You may not impersonate another person or create a misleading public profile. We reserve the right to suspend accounts that violate this.
+                </p>
+
+                <h2>3. Your Content</h2>
+                <p>
+                    <strong>You own your content.</strong> Notes, voice recordings, transcriptions, and any other content you create in Legate Studio are yours. We do not claim ownership over your knowledge base.
+                </p>
+                <p>
+                    By using the Service, you grant us a limited license to store, process, and display your content as necessary to provide the Service — for example, running AI processing on your Motifs, displaying your library to you, and serving your published notes to public visitors.
+                </p>
+                <p>
+                    You are responsible for the content you create. You may not use Legate Studio to store or publish content that:
+                </p>
+                <ul>
+                    <li>Violates any applicable law or regulation</li>
+                    <li>Infringes the intellectual property rights of others</li>
+                    <li>Contains malicious code or is designed to harm others</li>
+                    <li>Constitutes harassment, threats, or hate speech</li>
+                    <li>Is deceptive, fraudulent, or misleading</li>
+                </ul>
+
+                <h2>4. Free Trial and Paid Plans</h2>
+                <p>
+                    <strong>Free Trial:</strong> New accounts receive a 14-day free trial with full access to all features. No credit card is required to start a trial. At the end of the trial, your account transitions to read-only until you subscribe to a paid plan.
+                </p>
+                <p>
+                    <strong>BYOK Plan ($0.99/month):</strong> You provide your own Google Gemini API key. AI usage is billed directly by Google to you. We charge $0.99/month for platform access.
+                </p>
+                <p>
+                    <strong>Managed Plan ($9.99/month):</strong> AI is included. We provide Gemini API access as part of your subscription. Nothing to configure.
+                </p>
+                <p>
+                    Subscriptions are billed monthly through Stripe. Payments are non-refundable except where required by law, or at our discretion for first-month refund requests submitted within 30 days. You may cancel your subscription at any time from your account settings — cancellation takes effect at the end of the current billing period.
+                </p>
+
+                <h2>5. Service Availability</h2>
+                <p>
+                    We aim to keep Legate Studio available and operational, but we do not guarantee 100% uptime. We may take the Service offline for maintenance, updates, or emergency fixes. We will make reasonable efforts to notify users in advance of planned downtime.
+                </p>
+                <p>
+                    We are not responsible for disruptions caused by third-party services we depend on (GitHub, Google, Fly.io, Stripe) or factors outside our control.
+                </p>
+
+                <h2>6. Data and Privacy</h2>
+                <p>
+                    Your use of the Service is also governed by our <a href="/privacy">Privacy Policy</a>, which is incorporated into these Terms. By using the Service, you agree to our data practices as described in the Privacy Policy.
+                </p>
+                <p>
+                    Your knowledge base data can be downloaded from your account settings at any time. If you delete your account, your data is deleted from our systems. We retain billing records as required by law.
+                </p>
+
+                <h2>7. Acceptable Use</h2>
+                <p>You agree not to:</p>
+                <ul>
+                    <li>Attempt to gain unauthorized access to any part of the Service or other users' accounts</li>
+                    <li>Use the Service to send unsolicited communications (spam)</li>
+                    <li>Reverse engineer, decompile, or attempt to extract the source code of the Service</li>
+                    <li>Use automated means to access the Service in a way that damages or burdens our infrastructure</li>
+                    <li>Attempt to circumvent subscription restrictions or use multiple accounts to extend trial access</li>
+                    <li>Use the Service for any illegal purpose</li>
+                </ul>
+
+                <h2>8. API and MCP Integration</h2>
+                <p>
+                    Legate Studio provides an MCP (Model Context Protocol) server that allows third-party AI tools to access your knowledge base. By configuring this integration, you authorize those AI tools to read your library content and create notes on your behalf. You are responsible for which AI tools you connect to the Service and how those tools use your data.
+                </p>
+
+                <h2>9. Intellectual Property</h2>
+                <p>
+                    The Legate Studio application, its design, code, and branding are owned by ThinxAI and protected by intellectual property law. You may not copy, modify, distribute, or create derivative works of the Service without our written permission.
+                </p>
+                <p>
+                    Your content remains yours. We make no claim to ownership over the notes, ideas, or knowledge you store in Legate Studio.
+                </p>
+
+                <h2>10. Disclaimer of Warranties</h2>
+                <p>
+                    The Service is provided "as is" and "as available" without warranties of any kind, express or implied. We do not warrant that the Service will be uninterrupted, error-free, or meet your specific requirements. To the fullest extent permitted by law, we disclaim all warranties including merchantability, fitness for a particular purpose, and non-infringement.
+                </p>
+
+                <h2>11. Limitation of Liability</h2>
+                <p>
+                    To the fullest extent permitted by applicable law, ThinxAI shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Service, including but not limited to loss of data, loss of profits, or business interruption, even if we have been advised of the possibility of such damages.
+                </p>
+                <p>
+                    Our total liability to you for any claim arising from your use of the Service shall not exceed the amount you paid us in the 12 months preceding the claim.
+                </p>
+
+                <h2>12. Termination</h2>
+                <p>
+                    You may terminate your account at any time from account settings. We may suspend or terminate your account if you violate these Terms, if your subscription lapses and you do not respond to renewal requests, or at our discretion with reasonable notice. Upon termination, your data will be deleted in accordance with our Privacy Policy.
+                </p>
+
+                <h2>13. Changes to Terms</h2>
+                <p>
+                    We may update these Terms as the Service evolves. We will update the "last updated" date at the top of this page. For significant changes, we will notify active subscribers via email at least 14 days before the changes take effect. Continued use of the Service after changes take effect constitutes acceptance of the updated Terms.
+                </p>
+
+                <h2>14. Governing Law</h2>
+                <p>
+                    These Terms are governed by the laws of the United States, without regard to conflict of law principles. Any disputes arising from these Terms or your use of the Service shall be resolved through binding arbitration or in the courts of competent jurisdiction.
+                </p>
+
+                <h2>15. Contact</h2>
+                <p>
+                    Questions about these Terms? Contact us at <a href="mailto:hello@legate.studio">hello@legate.studio</a>.
+                </p>
+
+            </div>
+        </div>
+    </section>
+
+</main>
+
+{{ marketing_footer() }}
+{{ marketing_scripts() }}
+
+</body>
+</html>

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Legate Studio features: voice capture, automatic knowledge structuring, interactive knowledge graph, semantic search, MCP integration for AI tools, and public note publishing. Everything a personal knowledge base needs.">
+    <meta name="theme-color" content="#0d1117">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Features | MCP-First PKM, Voice Capture, Knowledge Graph, AI Memory">
+    <meta property="og:description" content="Voice capture, knowledge graph, semantic search, MCP integration for AI workflows. Features built for AI-usable personal knowledge.">
+    <meta property="og:image" content="https://legate.studio/static/img/og-share.png">
+    <meta property="og:url" content="https://legate.studio/features">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Legate Studio">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Features | MCP-First PKM, Voice Capture, Knowledge Graph, AI Memory">
+    <meta name="twitter:description" content="Voice capture, knowledge graph, semantic search, MCP integration for AI workflows. Features built for AI-usable personal knowledge.">
+    <meta name="twitter:image" content="https://legate.studio/static/img/og-share.png">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://legate.studio/features">
+
+    <title>Features | MCP-First PKM, Voice Capture, Knowledge Graph, AI Memory | Legate Studio</title>
+
+    {% from "marketing_base.html" import marketing_page_styles, marketing_head_common %}
+    {{ marketing_page_styles() }}
+    {{ marketing_head_common() }}
+
+    <!-- BreadcrumbList JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://legate.studio/"},
+        {"@type": "ListItem", "position": 2, "name": "Features", "item": "https://legate.studio/features"}
+      ]
+    }
+    </script>
+</head>
+<body>
+
+{% from "marketing_base.html" import marketing_nav, marketing_footer, marketing_scripts %}
+{{ marketing_nav(active_page="features") }}
+
+<main class="landing-main">
+
+    <!-- ===== Page Hero ===== -->
+    <div class="page-hero">
+        <div class="page-hero-label">Features</div>
+        <h1>Features Built for AI-Usable Personal Knowledge</h1>
+        <p class="page-hero-sub">
+            Legate Studio is designed from the ground up to make your personal knowledge accessible to AI tools. Every feature maps to a real workflow: capture, structure, connect, search, and expose to AI via MCP.
+        </p>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ===== Capture ===== -->
+    <section>
+        <div class="section-wide">
+            <div class="section-label">Capture</div>
+            <h2 class="section-title">Get thoughts in before they disappear</h2>
+            <p class="section-subtitle">The fastest path from a thought to your knowledge base — voice or text, from any device.</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Voice Input</span>
+                    <div class="feature-name">Motifs — Voice Notes That Think</div>
+                    <p class="feature-desc">Record a voice memo on your phone or upload an audio file. Legate transcribes it, identifies the category it belongs to, extracts key concepts, and writes a structured note — automatically. No tags to apply, no folders to pick.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Text Input</span>
+                    <div class="feature-name">Paste and Process</div>
+                    <p class="feature-desc">Paste in text from anywhere — meeting notes, article excerpts, raw ideas — and Legate processes it through the same pipeline. Transcription skipped; structuring, categorization, and knowledge extraction still run in full.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">AI Processing</span>
+                    <div class="feature-name">Automatic Structuring</div>
+                    <p class="feature-desc">Every input goes through an AI pipeline: transcription (for audio), category assignment, concept extraction, and relationship mapping. The result is a structured knowledge entry, not a raw dump. Structure happens at capture time — before it's ever needed.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== Structure & Library ===== -->
+    <section>
+        <div class="section-wide">
+            <div class="section-label">Structure</div>
+            <h2 class="section-title">A library that's actually organized</h2>
+            <p class="section-subtitle">Your knowledge lives in a searchable, browsable library — organized by category, browsable by date, and structured in a format AI tools can actually use.</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Library</span>
+                    <div class="feature-name">Categorized Knowledge Base</div>
+                    <p class="feature-desc">Every note belongs to a category — determined by the AI at capture time. Categories are yours to name and define. Browse your library by category, date, or full-text search. Your entire knowledge base in one place.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Timeline</span>
+                    <div class="feature-name">Daily, Monthly, Yearly Views</div>
+                    <p class="feature-desc">Browse your knowledge chronologically. Daily journal view for what you captured today. Monthly and yearly rollups to see how your thinking has evolved. Your knowledge base as a record of your intellectual life.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path d="M9 11l3 3L22 4"/>
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Tasks</span>
+                    <div class="feature-name">Integrated Task Tracking</div>
+                    <p class="feature-desc">Notes can carry task status. Track action items inside your knowledge base — without leaving the context where they appeared. Tasks live next to the knowledge that generated them.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== Knowledge Graph ===== -->
+    <section>
+        <div class="section-wide">
+            <div class="section-label">Graph</div>
+            <h2 class="section-title">See how your ideas connect</h2>
+            <p class="section-subtitle">Every note is a node. Relationships between notes form edges. The result is a force-directed, interactive graph of your entire knowledge base.</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <circle cx="12" cy="12" r="2"/>
+                            <circle cx="4" cy="6" r="2"/><circle cx="20" cy="6" r="2"/>
+                            <circle cx="4" cy="18" r="2"/><circle cx="20" cy="18" r="2"/>
+                            <path d="M6 6h4M14 6h4M6 18h4M14 18h4M12 10V6M12 14v4"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Knowledge Graph</span>
+                    <div class="feature-name">Interactive Force-Directed Graph</div>
+                    <p class="feature-desc">Your knowledge visualized as a living map. Drag nodes, zoom in on clusters, click to open entries. The graph updates as you add new knowledge — patterns and connections emerge that you'd never spot in a list.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <circle cx="18" cy="5" r="3"/>
+                            <circle cx="6" cy="12" r="3"/>
+                            <circle cx="18" cy="19" r="3"/>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Connections</span>
+                    <div class="feature-name">Automatic Relationship Mapping</div>
+                    <p class="feature-desc">When new knowledge arrives, Legate identifies how it connects to what you already know. Relationships are built at capture time — not as a manual curation task. The graph fills itself in.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Exploration</span>
+                    <div class="feature-name">Cluster Discovery</div>
+                    <p class="feature-desc">Related ideas form visible clusters. See which topics dominate your thinking, which ideas are isolated, and which concepts bridge multiple domains. The graph reveals the shape of what you know.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== Search ===== -->
+    <section>
+        <div class="section-wide">
+            <div class="section-label">Search</div>
+            <h2 class="section-title">Find what you know, even when you don't know the words</h2>
+            <p class="section-subtitle">Full-text search across your entire library. Semantic search finds related entries even when exact keywords don't match.</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Full-Text Search</span>
+                    <div class="feature-name">Instant Library Search</div>
+                    <p class="feature-desc">Search across the full text of all your notes — titles, content, tags, categories. Results appear as you type. Your entire knowledge base is instantly queryable.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Semantic Search</span>
+                    <div class="feature-name">Find Meaning, Not Just Keywords</div>
+                    <p class="feature-desc">Semantic search uses embeddings to find entries related by concept, not just by exact match. Ask a question in natural language and get results that are actually relevant — even when you used different words when you wrote them.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <line x1="8" y1="6" x2="21" y2="6"/>
+                            <line x1="8" y1="12" x2="21" y2="12"/>
+                            <line x1="8" y1="18" x2="21" y2="18"/>
+                            <line x1="3" y1="6" x2="3.01" y2="6"/>
+                            <line x1="3" y1="12" x2="3.01" y2="12"/>
+                            <line x1="3" y1="18" x2="3.01" y2="18"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Filter</span>
+                    <div class="feature-name">Category and Date Filters</div>
+                    <p class="feature-desc">Narrow search results by category, date range, or both. Find all the notes from a specific project period, or everything you've captured about a particular topic. Filtering is fast and non-destructive.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== AI Memory via MCP ===== -->
+    <section>
+        <div class="section-wide">
+            <div class="section-label">AI Memory via MCP</div>
+            <h2 class="section-title">Connect your knowledge to any AI workflow</h2>
+            <p class="section-subtitle">Legate exposes your knowledge base via the Model Context Protocol (MCP) — so Claude, Cursor, and other MCP-compatible AI tools can query your memory directly.</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                            <path d="M8 21h8M12 17v4"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">MCP Server</span>
+                    <div class="feature-name">MCP Integration — Your Knowledge in Claude</div>
+                    <p class="feature-desc">Configure Legate as an MCP server in Claude Desktop. Your entire library becomes queryable from inside Claude — search, retrieve notes, create new entries, and browse categories without leaving your AI assistant.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Persistent Memory</span>
+                    <div class="feature-name">Context That Persists Across Sessions</div>
+                    <p class="feature-desc">Unlike chat history that resets, Legate's MCP integration gives AI tools access to a persistent, structured memory layer. Every conversation can start with relevant context — because your knowledge base remembers what the chat window doesn't.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Tool Access</span>
+                    <div class="feature-name">Read and Write via MCP Tools</div>
+                    <p class="feature-desc">MCP tools include: search library, get note by ID, list categories, create note, and more. AI agents can build workflows that read from and write to your knowledge base — Legate becomes the memory substrate of your AI stack.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== Ownership ===== -->
+    <section>
+        <div class="section-wide">
+            <div class="section-label">Ownership</div>
+            <h2 class="section-title">Your data, your rules</h2>
+            <p class="section-subtitle">Your knowledge lives in infrastructure you control. No data training on your notes. No lock-in. No surprises.</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Data Ownership</span>
+                    <div class="feature-name">SQLite Per-User, Hosted on Fly.io Volumes</div>
+                    <p class="feature-desc">Each user gets their own SQLite database on a persistent Fly.io volume. Your data doesn't share infrastructure with other users. Export it, inspect it, migrate it — it's a file you can hold in your hands.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Privacy</span>
+                    <div class="feature-name">No Training on Your Notes</div>
+                    <p class="feature-desc">We don't read your notes, train models on them, or use your content to improve anything other than your own experience. Your knowledge base is private to you. Full stop.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <polyline points="8 17 12 21 16 17"/>
+                            <line x1="12" y1="12" x2="12" y2="21"/>
+                            <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Portability</span>
+                    <div class="feature-name">Export Anytime, No Lock-In</div>
+                    <p class="feature-desc">Your knowledge base is a SQLite file. Download it directly from your account settings. No conversion required, no export wizard. Your notes are markdown text inside a standard database — readable by any SQLite tool.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== Publishing ===== -->
+    <section>
+        <div class="section-wide">
+            <div class="section-label">Publishing</div>
+            <h2 class="section-title">Share what you choose, keep the rest private</h2>
+            <p class="section-subtitle">Publish individual notes as clean public pages. Build a public profile to share your thinking with the world — while the rest of your library stays private.</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="2" y1="12" x2="22" y2="12"/>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Public Notes</span>
+                    <div class="feature-name">One-Click Publishing</div>
+                    <p class="feature-desc">Mark any note as public and it gets a clean, shareable URL at <code>legate.studio/pub/you/note-slug</code>. The page renders your markdown with proper typography and syntax highlighting — no styling work required.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">Public Profile</span>
+                    <div class="feature-name">Personalized Public Profile</div>
+                    <p class="feature-desc">Your published notes live on a profile page at <code>legate.studio/pub/username</code>. Set a display name, bio, and accent color. Your public profile shows only what you've chosen to share — the rest stays private.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path d="M4 11a9 9 0 0 1 9 9"/>
+                            <path d="M4 4a16 16 0 0 1 16 16"/>
+                            <circle cx="5" cy="19" r="1"/>
+                        </svg>
+                    </div>
+                    <span class="feature-tag">RSS Feed</span>
+                    <div class="feature-name">RSS Feed for Your Published Notes</div>
+                    <p class="feature-desc">Every profile gets an RSS feed at <code>/pub/username/feed.xml</code>. Readers can subscribe to your published notes using any RSS reader. A global feed at <code>/feed.xml</code> aggregates published notes from all users.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CTA ===== -->
+    <div class="cta-band">
+        <div class="cta-band-inner">
+            <h2>Start building your AI-usable knowledge base</h2>
+            <p>14-day free trial. No credit card required. Full access from day one.</p>
+            <a href="{{ url_for('auth.login') }}" class="btn-primary">
+                Start Free Trial
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+            </a>
+        </div>
+    </div>
+
+</main>
+
+{{ marketing_footer() }}
+{{ marketing_scripts() }}
+
+</body>
+</html>

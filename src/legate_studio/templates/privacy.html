@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Legate Studio Privacy Policy — how we collect, use, and protect your data. GitHub OAuth, Plausible analytics, Stripe billing, and per-user data storage explained.">
+    <meta name="theme-color" content="#0d1117">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Privacy Policy | Legate Studio">
+    <meta property="og:description" content="How Legate Studio collects, uses, and protects your data. Plain language privacy policy.">
+    <meta property="og:image" content="https://legate.studio/static/img/og-share.png">
+    <meta property="og:url" content="https://legate.studio/privacy">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Legate Studio">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Privacy Policy | Legate Studio">
+    <meta name="twitter:description" content="How Legate Studio collects, uses, and protects your data. Plain language privacy policy.">
+    <meta name="twitter:image" content="https://legate.studio/static/img/og-share.png">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://legate.studio/privacy">
+
+    <title>Privacy Policy | Legate Studio</title>
+
+    {% from "marketing_base.html" import marketing_page_styles, marketing_head_common %}
+    {{ marketing_page_styles() }}
+    {{ marketing_head_common() }}
+
+    <style>
+        .legal-last-updated {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+    </style>
+
+    <!-- BreadcrumbList JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://legate.studio/"},
+        {"@type": "ListItem", "position": 2, "name": "Privacy Policy", "item": "https://legate.studio/privacy"}
+      ]
+    }
+    </script>
+</head>
+<body>
+
+{% from "marketing_base.html" import marketing_nav, marketing_footer, marketing_scripts %}
+{{ marketing_nav(active_page="privacy") }}
+
+<main class="landing-main">
+
+    <!-- ===== Page Hero ===== -->
+    <div class="page-hero">
+        <div class="page-hero-label">Legal</div>
+        <h1>Privacy Policy</h1>
+        <p class="page-hero-sub">
+            How Legate Studio collects, uses, and protects your information. We've written this to be readable, not impenetrable.
+        </p>
+    </div>
+
+    <section>
+        <div class="section">
+            <p class="legal-last-updated">Last updated: January 2025</p>
+
+            <div class="prose">
+
+                <h2>1. Who We Are</h2>
+                <p>
+                    Legate Studio is operated by ThinxAI. When we say "we," "us," or "our" in this policy, we mean ThinxAI and the Legate Studio service at legate.studio. If you have questions, reach us at <a href="mailto:hello@legate.studio">hello@legate.studio</a>.
+                </p>
+
+                <h2>2. What We Collect</h2>
+
+                <h3>2.1 Account Information (from GitHub OAuth)</h3>
+                <p>
+                    When you sign in with GitHub, we receive your GitHub username, display name, and avatar URL from GitHub's API. We use this to create and identify your account. We do not receive your GitHub password, email address (unless it's public on your GitHub profile), or access to any of your repositories.
+                </p>
+
+                <h3>2.2 Your Knowledge Base Content</h3>
+                <p>
+                    Notes, categories, voice recordings (during processing), transcriptions, embeddings, graph data, and any other content you create in Legate Studio. This is stored in your per-user SQLite database on Fly.io infrastructure. Your content is private by default; you choose to publish specific notes.
+                </p>
+
+                <h3>2.3 Profile Information</h3>
+                <p>
+                    Display name, bio, and accent color you set for your public profile. This information is publicly visible if you create a public profile.
+                </p>
+
+                <h3>2.4 Billing Information</h3>
+                <p>
+                    If you subscribe to a paid plan, billing is handled entirely by Stripe. We store a Stripe customer ID and your subscription status. We do not store your credit card number, CVV, or any sensitive payment details — those live only in Stripe's systems, which are PCI-DSS compliant.
+                </p>
+
+                <h3>2.5 Usage Analytics</h3>
+                <p>
+                    We use Plausible Analytics to understand how the product is used. Plausible collects aggregate, non-identifiable data: pageviews, country-level location, referrer, browser type. No cookies are set. No user profiles are built. No data is shared with advertisers. For details, see <a href="https://plausible.io/privacy" target="_blank" rel="noopener">Plausible's privacy policy</a>.
+                </p>
+
+                <h3>2.6 Server Logs</h3>
+                <p>
+                    Our hosting infrastructure (Fly.io) generates standard access logs including IP addresses, request timestamps, and response codes. These logs are used for debugging and security purposes and are retained for a limited period per Fly.io's standard policies.
+                </p>
+
+                <h2>3. How We Use Your Information</h2>
+                <ul>
+                    <li><strong>To operate the service</strong> — storing and retrieving your knowledge base, processing Motifs through AI pipelines, running search and graph features.</li>
+                    <li><strong>To authenticate you</strong> — verifying your identity via GitHub OAuth on each session.</li>
+                    <li><strong>To process payments</strong> — creating and managing your subscription via Stripe.</li>
+                    <li><strong>To display your public profile</strong> — if you've enabled one, showing your published notes and profile information to visitors.</li>
+                    <li><strong>To improve the product</strong> — using aggregate Plausible analytics to understand which features are used and where friction exists.</li>
+                </ul>
+
+                <p>We do <strong>not</strong> use your content to train AI models. We do not sell your data. We do not share your personal information with advertisers.</p>
+
+                <h2>4. AI Processing and Third Parties</h2>
+                <p>
+                    To power transcription, categorization, and semantic search, your content is sent to Google's Gemini API for processing. On the BYOK plan, this happens using your own API key under your own Google agreement. On the Managed plan, it happens under our Google API agreement.
+                </p>
+                <p>
+                    Google processes your content as part of providing the API service. We do not control Google's data handling practices — review <a href="https://ai.google.dev/terms" target="_blank" rel="noopener">Google's AI terms</a> for details. We select Google because they offer data processing agreements and commit to not training on API inputs by default.
+                </p>
+                <p>
+                    <strong>Third parties we share data with:</strong>
+                </p>
+                <ul>
+                    <li><strong>Stripe</strong> — payment processing. They receive your payment information and billing address.</li>
+                    <li><strong>Google (Gemini API)</strong> — AI processing. They receive content from your notes during processing.</li>
+                    <li><strong>GitHub</strong> — authentication. They confirm your identity when you log in.</li>
+                    <li><strong>Fly.io</strong> — hosting infrastructure. Your data is stored on their servers.</li>
+                    <li><strong>Plausible</strong> — analytics. They receive anonymous pageview data.</li>
+                </ul>
+
+                <h2>5. Data Retention</h2>
+                <p>
+                    Your account and knowledge base are retained as long as your account is active. If you delete your account, your per-user database is deleted. We retain billing records as required by law (typically 7 years). Server logs are retained for a limited period per our hosting provider's policies.
+                </p>
+
+                <h2>6. Your Rights</h2>
+                <p>
+                    You have the right to:
+                </p>
+                <ul>
+                    <li><strong>Access your data</strong> — download your knowledge base database directly from account settings.</li>
+                    <li><strong>Delete your data</strong> — delete your account and all associated data from account settings.</li>
+                    <li><strong>Correct your information</strong> — update your profile from account settings.</li>
+                    <li><strong>Data portability</strong> — your knowledge base is a standard SQLite file, downloadable at any time.</li>
+                </ul>
+                <p>
+                    If you are in the European Economic Area (EEA), you have additional rights under GDPR. Contact us at <a href="mailto:hello@legate.studio">hello@legate.studio</a> to exercise any of these rights.
+                </p>
+
+                <h2>7. Cookies</h2>
+                <p>
+                    We use a single session cookie to keep you logged in. This is a functional cookie required for the service to work — it contains a session identifier, not personal information. We do not use advertising cookies, tracking pixels, or third-party cookies of any kind. Plausible Analytics does not use cookies.
+                </p>
+
+                <h2>8. Children's Privacy</h2>
+                <p>
+                    Legate Studio is not directed at children under 13. We do not knowingly collect information from children under 13. If you believe we have inadvertently collected such information, contact us at <a href="mailto:hello@legate.studio">hello@legate.studio</a>.
+                </p>
+
+                <h2>9. Changes to This Policy</h2>
+                <p>
+                    We may update this policy as the product evolves. We will update the "last updated" date at the top of this page when we make changes. For significant changes, we will notify active users via email or in-app notification.
+                </p>
+
+                <h2>10. Contact</h2>
+                <p>
+                    Questions about this privacy policy? Email us at <a href="mailto:hello@legate.studio">hello@legate.studio</a>.
+                </p>
+
+            </div>
+        </div>
+    </section>
+
+</main>
+
+{{ marketing_footer() }}
+{{ marketing_scripts() }}
+
+</body>
+</html>

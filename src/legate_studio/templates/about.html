@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="About Legate Studio by ThinxAI — a personal knowledge base built for the era of AI-assisted work. Our mission, our approach, and why we built this.">
+    <meta name="theme-color" content="#0d1117">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="About | Legate Studio">
+    <meta property="og:description" content="Legate Studio by ThinxAI — personal knowledge infrastructure built for the era of AI-assisted work.">
+    <meta property="og:image" content="https://legate.studio/static/img/og-share.png">
+    <meta property="og:url" content="https://legate.studio/about">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Legate Studio">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="About | Legate Studio">
+    <meta name="twitter:description" content="Legate Studio by ThinxAI — personal knowledge infrastructure built for the era of AI-assisted work.">
+    <meta name="twitter:image" content="https://legate.studio/static/img/og-share.png">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://legate.studio/about">
+
+    <title>About | Legate Studio</title>
+
+    {% from "marketing_base.html" import marketing_page_styles, marketing_head_common %}
+    {{ marketing_page_styles() }}
+    {{ marketing_head_common() }}
+
+    <!-- BreadcrumbList JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://legate.studio/"},
+        {"@type": "ListItem", "position": 2, "name": "About", "item": "https://legate.studio/about"}
+      ]
+    }
+    </script>
+</head>
+<body>
+
+{% from "marketing_base.html" import marketing_nav, marketing_footer, marketing_scripts %}
+{{ marketing_nav(active_page="about") }}
+
+<main class="landing-main">
+
+    <!-- ===== Page Hero ===== -->
+    <div class="page-hero">
+        <div class="page-hero-label">About</div>
+        <h1>About Legate Studio</h1>
+        <p class="page-hero-sub">
+            Legate Studio is a personal knowledge base built for the era of AI-assisted work — made by <strong>ThinxAI</strong>, a small team building infrastructure for how people think alongside AI.
+        </p>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ===== Mission ===== -->
+    <section>
+        <div class="section">
+            <div class="section-label">Our Mission</div>
+            <h2 class="section-title">Personal knowledge infrastructure for the AI era</h2>
+            <div class="prose">
+                <p>
+                    The problem we're solving is simple to state and hard to fix: AI tools are stateless. Every conversation starts from scratch. Your Claude session doesn't remember the context from last week. Your AI assistant doesn't know about the project you've been thinking about for months.
+                </p>
+                <p>
+                    The standard workaround is copy-pasting context into every prompt. That's a patch, not a solution. The real fix is a structured, persistent memory layer that AI tools can query directly — one that's built on your actual thinking, not just chat logs.
+                </p>
+                <p>
+                    That's what Legate Studio is. A personal knowledge base where every note is a node, relationships form automatically, and the whole thing is queryable by any AI tool via MCP (Model Context Protocol). Not a note app with an AI chat widget bolted on — a knowledge base designed from the ground up to be an AI-usable memory substrate.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== Why this category ===== -->
+    <section>
+        <div class="section">
+            <div class="section-label">Why This Category Exists</div>
+            <h2 class="section-title">The gap between note-taking and AI memory</h2>
+            <div class="prose">
+                <p>
+                    Personal knowledge management tools have been around for decades. Roam Research, Obsidian, Notion, Bear — they're all good at storing and organizing notes. The problem is that none of them were designed to be read by AI tools in real-time.
+                </p>
+                <p>
+                    Meanwhile, AI assistants have become genuinely useful for knowledge work — but their usefulness is bounded by what they know about you. A generic AI gives generic answers. An AI with access to your notes, your projects, your thinking patterns gives something closer to a knowledgeable collaborator.
+                </p>
+                <p>
+                    The Model Context Protocol, developed by Anthropic, created a standard for exactly this kind of integration. MCP lets AI tools query external data sources during a conversation — turning a static knowledge base into a live memory layer.
+                </p>
+                <p>
+                    Legate Studio was built to occupy this gap: a personal knowledge base that's organized enough to be useful to AI tools, and structured enough that those tools can reason over it meaningfully. Not a document dump, not a raw text store — a structured graph that AI can navigate.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== What we believe ===== -->
+    <section>
+        <div class="section">
+            <div class="section-label">What We Believe</div>
+            <h2 class="section-title">Principles behind the product</h2>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </div>
+                    <div class="info-card-title">Your data belongs to you</div>
+                    <p class="info-card-desc">Your knowledge base is stored in your own SQLite database on a volume you can download. No platform lock-in, no proprietary formats. Your notes are markdown text in a standard database.</p>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                        </svg>
+                    </div>
+                    <div class="info-card-title">Capture should be frictionless</div>
+                    <p class="info-card-desc">The hardest part of building a knowledge base is getting things into it consistently. Legate minimizes that friction — voice input, text paste, fast processing. Getting things in has to be easier than not getting things in.</p>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <circle cx="12" cy="12" r="2"/>
+                            <circle cx="4" cy="6" r="2"/><circle cx="20" cy="6" r="2"/>
+                            <circle cx="4" cy="18" r="2"/><circle cx="20" cy="18" r="2"/>
+                            <path d="M6 6h4M14 6h4M6 18h4M14 18h4M12 10V6M12 14v4"/>
+                        </svg>
+                    </div>
+                    <div class="info-card-title">Structure should emerge, not be imposed</div>
+                    <p class="info-card-desc">You shouldn't have to organize your notes. The AI pipeline handles categorization, relationship mapping, and graph placement automatically. You capture — the structure builds itself.</p>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                            <path d="M8 21h8M12 17v4"/>
+                        </svg>
+                    </div>
+                    <div class="info-card-title">AI integration should be architectural</div>
+                    <p class="info-card-desc">MCP integration isn't a feature we added to a note app. It's built into the data model. The knowledge base was always designed to be queryable by AI tools — not adapted for it after the fact.</p>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <line x1="12" y1="1" x2="12" y2="23"/>
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
+                    </div>
+                    <div class="info-card-title">Pricing should be honest</div>
+                    <p class="info-card-desc">The BYOK tier exists because we don't want to mark up AI costs. If you bring your own Gemini API key, you pay Google at their rates and us $0.99/month for the platform. No hidden margins, no bundled usage you didn't ask for.</p>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="2" y1="12" x2="22" y2="12"/>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                        </svg>
+                    </div>
+                    <div class="info-card-title">Publishing is a power users want</div>
+                    <p class="info-card-desc">Sharing specific notes while keeping the rest private is a real workflow. Researchers, developers, writers — they want to share some thinking, not all of it. Public profiles and per-note publishing exist because that distinction matters.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== ThinxAI ===== -->
+    <section>
+        <div class="section">
+            <div class="section-label">ThinxAI</div>
+            <h2 class="section-title">The team behind Legate Studio</h2>
+            <div class="prose">
+                <p>
+                    Legate Studio is built by <strong>ThinxAI</strong> — a small team focused on building infrastructure for human-AI collaboration. We build tools that make AI more useful to individual people, specifically by giving AI tools better access to personal context and knowledge.
+                </p>
+                <p>
+                    We're building in public. The product is live, actively developed, and used by real people. We're not a research project or a demo — we're a small company trying to build something worth using.
+                </p>
+                <p>
+                    If you have feedback, questions, or ideas, we want to hear them. <a href="/contact">Reach out directly.</a>
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CTA ===== -->
+    <div class="cta-band">
+        <div class="cta-band-inner">
+            <h2>Try Legate Studio</h2>
+            <p>14-day free trial. No credit card required. See what it's like to have a knowledge base that works with your AI tools.</p>
+            <a href="{{ url_for('auth.login') }}" class="btn-primary">
+                Start Free Trial
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+            </a>
+        </div>
+    </div>
+
+</main>
+
+{{ marketing_footer() }}
+{{ marketing_scripts() }}
+
+</body>
+</html>

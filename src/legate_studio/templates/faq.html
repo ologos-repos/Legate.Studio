@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Frequently asked questions about Legate Studio — what MCP-first means, how it connects to AI workflows, data privacy, voice notes to knowledge, knowledge graphs, and publishing.">
+    <meta name="theme-color" content="#0d1117">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="FAQ | Legate Studio — MCP-First Personal Knowledge Base">
+    <meta property="og:description" content="What does MCP-first mean? How does Legate connect to AI workflows? Is my knowledge private? Answers to the most common questions.">
+    <meta property="og:image" content="https://legate.studio/static/img/og-share.png">
+    <meta property="og:url" content="https://legate.studio/faq">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Legate Studio">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="FAQ | Legate Studio — MCP-First Personal Knowledge Base">
+    <meta name="twitter:description" content="What does MCP-first mean? How does Legate connect to AI workflows? Is my knowledge private? Answers to the most common questions.">
+    <meta name="twitter:image" content="https://legate.studio/static/img/og-share.png">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://legate.studio/faq">
+
+    <title>FAQ | Legate Studio — MCP-First Personal Knowledge Base</title>
+
+    {% from "marketing_base.html" import marketing_page_styles, marketing_head_common %}
+    {{ marketing_page_styles() }}
+    {{ marketing_head_common() }}
+
+    <!-- BreadcrumbList JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://legate.studio/"},
+        {"@type": "ListItem", "position": 2, "name": "FAQ", "item": "https://legate.studio/faq"}
+      ]
+    }
+    </script>
+
+    <!-- FAQPage JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What does MCP-first mean?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "MCP-first means that AI integration isn't an afterthought — it's the architecture. MCP (Model Context Protocol) is an open standard that lets AI tools like Claude query external data sources during a conversation. Legate Studio runs an MCP server, so any MCP-compatible AI can read and write to your knowledge base as a first-class operation. Your notes aren't just stored — they're directly addressable by AI tools."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does Legate Studio connect to AI workflows?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Legate exposes your knowledge base as an MCP server. Configure it in Claude Desktop (or any MCP-compatible client), and your AI assistant gains tools to search your library, retrieve specific notes, create new entries, and browse categories. Your personal knowledge becomes part of the AI's working context — not a separate tab you have to switch to."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is my knowledge private?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Your knowledge lives in a SQLite database on a persistent Fly.io volume — isolated per user, not shared with anyone. We don't read your notes, train models on them, or use your content for any purpose beyond running the app for you. Notes are private by default; you opt in to sharing specific notes publicly."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do voice notes become structured knowledge?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "When you upload a voice note (called a Motif), Legate runs it through an AI pipeline: first transcription (speech to text), then categorization (which category of your library does this belong to?), then concept extraction (what are the key ideas?), and finally relationship mapping (how does this connect to what you already know?). The result is a structured note in your library — not a raw transcript."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Legate Studio use a knowledge graph?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Every note is a node. The relationships between notes form edges. As you add new knowledge, Legate maps how new entries connect to existing ones and updates the graph. You can explore the graph interactively — force-directed layout, click to open notes, zoom in on clusters. The graph view is also available as a dashboard widget showing your most recent notes."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I publish from my knowledge base?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Any note can be published as a public page at legate.studio/pub/username/note-slug. Published notes appear on your public profile at legate.studio/pub/username. You can set a display name, bio, and accent color for your profile. Everything else in your library stays private — you publish selectively, note by note."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What AI models does Legate Studio use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Legate uses Google Gemini models for transcription, categorization, embedding generation, and knowledge extraction. On the BYOK plan, you provide your own Gemini API key and Google bills you directly. On the Managed plan, we provide Gemini access as part of your subscription."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need a GitHub account?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Legate Studio uses GitHub OAuth for authentication. It's the fastest, most secure way to log in without managing a separate password. We request minimal permissions — we only need your public profile information to create your account."
+          }
+        }
+      ]
+    }
+    </script>
+</head>
+<body>
+
+{% from "marketing_base.html" import marketing_nav, marketing_footer, marketing_scripts %}
+{{ marketing_nav(active_page="faq") }}
+
+<main class="landing-main">
+
+    <!-- ===== Page Hero ===== -->
+    <div class="page-hero">
+        <div class="page-hero-label">FAQ</div>
+        <h1>Frequently Asked Questions</h1>
+        <p class="page-hero-sub">
+            Common questions about what Legate Studio is, how it works, and how it fits into AI workflows.
+        </p>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ===== Core Concept Questions ===== -->
+    <section>
+        <div class="section">
+            <div class="section-label">The Core Idea</div>
+            <h2 class="section-title">Understanding MCP-first personal knowledge</h2>
+
+            <div class="faq-list" id="faqMain">
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        What does MCP-first mean?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        <p>MCP-first means that AI integration isn't an afterthought — it's the architecture. MCP (Model Context Protocol) is an open standard that lets AI tools like Claude query external data sources during a conversation.</p>
+                        <p>Legate Studio runs an MCP server, so any MCP-compatible AI assistant can read and write to your knowledge base as a first-class operation. Your notes aren't just stored — they're directly addressable by AI tools.</p>
+                        <p>The difference from a traditional note app with an "AI feature" is fundamental: in Legate, the AI integration is built into the data model and the server architecture, not bolted on as a chat interface over your notes.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        How does Legate Studio connect to AI workflows?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Legate exposes your knowledge base as an MCP server. Configure it in Claude Desktop (or any MCP-compatible client), and your AI assistant gains a set of tools:</p>
+                        <ul>
+                            <li>Search your library by keyword or semantic similarity</li>
+                            <li>Retrieve a specific note by ID or title</li>
+                            <li>List categories in your knowledge base</li>
+                            <li>Create new notes from inside the AI conversation</li>
+                            <li>Browse recent notes</li>
+                        </ul>
+                        <p>Your personal knowledge becomes part of the AI's working context — not a separate tab you have to switch to, not a copy-paste workflow.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        What's the difference between Legate and a standard note-taking app?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Three things separate Legate from standard note apps:</p>
+                        <ol style="margin:0.75rem 0 0 1.5rem">
+                            <li style="margin-bottom:0.5rem"><strong>Capture is structured, not raw.</strong> When you add a note, AI runs immediately: transcription, categorization, concept extraction, relationship mapping. You don't get a pile of unorganized text — you get structured knowledge from day one.</li>
+                            <li style="margin-bottom:0.5rem"><strong>The graph is automatic.</strong> Notes connect to each other without manual linking. The knowledge graph builds itself as you capture — you don't maintain it.</li>
+                            <li style="margin-bottom:0.5rem"><strong>The whole thing is queryable by AI.</strong> MCP integration means your knowledge base is a live memory substrate, not a document archive. AI tools can read from it and write to it during normal use.</li>
+                        </ol>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== How it works ===== -->
+    <section>
+        <div class="section">
+            <div class="section-label">How It Works</div>
+            <h2 class="section-title">Capture, structure, and recall</h2>
+
+            <div class="faq-list" id="faqHowItWorks">
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        How do voice notes become structured knowledge?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        <p>When you upload a voice note (called a Motif), Legate runs it through an AI pipeline in sequence:</p>
+                        <ol style="margin:0.75rem 0 0 1.5rem">
+                            <li style="margin-bottom:0.5rem"><strong>Transcription</strong> — speech is converted to text</li>
+                            <li style="margin-bottom:0.5rem"><strong>Categorization</strong> — which category of your library does this belong to?</li>
+                            <li style="margin-bottom:0.5rem"><strong>Concept extraction</strong> — what are the key ideas, entities, and themes?</li>
+                            <li style="margin-bottom:0.5rem"><strong>Relationship mapping</strong> — how does this connect to what you already know?</li>
+                        </ol>
+                        <p>The result is a structured note in your library — not a raw transcript. The category, connections, and concepts are already there.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Does Legate Studio use a knowledge graph?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes. Every note is a node. The relationships between notes form edges. The graph is built automatically as you capture — no manual linking required.</p>
+                        <p>You can explore the graph interactively: force-directed layout, drag nodes around, click to open notes, zoom into clusters. The graph view reveals the shape of what you know — which topics cluster together, which ideas bridge domains, which notes are isolated.</p>
+                        <p>The graph also powers search: semantic search uses embeddings that reflect the same relationships, so finding related notes works conceptually, not just by keyword match.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        What is a Motif?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        A Motif is Legate's name for a voice note or text capture — the raw input you feed into your knowledge base. You can record directly in the app, upload an audio file from your phone, or paste in text. Whatever format it arrives in, it goes through the same AI processing pipeline and becomes a structured library entry.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== Privacy & Ownership ===== -->
+    <section>
+        <div class="section">
+            <div class="section-label">Privacy &amp; Data</div>
+            <h2 class="section-title">Your knowledge, your control</h2>
+
+            <div class="faq-list" id="faqPrivacy">
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Is my knowledge private?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes. Your knowledge lives in a SQLite database on a persistent Fly.io volume — isolated per user, not shared with anyone else.</p>
+                        <p>We don't read your notes, train models on them, or use your content for any purpose beyond running the app for you. Notes are private by default — you opt in to sharing specific notes publicly, one at a time.</p>
+                        <p>For full details on what we collect and why, see the <a href="/privacy" style="color:var(--text-secondary);text-decoration:underline">Privacy Policy</a> and <a href="/security" style="color:var(--text-secondary);text-decoration:underline">Security page</a>.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Can I export my data?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        Yes. Your knowledge base is a SQLite file — a standard database format readable by dozens of tools. You can download it directly from your account settings. Your notes are stored as markdown text inside the database, so the content is human-readable with any SQLite browser or export script. No proprietary format, no conversion wizard needed.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== Publishing ===== -->
+    <section>
+        <div class="section">
+            <div class="section-label">Publishing</div>
+            <h2 class="section-title">Sharing your knowledge</h2>
+
+            <div class="faq-list" id="faqPublishing">
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Can I publish from my knowledge base?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes. Any note in your library can be published as a public page. Toggle a note to "published" and it gets a clean URL at <code>legate.studio/pub/yourusername/note-slug</code>.</p>
+                        <p>Published notes appear on your public profile at <code>legate.studio/pub/yourusername</code>. Your profile shows your display name, bio, accent color, and the list of notes you've chosen to share. Everything else stays private.</p>
+                        <p>You can unpublish any note at any time — the public URL stops resolving immediately.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Does Legate have RSS feeds?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        Yes. Every public profile gets a per-user RSS feed at <code>/pub/username/feed.xml</code>. There's also a global feed at <code>/feed.xml</code> that aggregates published notes from all users sorted by recency. Both follow the RSS 2.0 standard and work with any feed reader.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CTA ===== -->
+    <div class="cta-band">
+        <div class="cta-band-inner">
+            <h2>Still have questions?</h2>
+            <p>Reach out directly — or just start the free trial and see how it works for yourself.</p>
+            <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+                <a href="{{ url_for('auth.login') }}" class="btn-primary">
+                    Start Free Trial
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+                </a>
+                <a href="/contact" class="btn-ghost">Contact Us</a>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+{{ marketing_footer() }}
+{{ marketing_scripts() }}
+
+<script>
+function toggleFaq(btn) {
+    const item = btn.closest('.faq-item');
+    const answer = item.querySelector('.faq-answer');
+    const isOpen = item.classList.contains('open');
+    const parentList = item.closest('.faq-list');
+    if (parentList) {
+        parentList.querySelectorAll('.faq-item').forEach(i => {
+            i.classList.remove('open');
+            i.querySelector('.faq-answer').classList.remove('open');
+        });
+    }
+    if (!isOpen) {
+        item.classList.add('open');
+        answer.classList.add('open');
+    }
+}
+</script>
+
+</body>
+</html>

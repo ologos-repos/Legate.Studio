@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="How Legate Studio protects your knowledge — per-user SQLite storage on Fly.io volumes, GitHub OAuth authentication, no-tracking analytics via Plausible, and a strict no-training policy.">
+    <meta name="theme-color" content="#0d1117">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Security | Legate Studio">
+    <meta property="og:description" content="How Legate Studio protects your knowledge — storage architecture, authentication, data isolation, and privacy practices.">
+    <meta property="og:image" content="https://legate.studio/static/img/og-share.png">
+    <meta property="og:url" content="https://legate.studio/security">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Legate Studio">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Security | Legate Studio">
+    <meta name="twitter:description" content="How Legate Studio protects your knowledge — storage architecture, authentication, data isolation, and privacy practices.">
+    <meta name="twitter:image" content="https://legate.studio/static/img/og-share.png">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://legate.studio/security">
+
+    <title>Security | Legate Studio</title>
+
+    {% from "marketing_base.html" import marketing_page_styles, marketing_head_common %}
+    {{ marketing_page_styles() }}
+    {{ marketing_head_common() }}
+
+    <!-- BreadcrumbList JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://legate.studio/"},
+        {"@type": "ListItem", "position": 2, "name": "Security", "item": "https://legate.studio/security"}
+      ]
+    }
+    </script>
+</head>
+<body>
+
+{% from "marketing_base.html" import marketing_nav, marketing_footer, marketing_scripts %}
+{{ marketing_nav(active_page="security") }}
+
+<main class="landing-main">
+
+    <!-- ===== Page Hero ===== -->
+    <div class="page-hero">
+        <div class="page-hero-label">Security</div>
+        <h1>How Legate Studio Protects Your Knowledge</h1>
+        <p class="page-hero-sub">
+            A straightforward account of how your data is stored, who can access it, how you authenticate, and what analytics we run. No vague promises — concrete architecture.
+        </p>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ===== Storage Architecture ===== -->
+    <section>
+        <div class="section">
+            <div class="section-label">Storage Architecture</div>
+            <h2 class="section-title">Per-user databases, not shared tables</h2>
+            <div class="prose">
+                <p>
+                    Each Legate Studio user gets their own SQLite database file, stored on a persistent Fly.io volume. Your data does not share a database with other users — there is no shared table that contains rows from multiple accounts.
+                </p>
+                <p>
+                    This is an intentional architectural decision. Shared multi-tenant databases are efficient for the platform but create a class of risk: a query bug, a misconfigured permission, or an injection vulnerability in one account can affect others. Per-user databases eliminate that class of problem entirely.
+                </p>
+                <p>
+                    A small shared database contains user account metadata (GitHub login, subscription status, profile settings). Your actual knowledge — notes, categories, embeddings, graph data — lives only in your per-user database.
+                </p>
+            </div>
+
+            <div class="info-grid" style="margin-top:2rem">
+                <div class="info-card">
+                    <div class="info-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                        </svg>
+                    </div>
+                    <div class="info-card-title">SQLite per user</div>
+                    <p class="info-card-desc">Every account has its own database file. Your notes never share a table with another user's data.</p>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                        </svg>
+                    </div>
+                    <div class="info-card-title">Fly.io persistent volumes</div>
+                    <p class="info-card-desc">Databases are stored on Fly.io's persistent block storage — data survives app restarts and deploys.</p>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <polyline points="8 17 12 21 16 17"/>
+                            <line x1="12" y1="12" x2="12" y2="21"/>
+                            <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/>
+                        </svg>
+                    </div>
+                    <div class="info-card-title">Downloadable</div>
+                    <p class="info-card-desc">You can download your database file directly from account settings. SQLite is a standard format — use any SQLite browser to inspect it.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== Authentication ===== -->
+    <section>
+        <div class="section">
+            <div class="section-label">Authentication</div>
+            <h2 class="section-title">GitHub OAuth — no passwords to breach</h2>
+            <div class="prose">
+                <p>
+                    Legate Studio uses GitHub OAuth for authentication. When you log in, you're redirected to GitHub, authenticate there, and GitHub tells us who you are. We never see your GitHub password — it never touches our servers.
+                </p>
+                <p>
+                    We request the minimum OAuth scopes needed to identify you: your public profile (username, name, avatar). We do not request access to your repositories, emails (unless public), or any other GitHub resources.
+                </p>
+                <p>
+                    Sessions are managed using server-side session cookies with a randomly generated secret. Sessions expire and are invalidated on sign-out.
+                </p>
+            </div>
+
+            <div class="info-grid" style="margin-top:2rem">
+                <div class="info-card">
+                    <div class="info-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+                        </svg>
+                    </div>
+                    <div class="info-card-title">GitHub OAuth only</div>
+                    <p class="info-card-desc">No passwords stored on our servers. Authentication happens at GitHub — we receive an identity confirmation, nothing more.</p>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                    </div>
+                    <div class="info-card-title">Minimal OAuth scopes</div>
+                    <p class="info-card-desc">We request only your public GitHub profile. No repo access, no email access, no write permissions of any kind.</p>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </div>
+                    <div class="info-card-title">Secure session cookies</div>
+                    <p class="info-card-desc">Sessions are server-side with a randomly generated secret key. Cookies are HTTP-only and expire on sign-out.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== Data Handling ===== -->
+    <section>
+        <div class="section">
+            <div class="section-label">Data Handling</div>
+            <h2 class="section-title">What we do and don't do with your notes</h2>
+            <div class="prose">
+                <p>
+                    Your notes are processed through AI models to generate transcriptions, categorizations, and embeddings. That processing requires sending content to an AI API — either Google Gemini via your own key (BYOK) or via our managed account.
+                </p>
+                <p>
+                    <strong>We do not use your notes to train models.</strong> We do not retain copies of your content beyond what's needed to run the app. We do not read your notes for any purpose other than running the AI pipeline on your behalf.
+                </p>
+                <p>
+                    If you use the BYOK plan, your content goes directly from Legate to Google's Gemini API under your API key — under Google's terms of service, not ours. Review <a href="https://ai.google.dev/terms" target="_blank" rel="noopener" style="color:var(--text-secondary);text-decoration:underline">Google's AI terms</a> if you need to understand exactly how they handle API inputs.
+                </p>
+                <p>
+                    If you use the Managed plan, your content goes to Google's Gemini API under our account. We choose Google specifically because they offer data processing agreements and clear data handling policies for API users.
+                </p>
+
+                <h3>What we store</h3>
+                <ul>
+                    <li>Your GitHub profile information (username, name, avatar URL) — for your account</li>
+                    <li>Your subscription status and billing ID — for payments via Stripe</li>
+                    <li>Your notes, categories, embeddings, and graph data — in your per-user database</li>
+                    <li>Your profile settings (display name, bio, accent color) — for your public profile</li>
+                </ul>
+
+                <h3>What we don't store</h3>
+                <ul>
+                    <li>Your GitHub password (we never see it)</li>
+                    <li>Your credit card details (handled entirely by Stripe)</li>
+                    <li>Your Gemini API key in recoverable form on BYOK plans</li>
+                    <li>Audio files after transcription is complete (audio is processed and discarded)</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== Analytics ===== -->
+    <section>
+        <div class="section">
+            <div class="section-label">Analytics</div>
+            <h2 class="section-title">Privacy-first analytics via Plausible</h2>
+            <div class="prose">
+                <p>
+                    We use <a href="https://plausible.io" target="_blank" rel="noopener" style="color:var(--text-secondary);text-decoration:underline">Plausible Analytics</a> to understand how the product is used. Plausible is an EU-based, open-source analytics provider that does not use cookies, does not build user profiles, and does not track you across sites.
+                </p>
+                <p>
+                    Plausible counts pageviews and events (button clicks, feature usage) as aggregate numbers — not tied to individual users. We see "100 people visited /features" — not "user X visited /features at 2pm." No IP addresses are stored. No fingerprinting is done.
+                </p>
+                <p>
+                    We do not use Google Analytics, Facebook Pixel, or any other tracking technology. Plausible is the only analytics tool on Legate Studio.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== Reporting ===== -->
+    <section>
+        <div class="section">
+            <div class="section-label">Contact</div>
+            <h2 class="section-title">Security questions or concerns</h2>
+            <div class="prose">
+                <p>
+                    If you discover a security issue, have a question about our data handling, or need to report something, please reach out at <a href="mailto:hello@legate.studio" style="color:var(--text-secondary);text-decoration:underline">hello@legate.studio</a>. We take security reports seriously and will respond promptly.
+                </p>
+                <p>
+                    For general privacy questions, see our <a href="/privacy" style="color:var(--text-secondary);text-decoration:underline">Privacy Policy</a>.
+                </p>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+{{ marketing_footer() }}
+{{ marketing_scripts() }}
+
+</body>
+</html>

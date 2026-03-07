@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Legate Studio pricing: free 14-day trial, BYOK at $0.99/month (bring your own Gemini API key), or Managed at $9.99/month. Simple, transparent pricing with no lock-in.">
+    <meta name="theme-color" content="#0d1117">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Pricing | Legate Studio">
+    <meta property="og:description" content="14-day free trial, then BYOK at $0.99/month or Managed at $9.99/month. Simple pricing, no lock-in.">
+    <meta property="og:image" content="https://legate.studio/static/img/og-share.png">
+    <meta property="og:url" content="https://legate.studio/pricing">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Legate Studio">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Pricing | Legate Studio">
+    <meta name="twitter:description" content="14-day free trial, then BYOK at $0.99/month or Managed at $9.99/month. Simple pricing, no lock-in.">
+    <meta name="twitter:image" content="https://legate.studio/static/img/og-share.png">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://legate.studio/pricing">
+
+    <title>Pricing | Legate Studio</title>
+
+    {% from "marketing_base.html" import marketing_page_styles, marketing_head_common %}
+    {{ marketing_page_styles() }}
+    {{ marketing_head_common() }}
+
+    <!-- BreadcrumbList JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://legate.studio/"},
+        {"@type": "ListItem", "position": 2, "name": "Pricing", "item": "https://legate.studio/pricing"}
+      ]
+    }
+    </script>
+</head>
+<body>
+
+{% from "marketing_base.html" import marketing_nav, marketing_footer, marketing_scripts %}
+{{ marketing_nav(active_page="pricing") }}
+
+<main class="landing-main">
+
+    <!-- ===== Page Hero ===== -->
+    <div class="page-hero">
+        <div class="page-hero-label">Pricing</div>
+        <h1>Simple, Transparent Pricing</h1>
+        <p class="page-hero-sub">
+            Start free for 14 days — no credit card required, full access to every feature. When you're ready to continue, choose the tier that fits how you work.
+        </p>
+    </div>
+
+    <!-- ===== Pricing Grid ===== -->
+    <section>
+        <div class="section-wide">
+            <div class="pricing-grid">
+
+                <div class="pricing-card">
+                    <div class="pricing-tier-label">Free Trial</div>
+                    <div class="pricing-price">
+                        <span class="pricing-amount">$0</span>
+                        <span class="pricing-period">/ 14 days</span>
+                    </div>
+                    <p class="pricing-tagline">Full access to every feature. No credit card required.</p>
+                    <div class="pricing-divider"></div>
+                    <ul class="pricing-features">
+                        <li>Every feature, no restrictions</li>
+                        <li>Voice → note pipeline (Motifs)</li>
+                        <li>Library &amp; knowledge graph</li>
+                        <li>Semantic search</li>
+                        <li>MCP integration</li>
+                        <li>Public profile &amp; note publishing</li>
+                        <li>No credit card required</li>
+                    </ul>
+                    <a href="{{ url_for('auth.login') }}" class="pricing-cta">Start Free Trial</a>
+                </div>
+
+                <div class="pricing-card featured">
+                    <div class="pricing-featured-badge">Most Popular</div>
+                    <div class="pricing-tier-label">BYOK</div>
+                    <div class="pricing-price">
+                        <span class="pricing-amount">$0.99</span>
+                        <span class="pricing-period">/ month</span>
+                    </div>
+                    <p class="pricing-tagline">Bring your own Gemini API key. Full platform at the lowest possible price.</p>
+                    <div class="pricing-divider"></div>
+                    <ul class="pricing-features">
+                        <li>Everything in Free Trial</li>
+                        <li>Bring your own Gemini API key</li>
+                        <li>AI usage billed directly by Google at their rates</li>
+                        <li>No markup on AI calls</li>
+                        <li>Voice transcription &amp; AI categorization</li>
+                        <li>Knowledge graph generation</li>
+                        <li>Semantic search embeddings</li>
+                        <li>Unlimited notes</li>
+                    </ul>
+                    <a href="{{ url_for('auth.login') }}" class="pricing-cta pricing-cta-primary">Get Started — $0.99/mo</a>
+                </div>
+
+                <div class="pricing-card">
+                    <div class="pricing-tier-label">Managed</div>
+                    <div class="pricing-price">
+                        <span class="pricing-amount">$9.99</span>
+                        <span class="pricing-period">/ month</span>
+                    </div>
+                    <p class="pricing-tagline">AI included. No API keys to manage. Works out of the box.</p>
+                    <div class="pricing-divider"></div>
+                    <ul class="pricing-features">
+                        <li>Everything in BYOK</li>
+                        <li>Gemini AI included — no API key needed</li>
+                        <li>Nothing to configure</li>
+                        <li>Priority support</li>
+                        <li>Voice transcription &amp; AI categorization</li>
+                        <li>Knowledge graph generation</li>
+                        <li>Semantic search embeddings</li>
+                        <li>Unlimited notes</li>
+                    </ul>
+                    <a href="{{ url_for('auth.login') }}" class="pricing-cta">Get Started — $9.99/mo</a>
+                </div>
+
+            </div>
+
+            <p style="text-align:center;margin-top:2rem;font-size:0.875rem;color:var(--text-muted)">
+                All plans include the full feature set. The only difference is how AI is powered.
+                <a href="/features" style="color:var(--text-secondary);text-decoration:underline">See all features →</a>
+            </p>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== BYOK Explained ===== -->
+    <section>
+        <div class="section">
+            <div class="section-label">What is BYOK?</div>
+            <h2 class="section-title">Bring Your Own Key — what it means and why it's different</h2>
+            <div class="prose">
+                <p>
+                    BYOK stands for <strong>Bring Your Own Key</strong>. Instead of Legate bundling AI usage into a higher subscription price, you connect your own Google Gemini API key and Legate uses it directly.
+                </p>
+                <p>
+                    When a Motif is processed — transcribed, categorized, and structured — that's an AI call. When you run semantic search, that's another. With BYOK, those calls go to Google using your API key, and Google bills you directly at their standard rates.
+                </p>
+                <p>
+                    Google's Gemini Flash API is inexpensive — typical personal use costs a few cents per month. You pay Google for the actual compute, and you pay Legate <strong>$0.99/month</strong> for the platform. No markup, no bundling, no guessing about hidden AI costs.
+                </p>
+                <p>
+                    The Managed tier is the simpler option: we provide the AI, nothing to configure, and it all works immediately. Managed costs more because we're absorbing the AI costs on your behalf.
+                </p>
+                <h3>How to get a Gemini API key</h3>
+                <p>
+                    Visit <a href="https://aistudio.google.com" target="_blank" rel="noopener">Google AI Studio</a>, sign in with a Google account, and create an API key. It takes about two minutes. Then paste it into your Legate account settings — that's it.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== FAQ ===== -->
+    <section>
+        <div class="section">
+            <div class="section-label">Pricing FAQ</div>
+            <h2 class="section-title">Common questions about pricing</h2>
+
+            <div class="faq-list" id="pricingFaq">
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        What happens when my free trial ends?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        When your 14-day trial ends, your account moves to a read-only state — you can view everything you've captured, but you can't add new notes or run AI processing until you subscribe. Nothing is deleted. You have as much time as you need to decide whether to continue.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Can I switch between BYOK and Managed?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        Yes. You can change your plan at any time from your account settings. Switching from BYOK to Managed removes the API key requirement. Switching from Managed to BYOK means you'll need to add your own Gemini API key before AI processing will work.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Is there a limit on how many notes I can store?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        There is no hard cap on notes in either paid tier. Your data lives in your own SQLite database on a persistent volume. For very large libraries, storage costs scale naturally, but there is no artificial limit imposed on your knowledge base.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        How much does Google charge for Gemini API usage?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        Gemini Flash is one of Google's lowest-cost models. For personal knowledge base use — processing voice notes, generating embeddings, categorizing content — most users spend well under $1/month with Google directly. Heavy daily users might spend $2–5/month. Google publishes their current rates at <a href="https://ai.google.dev/pricing" target="_blank" rel="noopener" style="color:var(--text-secondary);text-decoration:underline">ai.google.dev/pricing</a>.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Do you offer a refund if I'm not satisfied?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        Yes. If you're not satisfied within the first 30 days of a paid subscription, reach out at <a href="mailto:hello@legate.studio" style="color:var(--text-secondary);text-decoration:underline">hello@legate.studio</a> and we'll refund your payment, no questions asked. We'd rather lose the revenue than keep it from someone who got no value.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        What payment methods do you accept?
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="faq-answer">
+                        Payments are processed through Stripe. We accept all major credit and debit cards (Visa, Mastercard, American Express). Stripe handles all billing securely — we never see your card details.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CTA ===== -->
+    <div class="cta-band">
+        <div class="cta-band-inner">
+            <h2>Start your free trial today</h2>
+            <p>14 days of full access. No credit card required. See if Legate Studio fits your workflow before paying anything.</p>
+            <a href="{{ url_for('auth.login') }}" class="btn-primary">
+                Start Free Trial
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+            </a>
+        </div>
+    </div>
+
+</main>
+
+{{ marketing_footer() }}
+{{ marketing_scripts() }}
+
+<script>
+function toggleFaq(btn) {
+    const item = btn.closest('.faq-item');
+    const answer = item.querySelector('.faq-answer');
+    const isOpen = item.classList.contains('open');
+    // Close all
+    document.querySelectorAll('#pricingFaq .faq-item').forEach(i => {
+        i.classList.remove('open');
+        i.querySelector('.faq-answer').classList.remove('open');
+    });
+    if (!isOpen) {
+        item.classList.add('open');
+        answer.classList.add('open');
+    }
+}
+</script>
+
+</body>
+</html>

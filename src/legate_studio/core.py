@@ -608,12 +608,59 @@ def create_app():
             return redirect(url_for("dashboard.index"))
         return render_template("landing.html")
 
+    # ============ Public marketing pages ============
+
+    @app.route("/features")
+    def features():
+        return render_template("features.html")
+
+    @app.route("/pricing")
+    def pricing():
+        return render_template("pricing.html")
+
+    @app.route("/faq")
+    def faq():
+        return render_template("faq.html")
+
+    @app.route("/about")
+    def about():
+        return render_template("about.html")
+
+    @app.route("/security")
+    def security():
+        return render_template("security.html")
+
+    @app.route("/contact")
+    def contact():
+        return render_template("contact.html")
+
+    @app.route("/privacy")
+    def privacy():
+        return render_template("privacy.html")
+
+    @app.route("/terms")
+    def terms():
+        return render_template("terms.html")
+
+    # Custom 404 error page
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return render_template("404.html"), 404
+
     # SEO: robots.txt
     @app.route("/robots.txt")
     def robots_txt():
         content = (
             "User-agent: *\n"
             "Allow: /\n"
+            "Allow: /features\n"
+            "Allow: /pricing\n"
+            "Allow: /faq\n"
+            "Allow: /about\n"
+            "Allow: /security\n"
+            "Allow: /contact\n"
+            "Allow: /privacy\n"
+            "Allow: /terms\n"
             "Disallow: /dashboard\n"
             "Disallow: /library\n"
             "Disallow: /admin\n"
@@ -639,12 +686,15 @@ def create_app():
 
         today = datetime.now().strftime("%Y-%m-%d")
         urls = [
-            (
-                "https://legate.studio/",
-                today,
-                "weekly",
-                "1.0",
-            )
+            ("https://legate.studio/",         today, "weekly", "1.0"),
+            ("https://legate.studio/features",  today, "monthly", "0.9"),
+            ("https://legate.studio/pricing",   today, "monthly", "0.9"),
+            ("https://legate.studio/faq",       today, "monthly", "0.8"),
+            ("https://legate.studio/about",     today, "monthly", "0.6"),
+            ("https://legate.studio/security",  today, "monthly", "0.5"),
+            ("https://legate.studio/contact",   today, "monthly", "0.4"),
+            ("https://legate.studio/privacy",   today, "yearly",  "0.3"),
+            ("https://legate.studio/terms",     today, "yearly",  "0.3"),
         ]
 
         # Include published notes and profile pages from all user DBs
