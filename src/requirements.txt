@@ -38,5 +38,8 @@ cryptography>=41.0.0
 # Stripe for subscription billing
 stripe>=7.0.0
 
+# HTML sanitization for published notes
+nh3>=0.3.3
+
 # Error tracking
 sentry-sdk[flask]>=1.40.0
