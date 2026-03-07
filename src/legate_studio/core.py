@@ -608,6 +608,47 @@ def create_app():
             return redirect(url_for("dashboard.index"))
         return render_template("landing.html")
 
+    # SEO: robots.txt
+    @app.route("/robots.txt")
+    def robots_txt():
+        content = (
+            "User-agent: *\n"
+            "Allow: /\n"
+            "Disallow: /dashboard\n"
+            "Disallow: /library\n"
+            "Disallow: /admin\n"
+            "Disallow: /api\n"
+            "Disallow: /auth\n"
+            "Disallow: /billing\n"
+            "Disallow: /setup\n"
+            "Disallow: /motif\n"
+            "Disallow: /chat\n"
+            "Disallow: /chord\n"
+            "Disallow: /import\n"
+            "Disallow: /dropbox\n"
+            "Disallow: /agents\n"
+            "\n"
+            "Sitemap: https://legate.studio/sitemap.xml\n"
+        )
+        return content, 200, {"Content-Type": "text/plain; charset=utf-8"}
+
+    # SEO: sitemap.xml
+    @app.route("/sitemap.xml")
+    def sitemap_xml():
+        today = datetime.now().strftime("%Y-%m-%d")
+        xml = (
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+            "  <url>\n"
+            "    <loc>https://legate.studio/</loc>\n"
+            f"    <lastmod>{today}</lastmod>\n"
+            "    <changefreq>weekly</changefreq>\n"
+            "    <priority>1.0</priority>\n"
+            "  </url>\n"
+            "</urlset>\n"
+        )
+        return xml, 200, {"Content-Type": "application/xml; charset=utf-8"}
+
     # Health check (no auth required)
     @app.route("/health")
     def health():

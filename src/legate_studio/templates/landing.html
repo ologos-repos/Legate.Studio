@@ -5,6 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="Legate Studio — Record your thoughts. Build a knowledge graph. Remember everything.">
     <meta name="theme-color" content="#0d1117">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Legate Studio — Your Personal Knowledge Base">
+    <meta property="og:description" content="Record your thoughts. Build a knowledge graph. Remember everything. Voice-first AI memory with MCP integration.">
+    <meta property="og:image" content="https://legate.studio/static/img/og-share.png">
+    <meta property="og:url" content="https://legate.studio">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Legate Studio">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Legate Studio — Your Personal Knowledge Base">
+    <meta name="twitter:description" content="Record your thoughts. Build a knowledge graph. Remember everything. Voice-first AI memory with MCP integration.">
+    <meta name="twitter:image" content="https://legate.studio/static/img/og-share.png">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://legate.studio/">
+
     <title>Legate Studio — Your Personal Knowledge Base</title>
     <link rel="icon" href="{{ url_for('static', filename='img/favicon.png') }}" type="image/png">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
@@ -827,6 +845,89 @@
             }
         }
     </style>
+
+    <!-- Structured Data: SoftwareApplication + FAQPage -->
+    <script type="application/ld+json">
+    [
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Legate Studio",
+        "applicationCategory": "ProductivityApplication",
+        "operatingSystem": "Web",
+        "description": "Voice-first AI memory platform with MCP integration",
+        "url": "https://legate.studio",
+        "offers": [
+          {
+            "@type": "Offer",
+            "name": "BYOK",
+            "price": "0.99",
+            "priceCurrency": "USD"
+          },
+          {
+            "@type": "Offer",
+            "name": "Managed",
+            "price": "2.99",
+            "priceCurrency": "USD"
+          }
+        ]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is a Motif?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "A Motif is a voice memo or text note that you feed into Legate. Upload an audio recording from your phone, paste in some text, or type directly — Legate's AI transcribes it, categorizes it, and extracts structured knowledge. The result appears in your Library and gets added to your knowledge graph automatically."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Do I need a GitHub account?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Legate uses GitHub for authentication and stores your knowledge in a repository you own. This is intentional — your data lives in your GitHub account, not ours. You get full version history, portability, and ownership baked in from the start."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What's the difference between BYOK and Managed?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "BYOK (Bring Your Own Key) means you add your own Gemini API key from Google. You pay Google directly at their rates — we charge $0.99/month for the platform. No markup, no middlemen. Managed means we provide the AI: Gemini Flash is included, nothing to configure, and it works out of the box for $2.99/month."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is my data private?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Your knowledge lives in your own GitHub repository. We don't store your notes, read your content for training purposes, or have access to your data beyond what's technically required to run the application. The GitHub repo is yours — private or public, it's your call."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I export my data?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Your knowledge is already in a GitHub repository you own. You can clone it, fork it, or download it at any time — no export process needed. Your notes are Markdown files, readable by any editor. There's no lock-in."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is MCP integration?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "MCP (Model Context Protocol) lets you connect Legate to Claude Desktop and other compatible AI tools. Once connected, you can query your knowledge base, create notes, and search your library directly from inside your AI assistant — without switching tabs."
+            }
+          }
+        ]
+      }
+    ]
+    </script>
 </head>
 <body>
 
