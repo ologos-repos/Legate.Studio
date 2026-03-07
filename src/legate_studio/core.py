@@ -642,6 +642,32 @@ def create_app():
     def terms():
         return render_template("terms.html")
 
+    # ============ Solution / category landing pages ============
+
+    @app.route("/mcp-first-pkm")
+    def mcp_first_pkm():
+        return render_template("mcp_first_pkm.html")
+
+    @app.route("/personal-knowledge-base-for-ai")
+    def personal_knowledge_base_for_ai():
+        return render_template("pkb_for_ai.html")
+
+    @app.route("/memory-layer-for-ai")
+    def memory_layer_for_ai():
+        return render_template("memory_layer_for_ai.html")
+
+    @app.route("/voice-notes-to-knowledge-base")
+    def voice_notes_to_knowledge_base():
+        return render_template("voice_notes_to_kb.html")
+
+    @app.route("/knowledge-graph-notes")
+    def knowledge_graph_notes():
+        return render_template("knowledge_graph_notes.html")
+
+    @app.route("/persistent-memory-for-ai-assistants")
+    def persistent_memory_for_ai_assistants():
+        return render_template("persistent_memory_for_ai.html")
+
     # Custom 404 error page
     @app.errorhandler(404)
     def page_not_found(e):
@@ -661,6 +687,12 @@ def create_app():
             "Allow: /contact\n"
             "Allow: /privacy\n"
             "Allow: /terms\n"
+            "Allow: /mcp-first-pkm\n"
+            "Allow: /personal-knowledge-base-for-ai\n"
+            "Allow: /memory-layer-for-ai\n"
+            "Allow: /voice-notes-to-knowledge-base\n"
+            "Allow: /knowledge-graph-notes\n"
+            "Allow: /persistent-memory-for-ai-assistants\n"
             "Disallow: /dashboard\n"
             "Disallow: /library\n"
             "Disallow: /admin\n"
@@ -695,6 +727,13 @@ def create_app():
             ("https://legate.studio/contact",   today, "monthly", "0.4"),
             ("https://legate.studio/privacy",   today, "yearly",  "0.3"),
             ("https://legate.studio/terms",     today, "yearly",  "0.3"),
+            # Solution / category landing pages
+            ("https://legate.studio/mcp-first-pkm",                      today, "monthly", "0.8"),
+            ("https://legate.studio/personal-knowledge-base-for-ai",     today, "monthly", "0.8"),
+            ("https://legate.studio/memory-layer-for-ai",                today, "monthly", "0.8"),
+            ("https://legate.studio/voice-notes-to-knowledge-base",      today, "monthly", "0.8"),
+            ("https://legate.studio/knowledge-graph-notes",              today, "monthly", "0.8"),
+            ("https://legate.studio/persistent-memory-for-ai-assistants",today, "monthly", "0.8"),
         ]
 
         # Include published notes and profile pages from all user DBs

@@ -1,0 +1,240 @@
+{% from "marketing_base.html" import marketing_nav, marketing_footer, marketing_scripts, marketing_head_common, marketing_page_styles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Knowledge graph notes link your ideas into a connected web of knowledge. Here's why graph structure produces better recall, better AI context, and better insights than flat note lists.">
+    <meta name="theme-color" content="#0d1117">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Knowledge Graph Notes | Connect Ideas Into Searchable Memory">
+    <meta property="og:description" content="Knowledge graph notes link your ideas into a connected web of knowledge. Here's why graph structure produces better recall, better AI context, and better insights than flat note lists.">
+    <meta property="og:image" content="https://legate.studio/static/img/og-share.png">
+    <meta property="og:url" content="https://legate.studio/knowledge-graph-notes">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Legate Studio">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Knowledge Graph Notes | Connect Ideas Into Searchable Memory">
+    <meta name="twitter:description" content="Knowledge graph notes link your ideas into a connected web of knowledge. Here's why graph structure produces better recall, better AI context, and better insights than flat note lists.">
+    <meta name="twitter:image" content="https://legate.studio/static/img/og-share.png">
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://legate.studio/knowledge-graph-notes">
+
+    <title>Knowledge Graph Notes | Connect Ideas Into Searchable Memory</title>
+
+    {{ marketing_page_styles() }}
+    {{ marketing_head_common() }}
+
+    <!-- BreadcrumbList JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://legate.studio/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Knowledge Graph Notes",
+          "item": "https://legate.studio/knowledge-graph-notes"
+        }
+      ]
+    }
+    </script>
+</head>
+<body>
+
+{{ marketing_nav("") }}
+
+<main class="landing-main">
+
+    <div class="page-hero">
+        <div class="page-hero-label">Knowledge Graph</div>
+        <h1>Notes Are Better When They Connect</h1>
+        <p class="page-hero-sub">Flat note lists store information. Knowledge graphs structure it. The difference shows up when you try to retrieve something, build on something, or give an AI context about your work.</p>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">The Flat Note Problem</div>
+        <h2 class="section-title">What Knowledge Graph Note-Taking Solves</h2>
+        <div class="prose">
+            <p>A flat list of notes has a structural problem that becomes more painful as the list grows: every note is an island. You write a note about a decision. You write a note about the research that informed that decision. You write a note about a follow-up thought three weeks later, referencing the original decision. These three notes are semantically related — they're about the same thing, from different angles, at different times — but in a flat system they're stored separately with no machine-readable connection between them.</p>
+
+            <p>Finding related content requires remembering that it exists and then finding it. Search helps if you know what to search for. But the connections between ideas — the "this decision was informed by that research, which is relevant to this concern" relationships — are invisible in a flat list. They live only in your memory, which means they're not available to anyone or anything else: not to you when you've forgotten, not to collaborators, and certainly not to an AI assistant.</p>
+
+            <p>The knowledge graph approach makes connections explicit. Each note is a node. Related notes are connected by edges, derived from shared categories, semantic similarity, and explicit links. The graph is the structure that turns a list of notes into a navigable knowledge base — one that an AI can traverse to build richer context about a topic, not just retrieve individual isolated entries.</p>
+
+            <p>This is the practical difference between a note-taking tool and a knowledge base: the former stores individual notes, the latter stores the relationships between them.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">Graph vs Folders</div>
+        <h2 class="section-title">Why Graph Structure Beats Folder Hierarchy for Knowledge</h2>
+        <div class="prose">
+            <p>Folders enforce a single taxonomy: every note lives in exactly one folder. This works for filing documents with a clear single category. It breaks down for ideas, which tend to be multidimensional.</p>
+
+            <p>Consider a note about "Rust async patterns for high-throughput web servers." This note belongs in your Rust folder, your async programming folder, your web server folder, and your performance optimization folder simultaneously. Folders make you choose one. The others are lost as access paths.</p>
+
+            <p>Tagging systems extend folders by allowing multiple labels per note, but they're still fundamentally flat — a tag is a list membership, not a connection. "Tagged Rust" and "tagged async" doesn't tell you anything about how Rust and async relate in the context of <em>this particular note</em>, or how this note relates to other notes about Rust, or how your thinking about async patterns has evolved over time.</p>
+
+            <p>A graph encodes connection as a first-class concept. Nodes (notes) can be connected to many other nodes without choosing a primary location. Connections have direction and can carry weight — "closely related" vs "tangentially related." The visualization of the graph shows you cluster patterns: areas where many related notes have accumulated, representing topics where your knowledge is deep; sparse areas, representing topics you've touched on but not developed.</p>
+
+            <p>This structural information about your own knowledge base is information you'd never get from a folder view. It's also information an AI can use: a dense cluster of notes about a topic signals that you have substantial knowledge there that's worth querying deeply; a sparse single note signals a topic you mentioned once but haven't developed.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">Graph + AI</div>
+        <h2 class="section-title">How Graph Structure Improves AI Access to Your Knowledge</h2>
+        <div class="prose">
+            <p>When your AI queries your knowledge base via MCP, graph structure makes retrieval richer in two ways.</p>
+
+            <p><strong>Richer search results.</strong> A flat search returns notes that match the query. A graph search can return the queried note plus the notes connected to it — giving the AI the cluster of related knowledge around a topic, not just a single entry. Ask about your authentication architecture and get back the decision note, the research notes that informed it, the performance constraint notes that affected it, and the follow-up notes from implementation. That's the full context; a single entry is not.</p>
+
+            <p><strong>Better understanding of your knowledge depth.</strong> Graph density is meaningful signal. If your AI is helping you with a topic where you have 40 connected notes, it knows to draw heavily on your documented knowledge. If you have one isolated note on a topic, it knows your documented knowledge is thin there and it should rely more on general training data. This calibration makes AI assistance more accurate.</p>
+
+            <p>The graph also enables a kind of navigation that flat search can't support: "find the notes connected to this specific note." When you retrieve a central node — a key decision, a foundational concept, a major research finding — you can traverse outward to find everything related. This is how you'd follow a thread of thinking through your knowledge base, and it's how an AI can build a comprehensive picture of a complex topic rather than returning isolated pieces.</p>
+
+            <p>For long-running projects where knowledge accumulates over months, this navigability becomes the difference between a knowledge base you actually use and one that becomes too large to navigate effectively.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">Human Value</div>
+        <h2 class="section-title">Knowledge Graphs for Your Own Recall and Publishing</h2>
+        <div class="prose">
+            <p>The graph isn't only useful for AI access. For your own use, the visual knowledge graph in Legate Studio's dashboard is a different kind of interface to your knowledge — one that shows structure rather than lists it.</p>
+
+            <p><strong>Recall.</strong> Browsing a force-directed graph of your notes on a project is a different cognitive experience than reading a list. The visual positions of nodes — which ones are central, which are peripheral, which are isolated — communicate something about the structure of the knowledge that a list doesn't. Coming back to a project after time away, the graph can re-orient you to the shape of what you know faster than reading through notes sequentially.</p>
+
+            <p><strong>Insight discovery.</strong> Unexpected connections show up in graph views that you wouldn't find in lists. Two clusters of notes that share a bridge node represent a connection between two topics you might not have consciously recognized. The graph makes implicit connections explicit — sometimes surfacing relationships in your own thinking that weren't obvious when you captured the individual notes.</p>
+
+            <p><strong>Publishing.</strong> Legate Studio lets you publish individual notes as clean public pages. For researchers and writers who use Legate Studio to manage a body of work, the knowledge graph is a map of that work — published notes connected to the supporting unpublished notes that give them depth. The graph structure remains visible to you even when only some nodes are public.</p>
+
+            <p>The knowledge graph is a second layer of value on top of the individual notes. Notes that are well-connected are more findable, more useful to AI assistants, and more navigable for you. Building a knowledge base on a graph foundation is an investment that pays increasing returns as the base grows.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">FAQ</div>
+        <h2 class="section-title">Common Questions</h2>
+        <div class="faq-list">
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    How does Legate Studio build the knowledge graph automatically?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    When you submit a note or voice memo, Legate's AI categorizes it and identifies semantic relationships to existing notes. Notes in the same category get connected as cluster members. Notes with overlapping semantic content — even across different categories — get connected based on similarity. You don't draw edges manually; the graph builds from the content and structure of your notes automatically. The result is a graph that reflects your actual knowledge connections rather than a hand-curated one.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Can I see the knowledge graph visually?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    Yes. The dashboard has a force-directed, interactive knowledge graph visualization. Nodes are notes; edges are connections; clusters are related knowledge areas. You can zoom, pan, and click nodes to navigate to individual notes. The visualization updates as you add new notes — the graph is live, not a static snapshot.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Does the knowledge graph improve AI search results?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    Yes, in two ways. First, the graph enables connected retrieval — finding not just the most relevant note but the cluster of related notes around a topic, giving the AI fuller context. Second, the category structure from the graph helps with semantic matching — notes in related categories surface together even if keyword overlap is low. The graph is the structure that makes the knowledge base more than a collection of independent search results.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Can I manually create connections between specific notes?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    Currently, connections form automatically based on category and semantic similarity. Manual linking between specific notes is on the roadmap. In practice, the automatic graph is already dense enough to be useful for most knowledge bases — the AI categorization creates meaningful clusters, and the semantic similarity connections surface relationships you might not have explicitly thought to link. Manual linking will add precision on top of the automatic structure.
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">Related Reading</div>
+        <h2 class="section-title">Go Deeper</h2>
+        <div class="prose">
+            <ul>
+                <li><a href="/personal-knowledge-base-for-ai">Personal Knowledge Base for AI</a> — the architecture behind AI-accessible knowledge</li>
+                <li><a href="/memory-layer-for-ai">Memory Layer for AI</a> — how structured knowledge becomes persistent AI memory</li>
+                <li><a href="/mcp-first-pkm">MCP-First PKM</a> — how MCP connects the knowledge graph to AI assistants</li>
+                <li><a href="/voice-notes-to-knowledge-base">Voice Notes to Knowledge Base</a> — adding voice capture to your knowledge graph</li>
+                <li><a href="/features">Legate Studio Features</a> — full feature overview including the interactive graph</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="cta-band">
+        <div class="cta-band-inner">
+            <h2>Build your knowledge graph</h2>
+            <p>14-day free trial. Your first notes connect automatically — no manual graph-building required.</p>
+            <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+                <a href="{{ url_for('auth.login') }}" class="btn-primary">
+                    Start Free Trial
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+                </a>
+                <a href="/pricing" class="btn-ghost">See pricing</a>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+{{ marketing_footer() }}
+{{ marketing_scripts() }}
+
+<script>
+document.querySelectorAll('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const item = btn.closest('.faq-item');
+        const answer = item.querySelector('.faq-answer');
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(i => {
+            i.classList.remove('open');
+            i.querySelector('.faq-answer').classList.remove('open');
+        });
+        if (!isOpen) {
+            item.classList.add('open');
+            answer.classList.add('open');
+        }
+    });
+});
+</script>
+
+</body>
+</html>

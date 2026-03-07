@@ -1,0 +1,276 @@
+{% from "marketing_base.html" import marketing_nav, marketing_footer, marketing_scripts, marketing_head_common, marketing_page_styles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="AI assistants forget everything between sessions. Persistent memory via MCP and a personal knowledge base gives your AI durable, structured context that carries across every conversation.">
+    <meta name="theme-color" content="#0d1117">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Persistent Memory for AI Assistants | Personal Context That Lasts">
+    <meta property="og:description" content="AI assistants forget everything between sessions. Persistent memory via MCP and a personal knowledge base gives your AI durable, structured context that carries across every conversation.">
+    <meta property="og:image" content="https://legate.studio/static/img/og-share.png">
+    <meta property="og:url" content="https://legate.studio/persistent-memory-for-ai-assistants">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Legate Studio">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Persistent Memory for AI Assistants | Personal Context That Lasts">
+    <meta name="twitter:description" content="AI assistants forget everything between sessions. Persistent memory via MCP and a personal knowledge base gives your AI durable, structured context that carries across every conversation.">
+    <meta name="twitter:image" content="https://legate.studio/static/img/og-share.png">
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://legate.studio/persistent-memory-for-ai-assistants">
+
+    <title>Persistent Memory for AI Assistants | Personal Context That Lasts</title>
+
+    {{ marketing_page_styles() }}
+    {{ marketing_head_common() }}
+
+    <!-- BreadcrumbList JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://legate.studio/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Persistent Memory for AI Assistants",
+          "item": "https://legate.studio/persistent-memory-for-ai-assistants"
+        }
+      ]
+    }
+    </script>
+</head>
+<body>
+
+{{ marketing_nav("") }}
+
+<main class="landing-main">
+
+    <div class="page-hero">
+        <div class="page-hero-label">AI Memory</div>
+        <h1>Give AI Assistants Persistent Memory From Your Knowledge Base</h1>
+        <p class="page-hero-sub">Every AI conversation starts from zero. Persistent memory is the infrastructure that changes this — your accumulated knowledge, decisions, and context available to your AI in every session, without you providing it manually each time.</p>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">The Core Problem</div>
+        <h2 class="section-title">What Persistent Memory for AI Actually Means</h2>
+        <div class="prose">
+            <p>Persistent memory for AI means the AI has access to context that survives between sessions. Not just what you said in the last conversation — your accumulated knowledge, your project decisions, your terminology and constraints, your research — across months or years of work. The AI draws on this context automatically during conversations, without you manually providing it each time.</p>
+
+            <p>This is distinct from several things that get called "memory" in AI contexts:</p>
+
+            <p><strong>Session memory</strong> is what the AI knows from the current conversation. It resets when the session ends. Not persistent.</p>
+
+            <p><strong>Chat history scrollback</strong> is access to previous sessions in a linear thread. Useful for picking up where you left off, but not structured or queryable as a knowledge base. Relevant signal gets buried in volume.</p>
+
+            <p><strong>Vendor memory features</strong> (like the memory features in ChatGPT and Claude) are opaque, vendor-controlled stores of facts extracted from your conversations. Useful but limited: you can't see the full store, can't edit it precisely, can't export it easily, and it's stored in the vendor's infrastructure rather than yours.</p>
+
+            <p>Persistent memory, properly defined, is infrastructure you own and control: structured personal knowledge that an AI can query explicitly, on demand, in any session, via a standard protocol. It's not a feature of the AI provider — it's a layer you build and maintain independently of which AI tool you're using.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">Why Chat History Fails</div>
+        <h2 class="section-title">Why Chat History Is Not Persistent Memory</h2>
+        <div class="prose">
+            <p>Chat history is genuinely useful for its intended purpose: following the thread of a conversation. As a persistent memory substrate for AI assistants, it fails in specific structural ways.</p>
+
+            <p><strong>Sequential, not queryable.</strong> Chat history is a time-ordered sequence of messages. You can read back through it, but you can't run structured queries against it. "What constraints did I establish for the authentication system?" is not a question chat history can answer cleanly — you'd need to read through sessions looking for where authentication came up, hoping the context window reaches far enough back.</p>
+
+            <p><strong>Signal drowns in noise.</strong> Every decision, constraint, or important piece of context shares the log with all the conversational scaffolding around it: clarifying questions, follow-ups, tangents, corrections. The important signal from a session — the decision made, the constraint established, the research finding — has equal position in the log to "can you rephrase that?" and "yes, that's what I meant." Over time, the important things get harder to find, not easier.</p>
+
+            <p><strong>Session boundaries.</strong> In most AI tools, chat history is scoped to a thread or session. Starting a new conversation means starting without access to the history of previous sessions unless the AI provider explicitly provides thread continuity — which is inconsistent, not guaranteed, and varies by provider.</p>
+
+            <p><strong>Not portable.</strong> Chat history lives in the AI vendor's system. It's not portable to other tools. If you switch AI clients, your history doesn't come with you. This is a meaningful dependency for a system you're relying on as working memory for your projects.</p>
+
+            <p>A structured knowledge base solves all four problems: entries are titled and queryable, important information has the same retrieval weight regardless of age, the store persists across every AI session and client, and it's owned by you in portable format.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">What Good Memory Looks Like</div>
+        <h2 class="section-title">What a Useful Memory Substrate Looks Like</h2>
+        <div class="prose">
+            <p>For persistent memory to actually be useful for an AI assistant — rather than just theoretically present — it needs to satisfy a specific set of requirements.</p>
+
+            <p><strong>Structured entries.</strong> Raw text dumps are not useful memory. Each memory entry needs a title (describing what it's about), a category (placing it in context), and structured content. These are the metadata that make retrieval meaningful. "Authentication decision — JWT with 24-hour expiry, chose for statelessness" is a useful memory entry. "We talked about auth stuff in March" is not.</p>
+
+            <p><strong>Semantic retrieval.</strong> The AI must be able to find relevant entries by meaning, not just keyword. "What are my performance constraints?" should return relevant constraint notes even if those notes don't use the word "performance" exactly. Semantic search is the retrieval mechanism that makes this work at scale — when you have hundreds of notes, keyword search degrades; semantic search does not.</p>
+
+            <p><strong>A machine-callable interface.</strong> The AI needs to be able to query the memory store programmatically, during a conversation, via a standard interface. A web UI is for humans. An MCP server is the machine interface — it exposes tools (search, retrieve, create) that the AI can call the same way it calls any other tool during a conversation.</p>
+
+            <p><strong>Bidirectional access.</strong> The AI should be able to write to the memory store, not just read from it. If you're in a conversation and make a decision, the AI should be able to capture that decision in the knowledge base directly — without you switching to a note-taking app.</p>
+
+            <p><strong>Owned by you.</strong> Persistent memory you depend on for your work should not live in a vendor's system. If the vendor changes their terms, the memory should remain accessible. If you switch tools, the memory should be portable. Ownership is the practical requirement for using something as long-term working memory.</p>
+
+            <p>Legate Studio satisfies all five. The MCP interface is the query layer; your GitHub-backed knowledge base is the store.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">The MCP Layer</div>
+        <h2 class="section-title">How MCP Changes AI Memory Integration</h2>
+        <div class="prose">
+            <p>Before MCP, giving an AI assistant access to your personal knowledge required bespoke integration: APIs to build, authentication to configure, retrieval pipelines to maintain. Each integration was a custom engineering project. The result was that only developers with time to build integrations got the benefit of AI with personal context.</p>
+
+            <p>MCP standardizes the integration surface. An MCP server exposes tools — named callable functions with typed inputs and outputs — that an MCP-compatible AI client can discover and call. The AI client handles tool invocation; the MCP server handles fulfillment; you configure the connection once and it works.</p>
+
+            <p>For persistent memory specifically, MCP changes the integration model from "engineering project" to "config entry." You add a JSON snippet to Claude Desktop's configuration file pointing to Legate Studio's MCP server. Claude discovers the tools (search_knowledge_base, get_note, create_note, etc.) and starts using them during conversations when relevant. No API to build, no pipeline to maintain, no custom code.</p>
+
+            <p>The standardization also means the integration isn't locked to a single AI client. As more clients implement MCP support, the same Legate Studio knowledge base becomes accessible from multiple AI tools — without separate integrations for each. The memory layer is client-agnostic; MCP is the bridge.</p>
+
+            <p>This is the architectural shift that makes personal knowledge as AI memory practical for non-developers. The infrastructure is standard; the implementation is configuration, not code.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">Day to Day</div>
+        <h2 class="section-title">What This Looks Like in a Real Workflow</h2>
+        <div class="prose">
+            <p>Concrete example, to make this tangible: you've been working on a backend system for four months. You've been capturing notes in Legate Studio throughout — voice memos about architectural decisions, text notes from post-meeting brain dumps, research summaries from papers you've read. You now have 80 notes in your knowledge base about this system.</p>
+
+            <p>You open Claude Desktop (with Legate Studio connected) and ask: "What were my reasons for choosing PostgreSQL over MongoDB for this project?" Claude calls the search_knowledge_base MCP tool with a query about the database decision. Legate returns your note "Database selection — PostgreSQL chosen for ACID guarantees and complex query needs — March 2025." Claude incorporates that into its response, referencing your actual documented reasoning rather than generic advice about the tradeoffs.</p>
+
+            <p>Later in the same session, you make a new decision about indexing strategy. You say to Claude: "Save a note — decided to add a partial index on the status column for the jobs table, filtering on status IN ('pending', 'running'). Reason: 90% of queries filter on these statuses." Claude calls create_note. The note appears in your Legate Studio library, categorized, titled, and connected to your other database notes. It's now part of the memory layer for every future session.</p>
+
+            <p>Next week, new session, zero context paste. You ask Claude to help review your database schema. It searches your knowledge base, finds the PostgreSQL decision note, the indexing note, and three other related notes from the past four months. It reviews your schema with the context of your actual project constraints and decisions. That's persistent memory working as infrastructure.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">FAQ</div>
+        <h2 class="section-title">Common Questions</h2>
+        <div class="faq-list">
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Is this the same as giving Claude a system prompt with my context?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    System prompts work well for static context that doesn't change often — your name, your role, a few persistent preferences. For a growing knowledge base of hundreds or thousands of notes, system prompts don't scale: the context window is finite and you'd spend most of it on memory rather than the actual conversation. MCP-connected memory lets the AI query what it needs when it needs it, so the context window is used for the work rather than for memory injection.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Does the AI decide when to query my memory, or do I have to ask it to?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    Both. Claude Desktop can call MCP tools automatically when it determines your knowledge base is relevant — when you ask questions about your work, your projects, or your decisions, Claude will often proactively search your knowledge base to give you a contextually accurate answer. You can also explicitly ask: "search my notes for X" or "what did I document about Y?" Either way works, and the explicit path is useful when Claude doesn't automatically query on a topic you know you have notes about.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Can multiple AI clients share the same memory layer?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    Any MCP-compatible client can connect to the same Legate Studio MCP server. Claude Desktop is the primary supported client today. As more AI clients implement MCP support, the same knowledge base will become accessible from multiple tools without separate integrations. The knowledge base is client-agnostic — MCP is the bridge regardless of which AI assistant you're using.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    What if my knowledge base has conflicting notes?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    The AI retrieves what's there and can present both notes, showing you the conflict. This is actually better than opaque vendor memory, where you can't see what the AI "remembers" about you or why it's giving contradictory advice. With Legate Studio, your memory layer is fully visible and editable — you can resolve conflicts by updating or deleting notes directly. The transparency is a feature, not a limitation.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Is there a limit to how much knowledge the memory layer can hold?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    No practical limit. Your knowledge base can grow as large as your GitHub repository allows, which is effectively unlimited for text-based notes. The MCP semantic search returns the most relevant results regardless of total library size — large knowledge bases don't degrade retrieval quality because search is semantic, not exhaustive. The memory layer scales with your work.
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">Related Reading</div>
+        <h2 class="section-title">Go Deeper</h2>
+        <div class="prose">
+            <ul>
+                <li><a href="/memory-layer-for-ai">Memory Layer for AI</a> — what a memory layer is and why chat history doesn't qualify</li>
+                <li><a href="/mcp-first-pkm">MCP-First PKM</a> — how MCP-first design makes AI memory practical</li>
+                <li><a href="/personal-knowledge-base-for-ai">Personal Knowledge Base for AI</a> — the architecture behind AI-accessible personal knowledge</li>
+                <li><a href="/knowledge-graph-notes">Knowledge Graph Notes</a> — how graph structure makes memory retrieval richer</li>
+                <li><a href="/features">Legate Studio Features</a> — full feature overview including MCP integration</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="cta-band">
+        <div class="cta-band-inner">
+            <h2>Give your AI persistent memory</h2>
+            <p>14-day free trial. Connect Legate Studio to Claude Desktop and your AI has working memory from day one.</p>
+            <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+                <a href="{{ url_for('auth.login') }}" class="btn-primary">
+                    Start Free Trial
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+                </a>
+                <a href="/pricing" class="btn-ghost">See pricing</a>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+{{ marketing_footer() }}
+{{ marketing_scripts() }}
+
+<script>
+document.querySelectorAll('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const item = btn.closest('.faq-item');
+        const answer = item.querySelector('.faq-answer');
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(i => {
+            i.classList.remove('open');
+            i.querySelector('.faq-answer').classList.remove('open');
+        });
+        if (!isOpen) {
+            item.classList.add('open');
+            answer.classList.add('open');
+        }
+    });
+});
+</script>
+
+</body>
+</html>

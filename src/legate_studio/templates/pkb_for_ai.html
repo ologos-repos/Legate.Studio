@@ -1,0 +1,248 @@
+{% from "marketing_base.html" import marketing_nav, marketing_footer, marketing_scripts, marketing_head_common, marketing_page_styles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="A personal knowledge base built for AI means your notes are searchable, structured, and accessible to AI assistants via MCP. Here's what that infrastructure looks like and why it matters.">
+    <meta name="theme-color" content="#0d1117">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Personal Knowledge Base for AI | Searchable Memory for Your Work">
+    <meta property="og:description" content="A personal knowledge base built for AI means your notes are searchable, structured, and accessible to AI assistants via MCP. Here's what that infrastructure looks like and why it matters.">
+    <meta property="og:image" content="https://legate.studio/static/img/og-share.png">
+    <meta property="og:url" content="https://legate.studio/personal-knowledge-base-for-ai">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Legate Studio">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Personal Knowledge Base for AI | Searchable Memory for Your Work">
+    <meta name="twitter:description" content="A personal knowledge base built for AI means your notes are searchable, structured, and accessible to AI assistants via MCP. Here's what that infrastructure looks like and why it matters.">
+    <meta name="twitter:image" content="https://legate.studio/static/img/og-share.png">
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://legate.studio/personal-knowledge-base-for-ai">
+
+    <title>Personal Knowledge Base for AI | Searchable Memory for Your Work</title>
+
+    {{ marketing_page_styles() }}
+    {{ marketing_head_common() }}
+
+    <!-- BreadcrumbList JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://legate.studio/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Personal Knowledge Base for AI",
+          "item": "https://legate.studio/personal-knowledge-base-for-ai"
+        }
+      ]
+    }
+    </script>
+</head>
+<body>
+
+{{ marketing_nav("") }}
+
+<main class="landing-main">
+
+    <div class="page-hero">
+        <div class="page-hero-label">Personal Knowledge Base</div>
+        <h1>A Personal Knowledge Base Built for AI</h1>
+        <p class="page-hero-sub">Generic AI is useful for generic tasks. The gap shows up when you need the AI to understand your work — your decisions, your constraints, your terminology. A personal knowledge base built for AI closes that gap.</p>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">The Problem</div>
+        <h2 class="section-title">Why AI Needs User-Specific Context</h2>
+        <div class="prose">
+            <p>AI language models are trained on vast amounts of general knowledge. They're genuinely capable at reasoning, writing, coding, and explaining. But "general knowledge" has a ceiling when your work is specific. Your project has constraints the AI doesn't know about. Your decisions have reasoning behind them that the AI would contradict if it didn't know. Your terminology may differ from standard usage in ways that matter.</p>
+
+            <p>The typical workaround is to paste context into every AI session. You maintain a document — a running dump of your project state, key decisions, constraints — and drop it into the chat before asking anything substantive. This works, but it's a manual bridge between two completely separate systems. The AI has no memory of your last session. The context document is always incomplete and often stale. You're doing the integration work by hand, every time.</p>
+
+            <p>The underlying problem: AI assistants are stateless by default. Every conversation starts from zero. The only way to give the AI your context is to provide it explicitly, every session. A personal knowledge base built for AI is the infrastructure that changes this — making your context persistently accessible to the AI without manual intervention each session.</p>
+
+            <p>This isn't a convenience improvement. It's the difference between an AI that knows your work and one that doesn't. Those are different tools.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">Requirements</div>
+        <h2 class="section-title">What a Personal Knowledge Base for AI Actually Needs</h2>
+        <div class="prose">
+            <p>Not every note app qualifies. A personal knowledge base built for AI has four specific requirements:</p>
+
+            <h3>1. Capture — low friction, multiple formats</h3>
+            <p>If capturing is annoying, you won't do it consistently, and the knowledge base degrades into an incomplete record. The system must accept input in formats that match how you actually work: typing a quick note, pasting in a block of text, submitting a voice memo from your phone while you're walking. Each format should produce a usable knowledge entry without manual cleanup.</p>
+
+            <h3>2. Structure — titles, categories, connections</h3>
+            <p>Raw input is not knowledge. A pile of audio files is not searchable. A wall of plain text is not retrievable by an AI in any meaningful way. The system must transform raw input into structured entries: a title that describes the content, a category that places it in context, a date, and connections to related entries. This structure is what makes the knowledge base a knowledge base rather than an archive.</p>
+
+            <h3>3. Retrieve — semantic search, not just keyword</h3>
+            <p>Keyword search finds exact matches. Semantic search finds relevant content. "What did I decide about authentication?" should return your authentication decision notes even if those notes don't contain the word "authentication" verbatim. For a knowledge base built for AI access, semantic retrieval is the baseline — it's how the AI will query the system, and it's how you'll query it too.</p>
+
+            <h3>4. Expose — a machine-readable interface</h3>
+            <p>A web UI is for humans. For AI access, the knowledge base needs a protocol interface that an AI client can call programmatically. MCP (Model Context Protocol) is the current standard for this. An MCP server exposes the knowledge base as a set of callable tools: search, retrieve, create, update. The AI assistant calls these tools during a conversation — the same way it might call a web search tool to look up information — and gets structured results back.</p>
+
+            <p>A system that satisfies all four requirements is a personal knowledge base built for AI. Most note apps satisfy capture and, to some degree, structure. Few provide semantic retrieval as a machine interface. None expose an MCP interface. That's the gap.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">Ownership</div>
+        <h2 class="section-title">Why Ownership Matters More Than You Think</h2>
+        <div class="prose">
+            <p>Most cloud PKB tools store your knowledge in their database. You access it through their application. Their uptime is your uptime. Their pricing changes are your pricing changes. Their policy decisions — about what they store, how they use it, whether they train AI on it — apply to your knowledge.</p>
+
+            <p>For a personal knowledge base that your AI uses as working memory, this is a meaningful dependency. If the PKB tool goes down, your AI loses its memory for that work session. If the tool changes its pricing, you either pay or lose access to your accumulated knowledge. If the tool gets acquired and pivots, your knowledge moves with their business decisions.</p>
+
+            <p>There's also the training question. Some PKB tools with AI features use your notes to improve their models. Your knowledge base contains your thinking, your decisions, your unpublished work. Whether that's acceptable is a personal judgment, but it should be an explicit opt-in, not a buried clause in the terms of service.</p>
+
+            <p>Legate Studio stores your knowledge in a GitHub repository you own and control. It's your repository — private or public, your call. We can't access it even if we wanted to. If you stop using Legate Studio, your knowledge doesn't disappear — it's in your GitHub account, in Markdown files readable by any editor. The MCP server is the access layer; the data is yours independent of the service.</p>
+
+            <p>This matters for a personal knowledge base you intend to use with AI long-term. You're building something valuable over months and years. That investment should be portable.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">Architecture</div>
+        <h2 class="section-title">Capture, Structure, Retrieve, Expose — How It Works</h2>
+        <div class="prose">
+            <p>In Legate Studio, the pipeline from raw input to AI-accessible knowledge works like this:</p>
+
+            <p><strong>Capture:</strong> You submit a voice memo, audio file, or text as a Motif — Legate's term for raw input. You can do this from the web app on any device. The interface is minimal: submit the input, done.</p>
+
+            <p><strong>Structure:</strong> Legate's AI processes the Motif: transcribing audio, generating a title, assigning a category, and writing a structured note from the raw content. The result is a titled, categorized knowledge entry that appears in your Library. The AI also adds it to your knowledge graph — connecting it to related entries based on category and semantic similarity.</p>
+
+            <p><strong>Retrieve:</strong> Every entry is searchable semantically via the web app. Search by category, keyword, or meaning — Legate finds relevant entries. The knowledge graph gives you a visual map of how your entries connect, showing clusters that represent areas of accumulated knowledge.</p>
+
+            <p><strong>Expose:</strong> Legate Studio runs an MCP server. Connect it to Claude Desktop by adding a config entry. From that point, Claude has access to MCP tools: search your knowledge base, retrieve notes by ID or category, create new entries. The same knowledge base you browse in the web app is queryable by your AI in real time, during your conversations.</p>
+
+            <p>The result: one knowledge store, two interfaces — one for humans (the web app) and one for AI (MCP). Capture happens primarily through the web app. Retrieval happens both ways. New entries can be created either through the web app or by the AI during a conversation.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">FAQ</div>
+        <h2 class="section-title">Common Questions</h2>
+        <div class="faq-list">
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    How is a PKB for AI different from a regular note app?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    A regular note app is organized for human browsing: folders, tags, search by keyword. A personal knowledge base for AI is organized so a machine can query it effectively: structured metadata (title, category), semantic search that works on meaning not just keywords, and a protocol interface (MCP) that an AI client can call. The retrieval mechanism and exposure layer are designed around machine access, not just human navigation.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Does the AI have access to all my notes automatically?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    The AI has access to everything in your Legate Studio library via the MCP interface. It queries via search and retrieve tools — finding relevant notes based on your questions rather than loading everything into context. You control what enters the library; the AI can access all of it. Nothing is hidden from the AI that's in your library, and nothing outside your library is accessible to it.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Can I use Legate Studio as a PKB without the AI integration?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    Yes. The library, knowledge graph, voice capture, and semantic search all work without an MCP connection. Many people use Legate Studio primarily as a structured note-taking tool for themselves, without connecting it to an AI client. The MCP integration is available when you're ready for it — it doesn't require any special configuration on the Legate side, just a config entry in Claude Desktop.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    What happens to my knowledge if I cancel my subscription?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    Your knowledge lives in a GitHub repository you own. Cancel Legate Studio, and the repository stays in your GitHub account. Your notes are Markdown files — clone the repository and you have everything, readable by any text editor. There's no proprietary format, no export process required, no risk of losing your accumulated knowledge if you stop using the service.
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">Related Reading</div>
+        <h2 class="section-title">Go Deeper</h2>
+        <div class="prose">
+            <ul>
+                <li><a href="/mcp-first-pkm">MCP-First PKM</a> — what MCP-first personal knowledge management looks like in practice</li>
+                <li><a href="/memory-layer-for-ai">Memory Layer for AI</a> — building persistent context that survives across AI sessions</li>
+                <li><a href="/knowledge-graph-notes">Knowledge Graph Notes</a> — why connected notes produce better recall and better AI context</li>
+                <li><a href="/features">Legate Studio Features</a> — voice capture, knowledge graph, semantic search, MCP integration</li>
+                <li><a href="/faq">FAQ</a> — common questions about getting started</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="cta-band">
+        <div class="cta-band-inner">
+            <h2>Try Legate Studio free for 14 days</h2>
+            <p>Full access — voice capture, knowledge graph, MCP integration — no credit card required.</p>
+            <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+                <a href="{{ url_for('auth.login') }}" class="btn-primary">
+                    Start Free Trial
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+                </a>
+                <a href="/pricing" class="btn-ghost">See pricing</a>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+{{ marketing_footer() }}
+{{ marketing_scripts() }}
+
+<script>
+document.querySelectorAll('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const item = btn.closest('.faq-item');
+        const answer = item.querySelector('.faq-answer');
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(i => {
+            i.classList.remove('open');
+            i.querySelector('.faq-answer').classList.remove('open');
+        });
+        if (!isOpen) {
+            item.classList.add('open');
+            answer.classList.add('open');
+        }
+    });
+});
+</script>
+
+</body>
+</html>

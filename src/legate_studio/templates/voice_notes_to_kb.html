@@ -1,0 +1,244 @@
+{% from "marketing_base.html" import marketing_nav, marketing_footer, marketing_scripts, marketing_head_common, marketing_page_styles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Voice notes are fast to capture but hard to find later. Legate Studio transcribes, categorizes, and connects your voice memos into a searchable knowledge base your AI can query via MCP.">
+    <meta name="theme-color" content="#0d1117">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Turn Voice Notes Into a Searchable Knowledge Base | Legate Studio">
+    <meta property="og:description" content="Voice notes are fast to capture but hard to find later. Legate Studio transcribes, categorizes, and connects your voice memos into a searchable knowledge base your AI can query via MCP.">
+    <meta property="og:image" content="https://legate.studio/static/img/og-share.png">
+    <meta property="og:url" content="https://legate.studio/voice-notes-to-knowledge-base">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Legate Studio">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Turn Voice Notes Into a Searchable Knowledge Base | Legate Studio">
+    <meta name="twitter:description" content="Voice notes are fast to capture but hard to find later. Legate Studio transcribes, categorizes, and connects your voice memos into a searchable knowledge base your AI can query via MCP.">
+    <meta name="twitter:image" content="https://legate.studio/static/img/og-share.png">
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://legate.studio/voice-notes-to-knowledge-base">
+
+    <title>Turn Voice Notes Into a Searchable Knowledge Base | Legate Studio</title>
+
+    {{ marketing_page_styles() }}
+    {{ marketing_head_common() }}
+
+    <!-- BreadcrumbList JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://legate.studio/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Voice Notes to Knowledge Base",
+          "item": "https://legate.studio/voice-notes-to-knowledge-base"
+        }
+      ]
+    }
+    </script>
+</head>
+<body>
+
+{{ marketing_nav("") }}
+
+<main class="landing-main">
+
+    <div class="page-hero">
+        <div class="page-hero-label">Voice Capture</div>
+        <h1>From Voice Notes to Structured Knowledge</h1>
+        <p class="page-hero-sub">Voice notes solve the capture problem perfectly — you can record anywhere, faster than typing, right when you have the thought. The problem is what comes after. Legate Studio handles the after part.</p>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">The Capture Problem</div>
+        <h2 class="section-title">Why Voice Notes Are Fast to Record and Hard to Use</h2>
+        <div class="prose">
+            <p>Voice notes are genuinely the best capture mechanism for most situations. Speaking is faster than typing. You can do it while walking, driving, or in the moments immediately after a meeting when your thoughts are sharpest. The barrier to capture is low enough that you actually use it — which is the only thing that matters for a capture system.</p>
+
+            <p>But voice notes create a retrieval problem that most workflows don't solve. A folder of M4A files from the past six months is not searchable. You can't ctrl+F it. You can't ask your AI "what did I think about the API architecture in March?" and get an answer. The audio file is the beginning of a workflow, not the end of one.</p>
+
+            <p>Transcription tools move the needle but don't solve the problem. A raw transcript is better than audio — at least it's searchable text. But it's unstructured: a wall of words with no title, no category, no connection to your other notes. "Find the transcript where I talked about the API design decision" still requires reading through transcripts manually, hoping you remember the approximate date. Transcription converts audio to text. It doesn't convert text to knowledge.</p>
+
+            <p>The gap between "voice note" and "searchable, AI-accessible knowledge" is where most voice capture workflows break down. Capturing is easy. Processing, organizing, and connecting voice notes into a usable knowledge base is the actual hard part — and it's the part that requires automation to be sustainable at any real volume.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">The Pipeline</div>
+        <h2 class="section-title">From Raw Audio to Searchable Knowledge Entry</h2>
+        <div class="prose">
+            <p>Legate Studio processes voice memos through what it calls a Motif pipeline. A Motif is raw input — voice memo, audio file, or text — that you submit for processing. Here's what happens:</p>
+
+            <p><strong>Transcription.</strong> The audio is transcribed to text. This is the baseline that any transcription service provides. Legate handles standard mobile audio quality — iPhone Voice Memos, Android recorder apps, whatever you're using to record in the field.</p>
+
+            <p><strong>Title extraction.</strong> The AI generates a concise, descriptive title from the transcript content. This is the step most transcription tools skip, and it's what makes retrieval reliable. Instead of "voice_memo_2025_03_07_1423.m4a" you get "API authentication architecture decision — tradeoffs between JWT and session tokens." That title is what search operates on.</p>
+
+            <p><strong>Category assignment.</strong> The AI assigns the note to a category based on content. Categories in Legate Studio are used for organization and for knowledge graph clustering — notes in the same category are connected to each other. Voice memos about your backend work land in a backend category; voice memos about a specific project land in that project's category. The categorization is automatic but editable if the AI misses.</p>
+
+            <p><strong>Content structuring.</strong> The AI writes a structured note from the transcript — organized, readable prose rather than raw transcription. Filler words removed, rambling restructured, key points surfaced. The result is a note you'd actually want to read and reference, not a verbatim transcript.</p>
+
+            <p><strong>Knowledge graph placement.</strong> The new entry is added to the knowledge graph, connected to related entries based on category and semantic content. Your voice memo about authentication joins your other authentication notes. Your project voice memo joins your other project notes. The connections form automatically.</p>
+
+            <p>End result: you record a voice memo, submit it to Legate, and minutes later have a titled, categorized, structured knowledge entry that's semantically searchable and connected to your existing knowledge — and accessible to your AI via MCP. The audio file is the input; the knowledge entry is the output.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">The Connected Knowledge Base</div>
+        <h2 class="section-title">How Voice Notes Connect Into Larger Context</h2>
+        <div class="prose">
+            <p>An isolated structured note is useful. A connected body of structured notes is more useful by an order of magnitude.</p>
+
+            <p>When you record voice memos consistently over a project — capturing decisions, concerns, ideas, post-meeting thoughts — each memo becomes a node in your knowledge graph. After a few months, you have dozens of connected nodes representing your thinking about that project over time. The graph shows you how ideas evolved, where decisions came from, what concerns you kept returning to.</p>
+
+            <p>This matters for AI retrieval in a specific way. When your AI searches for context about a project via MCP, it doesn't just retrieve a single note — it can surface a cluster of related notes, giving it the fuller context of your evolving thinking rather than a snapshot from one moment. The quality of AI assistance on your work improves as the knowledge base grows, because the AI has more context to draw on.</p>
+
+            <p>It also matters for your own recall. Looking at a knowledge graph of 60 voice memos from a three-month project is a different cognitive experience than looking at a folder of 60 audio files. The graph shows structure — clusters around specific decisions, threads of evolving thought, the relative density of different aspects of the work. That structure is information about your own thinking that you'd lose if you were just storing files.</p>
+
+            <p>The connection layer is what distinguishes a knowledge base from an archive. An archive stores information. A knowledge base makes that information navigable, searchable, and useful as context — for you, and for your AI.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">Where It Helps</div>
+        <h2 class="section-title">Workflows Where Voice-to-Knowledge Makes the Biggest Difference</h2>
+        <div class="prose">
+            <p><strong>Walking and thinking.</strong> Ideas during walks are often the best ones and the most likely to be lost. The friction of pulling out your phone and typing while walking is enough to kill the impulse. Speaking a 90-second memo is not. That memo, processed by Legate, becomes a searchable knowledge entry within minutes of getting home.</p>
+
+            <p><strong>Post-meeting brain dump.</strong> The two minutes immediately after a meeting contain more useful signal than the hour spent trying to take notes during it. Record a voice memo in the elevator — your actual takeaways, the decisions that were made, the things you're going to do differently. Let Legate structure it. The result is a useful meeting record without the overhead of formal note-taking during the meeting itself.</p>
+
+            <p><strong>Research capture while reading.</strong> When you encounter something worth capturing in a paper or book, stop and record it: "I want to remember X from this paper because it applies to Y." Legate processes it into a structured note with the context of why you found it important — not just the fact, but the relevance. That context is what makes research notes useful months later.</p>
+
+            <p><strong>End-of-day reflection.</strong> A daily voice memo review — what happened, what I learned, what I'm thinking about tomorrow — processed into a structured daily log creates a searchable record of your working life. Your AI can search "what was I working on in February" and get real answers from your daily notes, not a calendar that shows meeting titles.</p>
+
+            <p><strong>Commute capture.</strong> Car or transit time is dead time for keyboard-based capture. It's live time for voice. Regular commute voice memos, processed consistently, can add up to a substantial body of captured thinking that would otherwise be lost entirely.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">FAQ</div>
+        <h2 class="section-title">Common Questions</h2>
+        <div class="faq-list">
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    What audio formats does Legate Studio accept?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    Common audio formats including MP3, M4A, WAV, and OGG. The M4A format that iPhone Voice Memos produces works out of the box. Standard Android recorder formats work too. You upload the file through the Legate Studio web app on any device — there's no separate app required for upload.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    How accurate is the transcription?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    Accurate enough for most spoken content. Technical jargon and uncommon proper nouns may have minor errors, but the AI note extraction works from the semantic content — it understands the meaning even with minor transcription imperfections. For critical technical content (code, URLs, specific names), review the generated note and edit as needed. The edit interface is in the Library and takes seconds.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Can I edit the generated note after it's processed?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    Yes. The processed note appears in your Library where you can edit the title, category, and content directly. Think of the AI processing as a strong first draft that you can refine. In practice, most voice memos produce notes that don't need editing — the AI does a good job of extracting the key content. But the edit interface is always available.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Is there a mobile app for recording Motifs directly?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    Currently, you record on your phone using its built-in voice memo app (iPhone Voice Memos, Google Recorder, etc.), then upload the file to Legate Studio via the mobile web interface. The web app is mobile-responsive and works well for upload from a phone browser. A more streamlined native mobile capture experience is on the roadmap.
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">Related Reading</div>
+        <h2 class="section-title">Go Deeper</h2>
+        <div class="prose">
+            <ul>
+                <li><a href="/mcp-first-pkm">MCP-First PKM</a> — how MCP connects your knowledge base to AI assistants</li>
+                <li><a href="/knowledge-graph-notes">Knowledge Graph Notes</a> — how voice notes connect into a larger structure</li>
+                <li><a href="/personal-knowledge-base-for-ai">Personal Knowledge Base for AI</a> — the architecture behind AI-accessible knowledge</li>
+                <li><a href="/features">Legate Studio Features</a> — full feature overview including voice capture</li>
+                <li><a href="/faq">FAQ</a> — common questions about getting started</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="cta-band">
+        <div class="cta-band-inner">
+            <h2>Turn your voice notes into searchable knowledge</h2>
+            <p>14-day free trial. Record, submit, and your first structured knowledge entry is ready within minutes.</p>
+            <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+                <a href="{{ url_for('auth.login') }}" class="btn-primary">
+                    Start Free Trial
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+                </a>
+                <a href="/pricing" class="btn-ghost">See pricing</a>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+{{ marketing_footer() }}
+{{ marketing_scripts() }}
+
+<script>
+document.querySelectorAll('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const item = btn.closest('.faq-item');
+        const answer = item.querySelector('.faq-answer');
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(i => {
+            i.classList.remove('open');
+            i.querySelector('.faq-answer').classList.remove('open');
+        });
+        if (!isOpen) {
+            item.classList.add('open');
+            answer.classList.add('open');
+        }
+    });
+});
+</script>
+
+</body>
+</html>

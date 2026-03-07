@@ -1,0 +1,236 @@
+{% from "marketing_base.html" import marketing_nav, marketing_footer, marketing_scripts, marketing_head_common, marketing_page_styles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="MCP-first PKM connects your personal knowledge base directly to AI assistants via the Model Context Protocol. Here's what that looks like in practice and why it changes how AI is useful.">
+    <meta name="theme-color" content="#0d1117">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="MCP-First PKM | Personal Knowledge Management Built for AI Workflows">
+    <meta property="og:description" content="MCP-first PKM connects your personal knowledge base directly to AI assistants via the Model Context Protocol. Here's what that looks like in practice and why it changes how AI is useful.">
+    <meta property="og:image" content="https://legate.studio/static/img/og-share.png">
+    <meta property="og:url" content="https://legate.studio/mcp-first-pkm">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Legate Studio">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="MCP-First PKM | Personal Knowledge Management Built for AI Workflows">
+    <meta name="twitter:description" content="MCP-first PKM connects your personal knowledge base directly to AI assistants via the Model Context Protocol. Here's what that looks like in practice and why it changes how AI is useful.">
+    <meta name="twitter:image" content="https://legate.studio/static/img/og-share.png">
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://legate.studio/mcp-first-pkm">
+
+    <title>MCP-First PKM | Personal Knowledge Management Built for AI Workflows</title>
+
+    {{ marketing_page_styles() }}
+    {{ marketing_head_common() }}
+
+    <!-- BreadcrumbList JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://legate.studio/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "MCP-First PKM",
+          "item": "https://legate.studio/mcp-first-pkm"
+        }
+      ]
+    }
+    </script>
+</head>
+<body>
+
+{{ marketing_nav("") }}
+
+<main class="landing-main">
+
+    <div class="page-hero">
+        <div class="page-hero-label">Personal Knowledge Management</div>
+        <h1>What MCP-First PKM Looks Like in Practice</h1>
+        <p class="page-hero-sub">Most PKM tools were built before AI mattered. MCP-first PKM is built around a different assumption: your AI assistant should be able to query your knowledge base directly, not the other way around.</p>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">Definition</div>
+        <h2 class="section-title">What MCP-First PKM Actually Means</h2>
+        <div class="prose">
+            <p>Personal knowledge management (PKM) is the practice of capturing, organizing, and retrieving your own knowledge — notes, decisions, research, ideas — in a way that makes them useful over time. The tools in this space (Notion, Obsidian, Roam, Logseq) are good at helping humans manage knowledge. They're not built around the question of how an AI assistant would access and use that knowledge.</p>
+
+            <p>MCP stands for Model Context Protocol, the open standard Anthropic released for connecting AI assistants to external tools and data sources. An MCP server exposes a set of tools — search, retrieve, create, update — that an MCP-compatible AI client can call during a conversation. It's the plumbing that lets your AI reach outside its own context window and work with external systems.</p>
+
+            <p>MCP-first, as a design philosophy, means the MCP interface is the <strong>primary</strong> way AI uses the knowledge base — not a feature layered on after the fact. In a standard note app, AI is an add-on: a sidebar chat, a summarize button, an AI-powered search within the app. In an MCP-first system, the direction is reversed: the AI assistant (running in Claude Desktop or another MCP client) reaches into the knowledge base and queries it directly, without you switching tabs or copy-pasting context.</p>
+
+            <p>Practically, this means: you connect Legate Studio to Claude Desktop once by adding a JSON config entry. From that point, Claude can search your knowledge base, retrieve specific notes by category or topic, and create new entries — all from inside the conversation, in response to natural language requests. The knowledge base is the AI's working memory, not your filing cabinet.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">The Problem</div>
+        <h2 class="section-title">Why Standard Note Apps Fall Short for AI Workflows</h2>
+        <div class="prose">
+            <p>The core problem with using a standard note app alongside an AI assistant is the context gap. Every AI conversation starts fresh. The model has its training data and whatever you paste into the chat window — nothing more. If you've spent six months building a knowledge base in Notion or Obsidian, that knowledge is completely inaccessible to your AI unless you copy and paste it in manually.</p>
+
+            <p>This is what most people do: maintain a "context document" — a text file with their key decisions, preferences, and project state — that they paste at the start of every AI session. It works, but it's friction that compounds. The context document grows stale. It never has everything. You forget to update it. Important context from three months ago is buried in notes you'd have to go find manually.</p>
+
+            <p>Standard note apps compound this problem because their organization is built for human browsing, not machine querying. Folder hierarchies are a human navigation model. You know that your API decision notes are in "Projects &gt; Backend &gt; Auth," but there's no way to express that query programmatically. Even note apps that added AI features give the AI access to their own embed space — an opaque vector store the AI queries, not your actual knowledge organized in your own structure.</p>
+
+            <p>The result: your note-taking tool and your AI tool are completely separate systems with no shared state. You do the translating between them manually, every session, forever.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">The Memory Shift</div>
+        <h2 class="section-title">How Persistent Memory Changes AI Usefulness</h2>
+        <div class="prose">
+            <p>When your AI has persistent, queryable access to your knowledge base, the character of AI assistance changes qualitatively — not just the convenience.</p>
+
+            <p>Consider the difference. Without persistent memory: you ask Claude to help you design a caching strategy. You paste in your current architecture notes. Claude suggests something reasonable but generic. Next session, you start over. With persistent memory: Claude can search your knowledge base for "caching decisions" and "performance constraints" before responding. It finds the note where you documented your latency requirements three months ago. It finds the note where you decided against Redis for operational reasons. Its suggestion accounts for your actual constraints, not generic best practices.</p>
+
+            <p>This isn't a marginal improvement. An AI that knows your context is a qualitatively different tool than one starting from zero. The productivity difference between "AI that knows your work" and "AI that knows nothing about you" is the same as the difference between a new contractor on day one and one who's been embedded in your team for a year. The capability is identical; the usefulness is not.</p>
+
+            <p>The persistent memory model also changes how you think about capturing knowledge. When you know your AI will have access to your notes in future sessions, capturing a decision in Legate Studio isn't just for your own future reference — it's briefing your AI on the decision so it doesn't contradict it later. The knowledge base becomes a shared working document between you and your AI assistant.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">The Legate Approach</div>
+        <h2 class="section-title">How Legate Studio Implements MCP-First PKM</h2>
+        <div class="prose">
+            <p>Legate Studio runs an MCP server that you connect to Claude Desktop (or any MCP-compatible client) by adding one config entry. The server exposes tools that cover the full read/write interface to your knowledge base: semantic search across all notes, retrieval by category or ID, creation of new entries, and querying the knowledge graph.</p>
+
+            <p>The capture side feeds the same store. When you submit a voice memo as a Motif, Legate's AI transcribes it, assigns it a title and category, and creates a structured knowledge entry. That entry is immediately available via MCP — your phone voice memo becomes AI-accessible knowledge in seconds, not in a separate "audio note" silo.</p>
+
+            <p>The knowledge graph is the structural layer that makes MCP retrieval meaningful. Every entry is a node; related entries are connected. When your AI searches for "authentication decisions," it doesn't just get one note — it can find the cluster of notes around authentication and return richer context. The graph is built automatically from your entries; you don't draw connections manually.</p>
+
+            <p>Storage is in a GitHub repository you own. This is a deliberate architectural choice: your knowledge base lives in your infrastructure, not ours. You can clone it, export it, or delete Legate Studio without losing your knowledge. The MCP server is the access layer — the data is yours regardless.</p>
+
+            <p>The result is a system where your note-taking tool and your AI tool share the same knowledge store, with MCP as the protocol that makes that sharing work. You capture in Legate; your AI retrieves from Legate. There's no translating between systems, no context documents to maintain, no copy-pasting.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">FAQ</div>
+        <h2 class="section-title">Common Questions</h2>
+        <div class="faq-list">
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Is MCP-first PKM different from AI-powered note-taking?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    Yes, and the difference is directional. AI-powered note-taking means AI helps you organize or summarize inside the note app — AI is a feature of the tool you're using. MCP-first means your AI assistant (running in Claude Desktop or another MCP client) reaches into your knowledge base from the outside via a standard protocol. The access direction is reversed: the AI is the primary actor, and your knowledge base is the data source it queries. This is a more powerful model because the AI operates in your workflow rather than requiring you to switch to a note app to get AI assistance.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Do I need to understand MCP to use Legate Studio?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    No. Setup is adding a JSON snippet to Claude Desktop's config file — Legate Studio's documentation walks through exactly what to paste and where. Once connected, you interact with your knowledge base through Claude naturally: "search my notes for X," "save a note about Y," "what did I decide about Z?" The MCP mechanics are invisible during use.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    What AI assistants does Legate Studio's MCP integration support?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    Currently Claude Desktop is the primary supported MCP client. Legate Studio's MCP server is standards-compliant, so any MCP-compatible client will work as the standard matures and more clients adopt it. Anthropic's Claude Desktop is the most capable MCP client available today.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Can my AI assistant write notes to my knowledge base, or only read them?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    Both. The MCP tools include read operations (semantic search, retrieve by ID, retrieve by category) and write operations (create new note, update existing note). Your AI can capture new knowledge into your base during a conversation — you can tell Claude "save a note: decided to use PostgreSQL for this project because X" and it will create the entry in your library. This bidirectional access is what makes the AI a genuine collaborator in building your knowledge base rather than just a reader of it.
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">Related Reading</div>
+        <h2 class="section-title">Go Deeper</h2>
+        <div class="prose">
+            <ul>
+                <li><a href="/memory-layer-for-ai">Memory Layer for AI</a> — how to build persistent context that survives across AI sessions</li>
+                <li><a href="/personal-knowledge-base-for-ai">Personal Knowledge Base for AI</a> — what a PKB built for AI access looks like architecturally</li>
+                <li><a href="/persistent-memory-for-ai-assistants">Persistent Memory for AI Assistants</a> — why chat history is weak memory and what to use instead</li>
+                <li><a href="/features">Legate Studio Features</a> — the full feature set: voice capture, knowledge graph, semantic search, MCP integration</li>
+                <li><a href="/faq">FAQ</a> — common questions about getting started</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="cta-band">
+        <div class="cta-band-inner">
+            <h2>Start building your MCP-first knowledge base</h2>
+            <p>14-day free trial. Full access from day one — voice capture, knowledge graph, MCP integration, everything.</p>
+            <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+                <a href="{{ url_for('auth.login') }}" class="btn-primary">
+                    Start Free Trial
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+                </a>
+                <a href="/pricing" class="btn-ghost">See pricing</a>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+{{ marketing_footer() }}
+{{ marketing_scripts() }}
+
+<script>
+document.querySelectorAll('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const item = btn.closest('.faq-item');
+        const answer = item.querySelector('.faq-answer');
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(i => {
+            i.classList.remove('open');
+            i.querySelector('.faq-answer').classList.remove('open');
+        });
+        if (!isOpen) {
+            item.classList.add('open');
+            answer.classList.add('open');
+        }
+    });
+});
+</script>
+
+</body>
+</html>

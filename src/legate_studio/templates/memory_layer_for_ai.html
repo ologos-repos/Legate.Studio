@@ -1,0 +1,272 @@
+{% from "marketing_base.html" import marketing_nav, marketing_footer, marketing_scripts, marketing_head_common, marketing_page_styles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="AI assistants are stateless by default. A memory layer for AI gives them persistent context from your personal knowledge base via MCP. Here's what that looks like in practice.">
+    <meta name="theme-color" content="#0d1117">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Memory Layer for AI | Persistent Context Across Workflows">
+    <meta property="og:description" content="AI assistants are stateless by default. A memory layer for AI gives them persistent context from your personal knowledge base via MCP. Here's what that looks like in practice.">
+    <meta property="og:image" content="https://legate.studio/static/img/og-share.png">
+    <meta property="og:url" content="https://legate.studio/memory-layer-for-ai">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Legate Studio">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Memory Layer for AI | Persistent Context Across Workflows">
+    <meta name="twitter:description" content="AI assistants are stateless by default. A memory layer for AI gives them persistent context from your personal knowledge base via MCP. Here's what that looks like in practice.">
+    <meta name="twitter:image" content="https://legate.studio/static/img/og-share.png">
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://legate.studio/memory-layer-for-ai">
+
+    <title>Memory Layer for AI | Persistent Context Across Workflows</title>
+
+    {{ marketing_page_styles() }}
+    {{ marketing_head_common() }}
+
+    <!-- BreadcrumbList JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://legate.studio/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Memory Layer for AI",
+          "item": "https://legate.studio/memory-layer-for-ai"
+        }
+      ]
+    }
+    </script>
+</head>
+<body>
+
+{{ marketing_nav("") }}
+
+<main class="landing-main">
+
+    <div class="page-hero">
+        <div class="page-hero-label">AI Memory Infrastructure</div>
+        <h1>Build a Memory Layer for AI That Actually Holds Up</h1>
+        <p class="page-hero-sub">AI assistants have no memory between sessions by default. A memory layer is the infrastructure that changes this — persistent, structured, queryable context that your AI draws on without you manually providing it each time.</p>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">The Stateless Problem</div>
+        <h2 class="section-title">AI Assistants Have No Memory by Default</h2>
+        <div class="prose">
+            <p>Every AI conversation starts fresh. The model arrives with its training data — a broad base of general knowledge — and nothing specific to you. No memory of your previous session. No knowledge of your project decisions. No awareness of the constraints you've established or the research you've accumulated. Each conversation is session zero.</p>
+
+            <p>The standard workaround is manual context injection: before each AI session, paste in your relevant notes. You might maintain a "context document" — a growing text file of key decisions, project state, and background — that you copy into the chat window to orient the AI before asking anything substantive. For a small project, this works. For sustained work over months, it becomes unsustainable: the document grows, goes stale, never captures everything, and the act of maintaining it is itself a task.</p>
+
+            <p>The deeper problem is that manual context injection doesn't scale architecturally. You're doing the integration work — deciding what context is relevant, extracting it, reformatting it, pasting it — every single session. The AI doesn't get smarter about your work over time. You just get better at briefing it, which is a different (and inferior) thing.</p>
+
+            <p>A memory layer is the architectural solution: persistent structured data that the AI can query at runtime to answer questions about your work, decisions, and context, without you having to provide that data manually each session.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">What Memory Means</div>
+        <h2 class="section-title">What a Real Memory Layer Looks Like</h2>
+        <div class="prose">
+            <p>The term "memory" is used loosely in AI contexts, covering several different things. It's worth being precise about what a <em>real</em> memory layer is and isn't.</p>
+
+            <p><strong>It isn't in-context stuffing.</strong> Pasting notes into the system prompt or the beginning of a conversation is technically a form of memory injection, but it doesn't scale. Context windows are finite. For a large knowledge base, you can't fit everything into context. You have to choose what to include, which means you're doing the retrieval work manually — which is the problem we're trying to solve.</p>
+
+            <p><strong>It isn't chat history.</strong> Chat history is a sequential log of conversational turns. It has useful signal — the AI can reference what was said earlier in the session — but it's not structured, not searchable in any meaningful sense, and loses relevant signal in noise quickly. We'll come back to this.</p>
+
+            <p><strong>It isn't vendor-controlled AI memory.</strong> Some AI providers have added "memory" features that automatically extract facts from your conversations and store them. These are useful but limited: they're controlled by the vendor (opaque, non-portable), they store facts extracted from conversations (not your structured knowledge base), and they're not queryable in structured ways — the AI uses them implicitly, not on demand.</p>
+
+            <p><strong>A real memory layer is:</strong> structured (titled, categorized entries, not a pile of text), semantically searchable (retrieval by meaning, not just keyword), exposed via a machine interface the AI can call explicitly (MCP), and owned by you — not stored in the AI vendor's system. It's infrastructure you control that the AI accesses on demand.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">Chat History</div>
+        <h2 class="section-title">Why Raw Chat History Is Weak Memory</h2>
+        <div class="prose">
+            <p>Chat history has real value for picking up a conversation where you left off. For persistent memory across sessions and projects, it falls short in specific ways that are worth understanding.</p>
+
+            <p><strong>Sequential structure, not queryable structure.</strong> Chat history is a time-ordered sequence of messages. You can read back through it, but you can't run "search for notes about my authentication decision" against it in any meaningful way. The AI can reference earlier parts of the conversation, but it can't query chat history the way it can query a database. Finding specific information requires scrolling or hoping the AI's context window reaches far enough back.</p>
+
+            <p><strong>Signal drowning in noise.</strong> A meaningful decision made in session three is buried under dozens of follow-up messages, clarifying questions, and tangential conversation. Important context doesn't float to the top — it gets pushed down by volume. A month into using an AI assistant for a project, the important decisions from early sessions are effectively lost in the history log.</p>
+
+            <p><strong>Session boundaries.</strong> Chat history is per-session. When you start a new conversation, the previous session's history isn't accessible (unless the AI provider explicitly threads conversations, which few do reliably). Your decisions from last week aren't available to the AI today unless you paste them in.</p>
+
+            <p><strong>Not portable.</strong> Chat history lives in the AI provider's system. It's not portable to other tools, not searchable by you in structured ways, and subject to the provider's data retention policies.</p>
+
+            <p>A structured knowledge base inverts all of these: entries are titled and categorized (queryable), important information has the same retrieval priority regardless of when it was captured (no time-based signal decay), it persists across sessions and AI clients, and it's owned by you.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">Why Structure Matters</div>
+        <h2 class="section-title">Why Structured Personal Knowledge Is Better Memory</h2>
+        <div class="prose">
+            <p>When you capture a decision in Legate Studio, the AI processing step does something specific: it gives the note a title, assigns it a category, and places it in the knowledge graph. This transformation from raw text to structured entry is what makes the knowledge base useful as AI memory rather than just as an archive.</p>
+
+            <p>Consider the retrieval difference. An AI searching a structured knowledge base for "authentication constraints" runs a semantic search across titled, categorized entries. It finds "Authentication Architecture Decision — March 2025" and "Security Constraints for API Layer" — entries whose titles signal their relevance. The search is fast and the results are meaningful.</p>
+
+            <p>An AI trying to retrieve the same information from a pile of text files or a transcript runs string matching against unstructured content. The constraint might be mentioned once in paragraph four of a long session transcript. It might use different terminology. The AI might find it, or might not. The retrieval is unreliable because the storage isn't structured for retrieval.</p>
+
+            <p>The knowledge graph adds another dimension. Your authentication notes are connected to your security notes, which are connected to your infrastructure notes. When the AI retrieves your authentication constraints, it can traverse the graph to find related context — not just one isolated note but the cluster of knowledge around the topic. This is richer context than a flat list of search results.</p>
+
+            <p>Structure is the investment you make at capture time (or that AI processing makes on your behalf) that pays dividends at retrieval time. A memory layer without structure is a log. A memory layer with structure is a queryable knowledge base.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">Legate Studio</div>
+        <h2 class="section-title">How Legate Studio Fits as a Memory Layer</h2>
+        <div class="prose">
+            <p>Legate Studio is the capture-and-structure layer; MCP is the query interface. Together they form a memory layer that:</p>
+
+            <p><strong>Persists across sessions.</strong> Your knowledge base accumulates over time. Every note you add — whether from a voice memo, typed text, or AI-created entry during a conversation — is available in every future session. There are no session boundaries for the memory layer.</p>
+
+            <p><strong>Is semantically searchable.</strong> The AI can call the search tool with a natural language query and get relevant structured entries back. "What constraints did I document for the API?" returns your constraint notes — not a transcript where the constraints were mentioned in passing.</p>
+
+            <p><strong>Accepts new entries bidirectionally.</strong> You add entries via the web app (including voice memo upload). The AI adds entries during conversations via the create_note MCP tool. Both paths feed the same knowledge store. Capturing a decision during an AI session doesn't require you to switch apps — you ask Claude to save it.</p>
+
+            <p><strong>Is owned by you.</strong> Your knowledge base lives in a GitHub repository in your account. If you stop using Legate Studio, the knowledge stays. If you want to use it with a different tool, the data is portable Markdown. The memory layer is your infrastructure, not ours.</p>
+
+            <p>Setup: connect Legate Studio to Claude Desktop by adding a JSON config entry pointing to the MCP server. Done. From that point, Claude has working memory for your projects — every session, automatically, without you doing anything to provide context.</p>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">FAQ</div>
+        <h2 class="section-title">Common Questions</h2>
+        <div class="faq-list">
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Is this the same as the memory feature in ChatGPT or Claude?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    No. Provider memory features extract facts from your conversations and store them internally — you can't see the full store, edit it directly, or export it easily. Legate Studio gives you a knowledge base you own and control, with a structured query interface (MCP) your AI calls explicitly. You can see exactly what's in it, edit any entry, delete entries, and export everything. The transparency and ownership are fundamentally different.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    How does the AI actually query my memory layer?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    Via MCP tools. When you connect Legate Studio to Claude Desktop, Claude gets access to tools: search_knowledge_base, get_note, create_note, and others. During a conversation, Claude can call these tools to look up context from your knowledge base — the same mechanism it uses to call a web search tool. The results come back as structured data that Claude incorporates into its response.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Does querying the memory layer slow down AI conversations?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    MCP tool calls add a small latency — Legate returns results in milliseconds, and the network round-trip adds a bit more. In practice, tool calls are fast enough that you don't notice them in the flow of conversation. Claude only calls the tools when it determines your knowledge base is relevant to the current question — it doesn't query on every message.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Can I control what the AI can access in my memory layer?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    The AI can access everything in your Legate Studio library via MCP — there's no per-note access control on the MCP layer. Control is at the input level: what you add to Legate Studio is what the AI can access. If something shouldn't be in the memory layer, don't add it to Legate Studio. The GitHub repository can also be private, so your knowledge isn't accessible to anyone else on the web.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    What if I want to delete something from the AI's memory?
+                    <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="faq-answer">
+                    Delete it from your Legate Studio library. The MCP interface reflects your current library state — there's no separate AI memory store running behind the scenes. Delete the note in Legate, and the AI no longer has access to it. This transparency is a deliberate design choice: your memory layer is exactly what's in your library, nothing more.
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="section">
+        <div class="section-label">Related Reading</div>
+        <h2 class="section-title">Go Deeper</h2>
+        <div class="prose">
+            <ul>
+                <li><a href="/mcp-first-pkm">MCP-First PKM</a> — what MCP-first personal knowledge management looks like in practice</li>
+                <li><a href="/personal-knowledge-base-for-ai">Personal Knowledge Base for AI</a> — the four requirements for a PKB built for AI access</li>
+                <li><a href="/persistent-memory-for-ai-assistants">Persistent Memory for AI Assistants</a> — giving AI assistants durable context that survives session boundaries</li>
+                <li><a href="/features">Legate Studio Features</a> — voice capture, knowledge graph, semantic search, MCP integration</li>
+                <li><a href="/faq">FAQ</a> — common questions about getting started</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="cta-band">
+        <div class="cta-band-inner">
+            <h2>Build your AI memory layer</h2>
+            <p>14-day free trial. Full access from day one — no credit card required.</p>
+            <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+                <a href="{{ url_for('auth.login') }}" class="btn-primary">
+                    Start Free Trial
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+                </a>
+                <a href="/pricing" class="btn-ghost">See pricing</a>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+{{ marketing_footer() }}
+{{ marketing_scripts() }}
+
+<script>
+document.querySelectorAll('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const item = btn.closest('.faq-item');
+        const answer = item.querySelector('.faq-answer');
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(i => {
+            i.classList.remove('open');
+            i.querySelector('.faq-answer').classList.remove('open');
+        });
+        if (!isOpen) {
+            item.classList.add('open');
+            answer.classList.add('open');
+        }
+    });
+});
+</script>
+
+</body>
+</html>
