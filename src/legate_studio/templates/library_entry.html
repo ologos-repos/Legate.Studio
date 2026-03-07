@@ -601,6 +601,7 @@
     @media (max-width: 768px) {
         .library-layout {
             flex-direction: column;
+            padding: 0 0.75rem;
         }
 
         .library-sidebar {
@@ -613,6 +614,30 @@
             flex-direction: row;
             flex-wrap: wrap;
             gap: 0.5rem;
+        }
+
+        .entry-actions {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .action-group {
+            flex-wrap: wrap;
+        }
+
+        .public-url-bar {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .public-url-link {
+            word-break: break-all;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .library-layout {
+            padding: 0 0.5rem;
         }
     }
 </style>

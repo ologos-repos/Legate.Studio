@@ -342,6 +342,7 @@
     @media (max-width: 768px) {
         .library-layout {
             flex-direction: column;
+            padding: 0 0.75rem;
         }
 
         .library-sidebar {
@@ -358,6 +359,34 @@
 
         .sidebar-link {
             flex: 0 0 auto;
+        }
+
+        .entry-card {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .entry-actions {
+            opacity: 1; /* Always show on touch */
+        }
+
+        .library-stats {
+            flex-wrap: wrap;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .library-layout {
+            padding: 0 0.5rem;
+        }
+
+        .library-header h1 {
+            font-size: 1.25rem;
+        }
+
+        .library-stats {
+            grid-template-columns: repeat(2, 1fr);
+            display: grid;
         }
     }
 </style>

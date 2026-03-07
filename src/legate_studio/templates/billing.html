@@ -279,6 +279,36 @@
     .btn-success:hover {
         background: rgba(63, 185, 80, 0.1);
     }
+
+    @media (max-width: 600px) {
+        .billing-container {
+            padding: 1rem;
+        }
+
+        .plans-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .billing-header h1 {
+            font-size: 1.375rem;
+        }
+
+        .plan-status {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .manage-actions {
+            flex-direction: column;
+        }
+
+        .manage-actions .btn {
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+        }
+    }
 </style>
 {% endblock %}
 
