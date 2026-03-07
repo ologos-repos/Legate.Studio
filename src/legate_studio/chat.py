@@ -81,8 +81,8 @@ def get_services():
         from .rag.chat_service import ChatProvider, ChatService
         from .rag.context_builder import ContextBuilder
         from .rag.database import get_user_legato_db, init_chat_db
+        from .rag.embedding_provider import get_embedding_provider
         from .rag.embedding_service import EmbeddingService
-        from .rag.openai_provider import OpenAIEmbeddingProvider
 
         # Initialize databases
         # User-scoped legato db for embeddings/knowledge
@@ -92,13 +92,8 @@ def get_services():
         if "chat_db_conn" not in g:
             g.chat_db_conn = init_chat_db()
 
-        # Create embedding provider
-        try:
-            provider = OpenAIEmbeddingProvider()
-        except ValueError:
-            from .rag.ollama_provider import OllamaEmbeddingProvider
-
-            provider = OllamaEmbeddingProvider()
+        # Create embedding provider via factory (Gemini > OpenAI > Ollama)
+        provider = get_embedding_provider()
 
         # Embedding service uses user's legato db
         embedding_service = EmbeddingService(provider, legato_db)

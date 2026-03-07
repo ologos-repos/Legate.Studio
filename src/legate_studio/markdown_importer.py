@@ -677,19 +677,20 @@ class MarkdownImporter:
         from .rag.database import get_user_db_path
 
         try:
-            openai_key = get_api_key_for_user(self.user_id, "openai")
-            if not openai_key:
-                logger.warning("No OpenAI API key - skipping embedding generation")
-                return
+            gemini_key = get_api_key_for_user(self.user_id, "gemini")
 
+            from .rag.embedding_provider import get_embedding_provider
             from .rag.embedding_service import EmbeddingService
-            from .rag.openai_provider import OpenAIEmbeddingProvider
 
             user_db_path = get_user_db_path(self.user_id)
             user_db = sqlite3.connect(str(user_db_path))
             user_db.row_factory = sqlite3.Row
 
-            provider = OpenAIEmbeddingProvider(api_key=openai_key)
+            try:
+                provider = get_embedding_provider(api_key=gemini_key)
+            except RuntimeError:
+                logger.warning("No embedding provider available - skipping embedding generation")
+                return
             embedding_service = EmbeddingService(provider, user_db)
 
             # Generate embeddings for the imported entries

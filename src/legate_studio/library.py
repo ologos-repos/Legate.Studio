@@ -66,19 +66,17 @@ def _generate_embedding_for_entry(user_id: str, entry_id: str, content: str):
     from .core import get_api_key_for_user
 
     try:
-        openai_key = get_api_key_for_user(user_id, "openai") if user_id else None
-        if not openai_key:
-            openai_key = os.environ.get("OPENAI_API_KEY")
+        gemini_key = get_api_key_for_user(user_id, "gemini") if user_id else None
 
-        if not openai_key:
-            logger.debug("No OpenAI API key - skipping embedding generation")
-            return
-
+        from .rag.embedding_provider import get_embedding_provider
         from .rag.embedding_service import EmbeddingService
-        from .rag.openai_provider import OpenAIEmbeddingProvider
 
         db = get_db()
-        provider = OpenAIEmbeddingProvider(api_key=openai_key)
+        try:
+            provider = get_embedding_provider(api_key=gemini_key)
+        except RuntimeError:
+            logger.debug("No embedding provider available - skipping embedding generation")
+            return
         embedding_service = EmbeddingService(provider, db)
 
         # Generate embedding synchronously
@@ -395,9 +393,9 @@ def trigger_background_sync():
         try:
             from .chords import fetch_chord_repos
             from .rag.database import init_db
+            from .rag.embedding_provider import get_embedding_provider
             from .rag.embedding_service import EmbeddingService
             from .rag.library_sync import LibrarySync
-            from .rag.openai_provider import OpenAIEmbeddingProvider
 
             # Get user-specific database in multi-tenant mode
             if mode == "multi-tenant":
@@ -406,12 +404,11 @@ def trigger_background_sync():
                 db = init_db()
 
             embedding_service = None
-            if os.environ.get("OPENAI_API_KEY"):
-                try:
-                    provider = OpenAIEmbeddingProvider()
-                    embedding_service = EmbeddingService(provider, db)
-                except Exception as e:
-                    logger.warning(f"Could not create embedding service: {e}")
+            try:
+                provider = get_embedding_provider()
+                embedding_service = EmbeddingService(provider, db)
+            except Exception as e:
+                logger.warning(f"Could not create embedding service: {e}")
 
             sync = LibrarySync(db, embedding_service)
             stats = sync.sync_from_github(library_repo, token=token)
@@ -803,19 +800,16 @@ def search():
     embedding_service = None
     try:
         from .core import get_api_key_for_user
+        from .rag.embedding_provider import get_embedding_provider
         from .rag.embedding_service import EmbeddingService
-        from .rag.openai_provider import OpenAIEmbeddingProvider
 
-        # Get OpenAI key (user's or system)
-        openai_key = None
+        # Get user's Gemini key for BYOK, fall back to factory defaults
+        gemini_key = None
         if user_id:
-            openai_key = get_api_key_for_user(user_id, "openai")
-        if not openai_key:
-            openai_key = os.environ.get("OPENAI_API_KEY")
+            gemini_key = get_api_key_for_user(user_id, "gemini")
 
-        if openai_key:
-            provider = OpenAIEmbeddingProvider(api_key=openai_key)
-            embedding_service = EmbeddingService(provider, db)
+        provider = get_embedding_provider(api_key=gemini_key)
+        embedding_service = EmbeddingService(provider, db)
     except Exception as e:
         logger.warning(f"Could not initialize embedding service for search: {e}")
 
@@ -1248,9 +1242,9 @@ def api_sync():
         }
     }
     """
+    from .rag.embedding_provider import get_embedding_provider
     from .rag.embedding_service import EmbeddingService
     from .rag.library_sync import LibrarySync
-    from .rag.openai_provider import OpenAIEmbeddingProvider
 
     data = request.get_json() or {}
     source = data.get("source", "github")
@@ -1260,9 +1254,9 @@ def api_sync():
 
         # Create embedding service for generating embeddings
         try:
-            provider = OpenAIEmbeddingProvider()
+            provider = get_embedding_provider()
             embedding_service = EmbeddingService(provider, db)
-        except ValueError:
+        except RuntimeError:
             embedding_service = None  # Will skip embedding generation
 
         sync = LibrarySync(db, embedding_service)
@@ -1361,9 +1355,9 @@ def api_reset():
         def do_reset_sync():
             """Background worker for reset sync."""
             try:
+                from .rag.embedding_provider import get_embedding_provider
                 from .rag.embedding_service import EmbeddingService
                 from .rag.library_sync import LibrarySync
-                from .rag.openai_provider import OpenAIEmbeddingProvider
 
                 # Get user-specific database
                 if mode == "multi-tenant":
@@ -1374,12 +1368,11 @@ def api_reset():
                 update_job_progress(job_id, 0, 1, "Starting sync from GitHub...")
 
                 embedding_service = None
-                if os.environ.get("OPENAI_API_KEY"):
-                    try:
-                        provider = OpenAIEmbeddingProvider()
-                        embedding_service = EmbeddingService(provider, sync_db)
-                    except Exception as e:
-                        logger.warning(f"Could not create embedding service: {e}")
+                try:
+                    provider = get_embedding_provider()
+                    embedding_service = EmbeddingService(provider, sync_db)
+                except Exception as e:
+                    logger.warning(f"Could not create embedding service: {e}")
 
                 sync = LibrarySync(sync_db, embedding_service)
                 stats = sync.sync_from_github(library_repo, token=token)
@@ -1536,21 +1529,21 @@ def api_generate_embeddings():
         "embeddings_generated": 42
     }
     """
+    from .rag.embedding_provider import get_embedding_provider
     from .rag.embedding_service import EmbeddingService
-    from .rag.openai_provider import OpenAIEmbeddingProvider
 
     try:
         db = get_db()
 
         # Create embedding service
         try:
-            provider = OpenAIEmbeddingProvider()
+            provider = get_embedding_provider()
             embedding_service = EmbeddingService(provider, db)
-        except ValueError as e:
+        except RuntimeError as e:
             return jsonify(
                 {
                     "status": "error",
-                    "error": f"OpenAI API key not configured: {e}",
+                    "error": f"No embedding provider available: {e}",
                 }
             ), 400
 

@@ -945,14 +945,11 @@ Generate the complete markdown artifact with frontmatter."""
         """
         from .auth import get_user_api_key
         from .rag.database import get_user_db_path
+        from .rag.embedding_provider import get_embedding_provider
         from .rag.embedding_service import EmbeddingService
-        from .rag.openai_provider import OpenAIEmbeddingProvider
 
-        # Get user's OpenAI API key
-        openai_key = get_user_api_key(self.user_id, "openai")
-        if not openai_key:
-            logger.warning(f"Job {self.job_id}: No OpenAI API key configured, skipping embedding generation")
-            return
+        # Get user's Gemini key for BYOK, fall back to factory defaults
+        gemini_key = get_user_api_key(self.user_id, "gemini")
 
         user_db_path = get_user_db_path(self.user_id)
         if not user_db_path or not user_db_path.exists():
@@ -963,7 +960,7 @@ Generate the complete markdown artifact with frontmatter."""
             user_db = sqlite3.connect(str(user_db_path))
             user_db.row_factory = sqlite3.Row
 
-            provider = OpenAIEmbeddingProvider(api_key=openai_key)
+            provider = get_embedding_provider(api_key=gemini_key)
             embedding_service = EmbeddingService(provider, user_db)
 
             count = embedding_service.generate_missing_embeddings("knowledge", delay=0.1)

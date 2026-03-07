@@ -1,11 +1,30 @@
 """
 Embedding Provider Interface
 
-Abstract base for embedding providers (OpenAI, Ollama, etc.)
+Abstract base for embedding providers (OpenAI, Ollama, Gemini, etc.)
 Following the pattern from Llore.
+
+Factory function
+----------------
+Use ``get_embedding_provider()`` instead of instantiating providers directly.
+It selects the best available provider at runtime:
+
+    1. GEMINI_API_KEY (or explicit api_key) → GeminiEmbeddingProvider (768-dim)
+    2. OPENAI_API_KEY → OpenAIEmbeddingProvider (1536-dim)
+    3. Ollama reachable at localhost → OllamaEmbeddingProvider
+
+IMPORTANT — dimension change when switching from OpenAI to Gemini:
+    Existing embeddings stored as BLOBs (4 bytes per float32) will be
+    768-dim after the switch vs the previous 1536-dim. Run
+    EmbeddingService.regenerate_all_embeddings() after deployment to
+    re-embed all existing entries with the new provider.
 """
 
+import logging
+import os
 from abc import ABC, abstractmethod
+
+logger = logging.getLogger(__name__)
 
 
 class EmbeddingProvider(ABC):
@@ -59,3 +78,64 @@ class EmbeddingProvider(ABC):
             Providers should override this for efficient batch processing.
         """
         return [self.create_embedding(text) for text in texts]
+
+
+# ============ Provider Factory ============
+
+
+def get_embedding_provider(api_key: str | None = None) -> "EmbeddingProvider":
+    """Return the best available embedding provider.
+
+    Priority order:
+        1. GeminiEmbeddingProvider — if api_key is given, or GEMINI_API_KEY is set
+        2. OpenAIEmbeddingProvider — if OPENAI_API_KEY is set (kept as fallback)
+        3. OllamaEmbeddingProvider — if Ollama is reachable at localhost (local fallback)
+
+    Args:
+        api_key: Optional Gemini API key. If provided, always tries Gemini first.
+                 Pass the user's BYOK Gemini key here for per-user provider selection.
+
+    Returns:
+        An EmbeddingProvider instance.
+
+    Raises:
+        RuntimeError: If no provider is available (no keys set and Ollama not running).
+    """
+    # 1. Gemini (preferred)
+    gemini_key = api_key or os.environ.get("GEMINI_API_KEY")
+    if gemini_key:
+        try:
+            from .gemini_provider import GeminiEmbeddingProvider
+            provider = GeminiEmbeddingProvider(api_key=gemini_key)
+            logger.debug("get_embedding_provider: using Gemini (text-embedding-004)")
+            return provider
+        except Exception as e:
+            logger.warning(f"get_embedding_provider: Gemini unavailable ({e}), trying fallbacks")
+
+    # 2. OpenAI (fallback for existing deployments / BYOK OpenAI users)
+    openai_key = os.environ.get("OPENAI_API_KEY")
+    if openai_key:
+        try:
+            from .openai_provider import OpenAIEmbeddingProvider
+            provider = OpenAIEmbeddingProvider(api_key=openai_key)
+            logger.debug("get_embedding_provider: using OpenAI (text-embedding-3-small)")
+            return provider
+        except Exception as e:
+            logger.warning(f"get_embedding_provider: OpenAI unavailable ({e}), trying Ollama")
+
+    # 3. Ollama (local dev / offline fallback)
+    try:
+        import requests as _requests
+        resp = _requests.get("http://localhost:11434/api/tags", timeout=2)
+        if resp.ok:
+            from .ollama_provider import OllamaEmbeddingProvider
+            provider = OllamaEmbeddingProvider()
+            logger.debug("get_embedding_provider: using Ollama (nomic-embed-text)")
+            return provider
+    except Exception:
+        pass
+
+    raise RuntimeError(
+        "No embedding provider available. Set GEMINI_API_KEY (preferred), "
+        "OPENAI_API_KEY (fallback), or run Ollama locally."
+    )

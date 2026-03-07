@@ -60,14 +60,11 @@ def commit_and_checkpoint(db):
 def get_embedding_service():
     """Get embedding service for semantic search."""
     if "mcp_embedding_service" not in g:
+        from .rag.embedding_provider import get_embedding_provider
         from .rag.embedding_service import EmbeddingService
-        from .rag.openai_provider import OpenAIEmbeddingProvider
-
-        if not os.environ.get("OPENAI_API_KEY"):
-            return None
 
         try:
-            provider = OpenAIEmbeddingProvider()
+            provider = get_embedding_provider()
             g.mcp_embedding_service = EmbeddingService(provider, get_db())
         except Exception as e:
             logger.warning(f"Could not create embedding service: {e}")
@@ -1356,21 +1353,19 @@ def _generate_embedding_for_entry(entry_db_id: int, entry_id: str, content: str)
         except RuntimeError:
             pass  # No request context
 
-        openai_key = None
+        gemini_key = None
         if user_id:
-            openai_key = get_api_key_for_user(user_id, "openai")
-        if not openai_key:
-            openai_key = os.environ.get("OPENAI_API_KEY")
+            gemini_key = get_api_key_for_user(user_id, "gemini")
 
-        if not openai_key:
-            logger.debug("No OpenAI API key - skipping embedding generation")
-            return
-
+        from .rag.embedding_provider import get_embedding_provider
         from .rag.embedding_service import EmbeddingService
-        from .rag.openai_provider import OpenAIEmbeddingProvider
 
         db = get_db()
-        provider = OpenAIEmbeddingProvider(api_key=openai_key)
+        try:
+            provider = get_embedding_provider(api_key=gemini_key)
+        except RuntimeError:
+            logger.debug("No embedding provider available - skipping embedding generation")
+            return
         embedding_service = EmbeddingService(provider, db)
 
         # Generate embedding synchronously using integer database ID

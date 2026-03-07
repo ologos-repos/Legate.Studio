@@ -65,21 +65,14 @@ def get_db():
 def get_embedding_service():
     """Get or create the embedding service."""
     if "embedding_service" not in g:
+        from .rag.embedding_provider import get_embedding_provider
         from .rag.embedding_service import EmbeddingService
-        from .rag.openai_provider import OpenAIEmbeddingProvider
 
         # Initialize database for current user
         db_conn = get_db()
 
-        # Create provider (prefer OpenAI for API consistency)
-        try:
-            provider = OpenAIEmbeddingProvider()
-        except ValueError:
-            # Fall back to Ollama if OpenAI not configured
-            from .rag.ollama_provider import OllamaEmbeddingProvider
-
-            provider = OllamaEmbeddingProvider()
-
+        # Factory selects: Gemini > OpenAI > Ollama
+        provider = get_embedding_provider()
         g.embedding_service = EmbeddingService(provider, db_conn)
 
     return g.embedding_service
@@ -635,9 +628,9 @@ def trigger_sync():
         "clear": true  // Clear all entries before sync (fixes duplicates)
     }
     """
+    from .rag.embedding_provider import get_embedding_provider
     from .rag.embedding_service import EmbeddingService
     from .rag.library_sync import LibrarySync
-    from .rag.openai_provider import OpenAIEmbeddingProvider
 
     data = request.get_json() or {}
     clear_first = data.get("clear", False)
@@ -654,12 +647,11 @@ def trigger_sync():
 
         # Create embedding service if possible
         embedding_service = None
-        if os.environ.get("OPENAI_API_KEY"):
-            try:
-                provider = OpenAIEmbeddingProvider()
-                embedding_service = EmbeddingService(provider, db)
-            except Exception:
-                pass
+        try:
+            provider = get_embedding_provider()
+            embedding_service = EmbeddingService(provider, db)
+        except Exception:
+            pass
 
         sync = LibrarySync(db, embedding_service)
         token = os.environ.get("SYSTEM_PAT")

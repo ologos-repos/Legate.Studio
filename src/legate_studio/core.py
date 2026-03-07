@@ -311,9 +311,9 @@ def create_app():
                 try:
                     with app.app_context():
                         from .rag.database import init_db
+                        from .rag.embedding_provider import get_embedding_provider
                         from .rag.embedding_service import EmbeddingService
                         from .rag.library_sync import LibrarySync
-                        from .rag.openai_provider import OpenAIEmbeddingProvider
 
                         token = os.getenv("SYSTEM_PAT")
                         if not token:
@@ -357,12 +357,11 @@ def create_app():
                             logger.info(f"Cleaned up {cleanup_count} invalid/duplicate entries")
 
                         embedding_service = None
-                        if os.getenv("OPENAI_API_KEY"):
-                            try:
-                                provider = OpenAIEmbeddingProvider()
-                                embedding_service = EmbeddingService(provider, db)
-                            except Exception as e:
-                                logger.warning(f"Could not create embedding service: {e}")
+                        try:
+                            provider = get_embedding_provider()
+                            embedding_service = EmbeddingService(provider, db)
+                        except Exception as e:
+                            logger.warning(f"Could not create embedding service: {e}")
 
                         sync = LibrarySync(db, embedding_service)
                         library_repo = get_user_library_repo()

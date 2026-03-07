@@ -1503,9 +1503,9 @@ def trigger_user_library_sync(user_id: str, username: str) -> dict:
 
     def _sync_in_background():
         from .rag.database import init_db
+        from .rag.embedding_provider import get_embedding_provider
         from .rag.embedding_service import EmbeddingService
         from .rag.library_sync import LibrarySync
-        from .rag.openai_provider import OpenAIEmbeddingProvider
 
         try:
             # Get token for user's Library - require user token in multi-tenant mode
@@ -1533,12 +1533,11 @@ def trigger_user_library_sync(user_id: str, username: str) -> dict:
 
             # Set up embedding service
             embedding_service = None
-            if os.environ.get("OPENAI_API_KEY"):
-                try:
-                    provider = OpenAIEmbeddingProvider()
-                    embedding_service = EmbeddingService(provider, db)
-                except Exception as e:
-                    logger.warning(f"Could not create embedding service: {e}")
+            try:
+                provider = get_embedding_provider()
+                embedding_service = EmbeddingService(provider, db)
+            except Exception as e:
+                logger.warning(f"Could not create embedding service: {e}")
             sync = LibrarySync(db, embedding_service)
             stats = sync.sync_from_github(library_repo, token=token)
 

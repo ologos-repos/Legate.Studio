@@ -383,6 +383,120 @@ class EmbeddingService:
 
         return count
 
+    def regenerate_all_embeddings(
+        self, entry_type: str = "knowledge", delay: float = 0.1, batch_size: int = 100
+    ) -> int:
+        """Re-generate embeddings for ALL entries using the current provider.
+
+        USE THIS AFTER SWITCHING PROVIDERS (e.g., OpenAI → Gemini).
+
+        When switching from OpenAI (1536-dim) to Gemini (768-dim), existing blobs
+        stored in the embeddings table are incompatible with new query vectors.
+        This method deletes all old embeddings for the current entry_type and
+        regenerates them fresh with the current provider.
+
+        IMPORTANT: This is a destructive operation — it deletes and re-creates all
+        embeddings. Similarity search will be unavailable during re-generation.
+        Run this as a one-time admin task after deploying a provider switch.
+
+        To trigger from a running app:
+            from legate_studio.rag.embedding_provider import get_embedding_provider
+            from legate_studio.rag.embedding_service import EmbeddingService
+            from legate_studio.rag.database import init_db
+            db = init_db()
+            provider = get_embedding_provider()
+            svc = EmbeddingService(provider, db)
+            count = svc.regenerate_all_embeddings()
+            print(f"Re-embedded {count} entries")
+
+        Args:
+            entry_type: 'knowledge' or 'project'
+            delay: Seconds to wait between batch API calls (rate limit headroom)
+            batch_size: Number of entries to process per batch API call
+
+        Returns:
+            Number of embeddings successfully regenerated
+        """
+        import time
+
+        version = self.provider.model_identifier()
+        logger.info(
+            f"regenerate_all_embeddings: starting for entry_type={entry_type} "
+            f"using provider={version}"
+        )
+
+        # Step 1: Delete all existing embeddings for this entry_type
+        with self._lock:
+            deleted = self.conn.execute(
+                "DELETE FROM embeddings WHERE entry_type = ?", (entry_type,)
+            ).rowcount
+            self.conn.commit()
+            logger.info(f"regenerate_all_embeddings: deleted {deleted} old embeddings")
+
+        # Step 2: Gather all entries
+        if entry_type == "knowledge":
+            rows = self.conn.execute(
+                "SELECT id, title, content FROM knowledge_entries"
+            ).fetchall()
+            entries = [(r["id"], f"Title: {r['title']}\n\nContent: {r['content']}") for r in rows]
+        else:
+            rows = self.conn.execute(
+                "SELECT id, title, description FROM project_entries"
+            ).fetchall()
+            entries = [(r["id"], f"Title: {r['title']}\n\nDescription: {r['description'] or ''}") for r in rows]
+
+        if not entries:
+            logger.info(f"regenerate_all_embeddings: no {entry_type} entries found")
+            return 0
+
+        logger.info(
+            f"regenerate_all_embeddings: re-embedding {len(entries)} {entry_type} entries "
+            f"in batches of {batch_size}"
+        )
+
+        # Step 3: Generate and store using batch API
+        count = 0
+        for i in range(0, len(entries), batch_size):
+            batch = entries[i : i + batch_size]
+            entry_ids = [e[0] for e in batch]
+            texts = [e[1] for e in batch]
+
+            try:
+                embeddings = self.provider.create_embeddings_batch(texts)
+
+                with self._lock:
+                    for entry_id, embedding in zip(entry_ids, embeddings, strict=False):
+                        blob = self._serialize_embedding(embedding)
+                        self.conn.execute(
+                            """
+                            INSERT INTO embeddings (entry_id, entry_type, embedding, vector_version)
+                            VALUES (?, ?, ?, ?)
+                            ON CONFLICT(entry_id, entry_type, vector_version)
+                            DO UPDATE SET embedding = excluded.embedding, updated_at = CURRENT_TIMESTAMP
+                            """,
+                            (entry_id, entry_type, blob, version),
+                        )
+                    self.conn.commit()
+
+                count += len(embeddings)
+                logger.info(
+                    f"regenerate_all_embeddings: {count}/{len(entries)} done "
+                    f"(batch {i // batch_size + 1})"
+                )
+
+                if delay > 0 and i + batch_size < len(entries):
+                    time.sleep(delay)
+
+            except Exception as e:
+                logger.error(f"regenerate_all_embeddings: batch at {i} failed: {e}")
+                continue
+
+        logger.info(
+            f"regenerate_all_embeddings: complete — {count}/{len(entries)} "
+            f"{entry_type} entries re-embedded with {version}"
+        )
+        return count
+
     # ============ Enhanced Search ============
 
     def keyword_search(
