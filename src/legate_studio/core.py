@@ -199,6 +199,7 @@ def create_app():
     from .memory_api import memory_api_bp
     from .motif_api import motif_api_bp
     from .oauth_server import oauth_bp
+    from .shared_libraries import shared_libraries_bp
     from .stripe_billing import billing_bp
 
     app.register_blueprint(auth_bp)
@@ -210,6 +211,7 @@ def create_app():
     app.register_blueprint(agents_bp)
     app.register_blueprint(chords_bp)
     app.register_blueprint(categories_bp)
+    app.register_blueprint(shared_libraries_bp)  # Shared library web UI + API
     app.register_blueprint(oauth_bp)  # OAuth 2.1 AS with DCR for MCP
     app.register_blueprint(mcp_bp)  # MCP protocol handler
     app.register_blueprint(motif_api_bp)  # Motif processing with job queue
