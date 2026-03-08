@@ -57,7 +57,8 @@ def get_library_db(args: dict) -> tuple:
     if not library_id:
         return get_db(), None
 
-    from .rag.database import get_shared_library_db, init_db as init_shared_db
+    from .rag.database import get_shared_library_db
+    from .rag.database import init_db as init_shared_db
 
     user_id = g.mcp_user.get("user_id") if hasattr(g, "mcp_user") else None
     if not user_id:
@@ -5056,7 +5057,8 @@ def tool_verify_sync_state(args: dict) -> dict:
 
     if library_id:
         # Shared library mode — use the shared library's DB and owner's token
-        from .rag.database import get_shared_library_db, init_db as init_shared_db
+        from .rag.database import get_shared_library_db
+        from .rag.database import init_db as init_shared_db
 
         shared_meta = init_shared_db()
         row = shared_meta.execute(
@@ -6591,7 +6593,6 @@ def tool_list_libraries(args: dict) -> dict:
     from .rag.database import init_db as init_shared_meta_db
 
     user_id = g.mcp_user.get("user_id") if hasattr(g, "mcp_user") and g.mcp_user else None
-    github_login = g.mcp_user.get("sub") if hasattr(g, "mcp_user") and g.mcp_user else None
 
     if not user_id:
         return {"error": "Authentication required"}
