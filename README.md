@@ -43,7 +43,7 @@ Top-ups: $2.99 per purchase → +$2.69 in token credits (same 10% platform margi
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone and set up
-git clone https://github.com/bobbyhiddn/Legate.Studio
+git clone https://github.com/ologos-repos/Legate.Studio
 cd Legate.Studio
 
 # Install dependencies

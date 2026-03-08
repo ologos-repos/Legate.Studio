@@ -8,9 +8,9 @@ version = "0.3.0"
 description = "Legato Memory Hub - Dashboard, Dropbox, and RAG API"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "MIT"}
+license = {text = "All Rights Reserved"}
 authors = [
-    {name = "bobbyhiddn"}
+    {name = "Ologos LLC"}
 ]
 dependencies = [
     "flask>=3.0.0",
