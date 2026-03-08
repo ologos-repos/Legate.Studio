@@ -3278,8 +3278,10 @@ def _unique_slug(db, title: str, existing_entry_id: str | None = None) -> str:
 def api_publish_entry(entry_id: str):
     """Toggle publish/unpublish on a note.
 
-    If the note is currently unpublished, assigns a slug and marks it published.
-    If already published, marks it unpublished (slug is retained but published=0).
+    For personal library notes: any authenticated user can publish their own notes.
+    For shared library notes: only the library OWNER can publish/unpublish.
+
+    Accepts optional query param: ?library_id=<uuid> for shared library notes.
 
     Response:
     {
@@ -3289,55 +3291,136 @@ def api_publish_entry(entry_id: str):
     }
     """
     try:
-        db = get_db()
-
-        entry = db.execute(
-            "SELECT entry_id, title, published, slug FROM knowledge_entries WHERE entry_id = ?",
-            (entry_id,),
-        ).fetchone()
-
-        if not entry:
-            return jsonify({"error": "Entry not found"}), 404
-
-        entry_dict = dict(entry)
         user = session.get("user", {})
+        user_id = user.get("user_id")
         username = user.get("username") or user.get("github_login") or "unknown"
 
-        currently_published = bool(entry_dict.get("published"))
+        # Check if this is a shared library publish request
+        library_id = request.args.get("library_id") or (request.get_json(silent=True) or {}).get("library_id")
 
-        if currently_published:
-            # Unpublish — keep slug but clear published flag
-            db.execute(
+        if library_id:
+            # Shared library path — only the owner can publish/unpublish
+            from .rag.database import get_shared_library_db
+            from .rag.database import init_db as init_shared_meta_db
+
+            shared_meta = init_shared_meta_db()
+
+            # Verify caller is the owner of this library and get library info
+            lib_row = shared_meta.execute(
                 """
-                UPDATE knowledge_entries
-                SET published = 0, published_at = NULL
-                WHERE entry_id = ?
+                SELECT sl.id, sl.name, sl.slug, u.github_login AS owner_login
+                FROM shared_libraries sl
+                JOIN shared_library_members slm ON sl.id = slm.shared_library_id
+                JOIN users u ON u.user_id = sl.owner_user_id
+                WHERE sl.id = ? AND slm.user_id = ? AND slm.role = 'owner'
+                    AND slm.status = 'active' AND sl.status = 'active'
                 """,
+                (library_id, user_id),
+            ).fetchone()
+
+            if not lib_row:
+                return jsonify({
+                    "error": (
+                        "Only the library owner can publish notes in a shared library. "
+                        "Collaborators can submit drafts for owner review."
+                    )
+                }), 403
+
+            lib_slug = lib_row["slug"]
+            owner_login = lib_row["owner_login"]
+
+            db = get_shared_library_db(library_id)
+
+            entry = db.execute(
+                "SELECT entry_id, title, published, slug FROM knowledge_entries WHERE entry_id = ?",
                 (entry_id,),
-            )
-            db.commit()
-            return jsonify({"status": "unpublished", "slug": entry_dict.get("slug"), "public_url": None})
+            ).fetchone()
+
+            if not entry:
+                return jsonify({"error": "Entry not found in shared library"}), 404
+
+            entry_dict = dict(entry)
+            currently_published = bool(entry_dict.get("published"))
+
+            if currently_published:
+                db.execute(
+                    """
+                    UPDATE knowledge_entries
+                    SET published = 0, published_at = NULL
+                    WHERE entry_id = ?
+                    """,
+                    (entry_id,),
+                )
+                db.commit()
+                return jsonify({"status": "unpublished", "slug": entry_dict.get("slug"), "public_url": None})
+            else:
+                existing_slug = entry_dict.get("slug")
+                if not existing_slug:
+                    slug = _unique_slug(db, entry_dict["title"], entry_id)
+                else:
+                    slug = existing_slug
+
+                db.execute(
+                    """
+                    UPDATE knowledge_entries
+                    SET published = 1, slug = ?, published_at = CURRENT_TIMESTAMP
+                    WHERE entry_id = ?
+                    """,
+                    (slug, entry_id),
+                )
+                db.commit()
+
+                public_url = f"https://legate.studio/pub/{owner_login}/{lib_slug}/{slug}"
+                return jsonify({"status": "published", "slug": slug, "public_url": public_url})
 
         else:
-            # Publish — generate slug if not already set
-            existing_slug = entry_dict.get("slug")
-            if not existing_slug:
-                slug = _unique_slug(db, entry_dict["title"], entry_id)
+            # Personal library path (original behaviour)
+            db = get_db()
+
+            entry = db.execute(
+                "SELECT entry_id, title, published, slug FROM knowledge_entries WHERE entry_id = ?",
+                (entry_id,),
+            ).fetchone()
+
+            if not entry:
+                return jsonify({"error": "Entry not found"}), 404
+
+            entry_dict = dict(entry)
+            currently_published = bool(entry_dict.get("published"))
+
+            if currently_published:
+                # Unpublish — keep slug but clear published flag
+                db.execute(
+                    """
+                    UPDATE knowledge_entries
+                    SET published = 0, published_at = NULL
+                    WHERE entry_id = ?
+                    """,
+                    (entry_id,),
+                )
+                db.commit()
+                return jsonify({"status": "unpublished", "slug": entry_dict.get("slug"), "public_url": None})
+
             else:
-                slug = existing_slug
+                # Publish — generate slug if not already set
+                existing_slug = entry_dict.get("slug")
+                if not existing_slug:
+                    slug = _unique_slug(db, entry_dict["title"], entry_id)
+                else:
+                    slug = existing_slug
 
-            db.execute(
-                """
-                UPDATE knowledge_entries
-                SET published = 1, slug = ?, published_at = CURRENT_TIMESTAMP
-                WHERE entry_id = ?
-                """,
-                (slug, entry_id),
-            )
-            db.commit()
+                db.execute(
+                    """
+                    UPDATE knowledge_entries
+                    SET published = 1, slug = ?, published_at = CURRENT_TIMESTAMP
+                    WHERE entry_id = ?
+                    """,
+                    (slug, entry_id),
+                )
+                db.commit()
 
-            public_url = f"https://legate.studio/pub/{username}/{slug}"
-            return jsonify({"status": "published", "slug": slug, "public_url": public_url})
+                public_url = f"https://legate.studio/pub/{username}/{slug}"
+                return jsonify({"status": "published", "slug": slug, "public_url": public_url})
 
     except Exception as e:
         logger.error(f"Publish toggle failed for {entry_id}: {e}")

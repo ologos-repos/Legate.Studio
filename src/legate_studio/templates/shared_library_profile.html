@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1e1e2e">
+
+    <!-- Primary meta -->
+    <title>{{ library_name }} — Legate Studio</title>
+    <meta name="description" content="{{ og_description }}">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Legate Studio">
+    <meta property="og:title" content="{{ og_title }}">
+    <meta property="og:description" content="{{ og_description }}">
+    <meta property="og:url" content="{{ og_url }}">
+    <meta property="og:image" content="{{ author_avatar or 'https://legate.studio/static/img/og-share.png' }}">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{{ og_title }}">
+    <meta name="twitter:description" content="{{ og_description }}">
+    <meta name="twitter:image" content="{{ author_avatar or 'https://legate.studio/static/img/og-share.png' }}">
+
+    <!-- Canonical -->
+    <link rel="canonical" href="{{ og_url }}">
+
+    <!-- Favicon -->
+    <link rel="icon" href="/static/img/favicon.png" type="image/png">
+
+    <!-- Performance hints -->
+    <link rel="preconnect" href="https://plausible.io">
+
+    <!-- Plausible analytics -->
+    <script defer data-domain="legate.studio" src="https://plausible.io/js/script.js"></script>
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ===== Catppuccin Mocha Palette ===== */
+        :root {
+            --ctp-base:    #1e1e2e;
+            --ctp-mantle:  #181825;
+            --ctp-crust:   #11111b;
+            --ctp-surface0: #313244;
+            --ctp-surface1: #45475a;
+            --ctp-surface2: #585b70;
+            --ctp-overlay0: #6c7086;
+            --ctp-overlay1: #7f849c;
+            --ctp-overlay2: #9399b2;
+            --ctp-subtext0: #a6adc8;
+            --ctp-subtext1: #bac2de;
+            --ctp-text:    #cdd6f4;
+            --ctp-lavender: #b4befe;
+            --ctp-blue:    #89b4fa;
+            --ctp-sapphire: #74c7ec;
+            --ctp-sky:     #89dceb;
+            --ctp-teal:    #94e2d5;
+            --ctp-green:   #a6e3a1;
+            --ctp-yellow:  #f9e2af;
+            --ctp-peach:   #fab387;
+            --ctp-maroon:  #eba0ac;
+            --ctp-red:     #f38ba8;
+            --ctp-mauve:   #cba6f7;
+            --ctp-pink:    #f5c2e7;
+            --ctp-flamingo: #f2cdcd;
+            --ctp-rosewater: #f5e0dc;
+
+            /* Semantic aliases */
+            --bg-primary:   var(--ctp-base);
+            --bg-secondary: var(--ctp-mantle);
+            --bg-tertiary:  var(--ctp-crust);
+            --bg-card:      var(--ctp-surface0);
+            --text-primary: var(--ctp-text);
+            --text-secondary: var(--ctp-subtext1);
+            --text-muted:   var(--ctp-overlay1);
+            --border-color: var(--ctp-surface1);
+            --accent-color: var(--ctp-mauve);
+            --accent-blue:  var(--ctp-blue);
+            --accent-teal:  var(--ctp-teal);
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+
+        a { color: var(--accent-color); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* ===== Nav ===== */
+        .pub-nav {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 1.5rem;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .pub-nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+        }
+
+        .pub-nav-logo:hover { text-decoration: none; opacity: 0.9; }
+
+        .pub-nav-logo img { height: 24px; width: auto; }
+
+        .pub-nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            height: 100%;
+        }
+
+        .btn-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            font-size: 0.8125rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: color 0.15s, border-color 0.15s, background 0.15s;
+            text-decoration: none;
+            white-space: nowrap;
+            line-height: 1.4;
+        }
+
+        .btn-nav:hover {
+            color: var(--text-primary);
+            border-color: var(--accent-color);
+            background: var(--ctp-surface1);
+            text-decoration: none;
+        }
+
+        /* ===== Library Hero ===== */
+        .library-hero {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem 2rem;
+        }
+
+        .library-hero-inner {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.75rem;
+        }
+
+        .library-owner-avatar {
+            flex-shrink: 0;
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-color);
+            object-fit: cover;
+            background: var(--bg-card);
+        }
+
+        .library-owner-avatar-placeholder {
+            flex-shrink: 0;
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-color);
+            background: var(--bg-card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .library-info { flex: 1; min-width: 0; }
+
+        .library-breadcrumb {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        .library-breadcrumb a {
+            color: var(--text-muted);
+            transition: color 0.15s;
+        }
+
+        .library-breadcrumb a:hover { color: var(--accent-color); text-decoration: none; }
+
+        .library-title {
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+            line-height: 1.2;
+        }
+
+        .library-meta {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .library-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .library-meta-sep { opacity: 0.4; }
+
+        .library-description {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            line-height: 1.65;
+            max-width: 560px;
+        }
+
+        .library-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: color-mix(in srgb, var(--accent-color) 15%, transparent);
+            color: var(--accent-color);
+            border: 1px solid color-mix(in srgb, var(--accent-color) 30%, transparent);
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        /* ===== Divider ===== */
+        .section-divider {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .section-divider hr {
+            border: none;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* ===== Notes Section ===== */
+        .notes-section {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 4rem;
+        }
+
+        .notes-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+        }
+
+        .notes-heading {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .notes-count {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            background: var(--bg-card);
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* ===== Note Cards ===== */
+        .notes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .note-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.25rem 1.5rem;
+            transition: border-color 0.2s, background 0.2s, transform 0.1s;
+            text-decoration: none;
+            display: block;
+            color: inherit;
+        }
+
+        .note-card:hover {
+            border-color: var(--accent-color);
+            background: color-mix(in srgb, var(--accent-color) 4%, var(--bg-secondary));
+            transform: translateY(-1px);
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .note-card-title {
+            font-size: 1.0625rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+            transition: color 0.15s;
+        }
+
+        .note-card:hover .note-card-title {
+            color: var(--accent-color);
+        }
+
+        .note-card-preview {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 0.875rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .note-card-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .note-card-category {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.2rem 0.55rem;
+            border-radius: 5px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: var(--bg-card);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            text-transform: lowercase;
+        }
+
+        .note-card-date {
+            font-size: 0.75rem;
+            color: var(--ctp-overlay0);
+        }
+
+        /* ===== Empty State ===== */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 1.5rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.4;
+        }
+
+        .empty-state-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state-desc {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            max-width: 340px;
+            margin: 0 auto;
+        }
+
+        /* ===== Footer ===== */
+        .pub-footer {
+            border-top: 1px solid var(--border-color);
+            padding: 1.5rem;
+            text-align: center;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        .pub-footer a { color: var(--text-muted); }
+        .pub-footer a:hover { color: var(--accent-color); text-decoration: none; }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 600px) {
+            .library-hero-inner { flex-direction: column; gap: 1rem; }
+            .library-owner-avatar,
+            .library-owner-avatar-placeholder { width: 56px; height: 56px; font-size: 1.4rem; }
+            .notes-section { padding: 1.5rem 1rem 3rem; }
+            .note-card { padding: 1rem 1.25rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== Nav ===== -->
+    <nav class="pub-nav">
+        <a href="/" class="pub-nav-logo">
+            <img src="/static/img/favicon.png" alt="Legate Studio">
+            Legate Studio
+        </a>
+        <div class="pub-nav-actions">
+            <a href="/pub/{{ owner }}" class="btn-nav">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                {{ profile.display_name or owner }}
+            </a>
+            <a href="/auth/login" class="btn-nav">Sign in</a>
+        </div>
+    </nav>
+
+    <!-- ===== Library Hero ===== -->
+    <header class="library-hero">
+        <div class="library-hero-inner">
+            {% if author_avatar %}
+                <img
+                    src="{{ author_avatar }}"
+                    alt="{{ profile.display_name or owner }}"
+                    class="library-owner-avatar"
+                    loading="lazy"
+                >
+            {% else %}
+                <div class="library-owner-avatar-placeholder">
+                    {{ (profile.display_name or owner)[0] | upper }}
+                </div>
+            {% endif %}
+
+            <div class="library-info">
+                <div class="library-breadcrumb">
+                    <a href="/pub/{{ owner }}">{{ profile.display_name or owner }}</a>
+                    <span>›</span>
+                    <span>{{ library_name }}</span>
+                </div>
+
+                <h1 class="library-title">{{ library_name }}</h1>
+
+                <div class="library-meta">
+                    <span class="library-meta-item">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        <a href="/pub/{{ owner }}" style="color: inherit;">{{ profile.display_name or owner }}</a>
+                    </span>
+                    <span class="library-meta-sep">·</span>
+                    <span class="library-meta-item">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <path d="M9 3v18M3 9h18"/>
+                        </svg>
+                        {{ notes | length }} published note{% if notes | length != 1 %}s{% endif %}
+                    </span>
+                    <span class="library-meta-sep">·</span>
+                    <span class="library-badge">
+                        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                        Shared Library
+                    </span>
+                </div>
+
+                {% if library_description %}
+                    <p class="library-description">{{ library_description }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== Divider ===== -->
+    <div class="section-divider"><hr></div>
+
+    <!-- ===== Notes ===== -->
+    <main class="notes-section">
+        <div class="notes-header">
+            <span class="notes-heading">Published Notes</span>
+            {% if notes %}
+                <span class="notes-count">{{ notes | length }}</span>
+            {% endif %}
+        </div>
+
+        {% if notes %}
+            <div class="notes-list">
+                {% for note in notes %}
+                    <a
+                        href="/pub/{{ owner }}/{{ library_slug }}/{{ note.slug }}"
+                        class="note-card"
+                    >
+                        <div class="note-card-title">{{ note.title }}</div>
+
+                        {% if note.preview %}
+                            <div class="note-card-preview">{{ note.preview }}</div>
+                        {% endif %}
+
+                        <div class="note-card-meta">
+                            {% if note.category %}
+                                <span class="note-card-category">{{ note.category }}</span>
+                            {% endif %}
+                            {% if note.published_at %}
+                                <span class="note-card-date">
+                                    {{ note.published_at[:10] if note.published_at else '' }}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">📚</div>
+                <div class="empty-state-title">No published notes yet</div>
+                <p class="empty-state-desc">
+                    The owner of this shared library hasn't published any notes yet.
+                    Check back soon.
+                </p>
+            </div>
+        {% endif %}
+    </main>
+
+    <!-- ===== Footer ===== -->
+    <footer class="pub-footer">
+        <p>
+            Powered by <a href="https://legate.studio">Legate Studio</a>
+            &nbsp;·&nbsp;
+            <a href="/pub/{{ owner }}">{{ profile.display_name or owner }}'s profile</a>
+        </p>
+    </footer>
+
+</body>
+</html>

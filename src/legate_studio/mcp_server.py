@@ -37,6 +37,96 @@ def get_db():
     return get_user_legato_db()
 
 
+def get_library_db(args: dict) -> tuple:
+    """Get the appropriate database connection based on args.
+
+    If 'library_id' is present in args, returns the shared library DB with the
+    caller's role. Otherwise returns the personal user DB with role=None.
+
+    Args:
+        args: Tool arguments dict (may contain 'library_id')
+
+    Returns:
+        (db_connection, role) where role is None (personal), 'owner', or 'collaborator'
+
+    Raises:
+        ValueError: If library_id provided but user has no active membership
+    """
+    library_id = args.get("library_id", "").strip() if args.get("library_id") else None
+
+    if not library_id:
+        return get_db(), None
+
+    from .rag.database import get_shared_library_db, init_db as init_shared_db
+
+    user_id = g.mcp_user.get("user_id") if hasattr(g, "mcp_user") else None
+    if not user_id:
+        raise ValueError("Authentication required")
+
+    # Require managed tier to access shared libraries
+    require_managed_tier(user_id)
+
+    # Verify caller is an active member
+    shared_meta = init_shared_db()
+    row = shared_meta.execute(
+        """
+        SELECT role FROM shared_library_members
+        WHERE shared_library_id = ? AND user_id = ? AND status = 'active'
+        """,
+        (library_id, user_id),
+    ).fetchone()
+
+    if not row:
+        raise ValueError(f"Access denied: you are not an active member of library '{library_id}'")
+
+    role = row["role"]
+    db = get_shared_library_db(library_id)
+    return db, role
+
+
+def check_write_permission(library_id: str | None, role: str | None) -> None:
+    """Verify caller has write permission for the given library context.
+
+    Args:
+        library_id: None for personal library, or the shared library UUID
+        role: None for personal, 'owner', or 'collaborator'
+
+    Raises:
+        ValueError: If caller is a collaborator (must use Draft & Merge workflow)
+    """
+    if library_id is None:
+        return  # Personal library: always allow
+    if role == "owner":
+        return  # Owner: always allow
+    if role == "collaborator":
+        raise ValueError(
+            "Collaborators cannot write directly to shared libraries. "
+            "Use Draft & Merge workflow: create_draft → submit_draft → merge_draft."
+        )
+    # Unknown role — deny
+    raise ValueError(f"Insufficient permissions for library '{library_id}'")
+
+
+def require_managed_tier(user_id: str) -> None:
+    """Verify user has a managed subscription tier.
+
+    Args:
+        user_id: The user ID to check
+
+    Raises:
+        ValueError: If user is on trial or byok tier
+    """
+    from .core import get_effective_tier
+
+    tier = get_effective_tier(user_id)
+    allowed_tiers = {"managed_lite", "managed_standard", "managed_plus", "beta"}
+    if tier not in allowed_tiers:
+        raise ValueError(
+            "Shared libraries require a managed subscription. "
+            "Upgrade at legate.studio/billing to access shared libraries."
+        )
+
+
 def commit_and_checkpoint(db):
     """Commit transaction and force WAL checkpoint for cross-worker visibility.
 
@@ -285,6 +375,10 @@ TOOLS = [
                     "description": ("Whether to include 'maybe related' lower-confidence results (default: true)"),
                     "default": True,
                 },
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
+                },
             },
             "required": ["query"],
         },
@@ -329,6 +423,10 @@ TOOLS = [
                         "'projects', 'backlog', 'research')"
                     ),
                 },
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
+                },
             },
             "required": ["title", "content", "category"],
         },
@@ -336,7 +434,16 @@ TOOLS = [
     {
         "name": "list_categories",
         "description": "List all available note categories in the Legate Studio library.",
-        "inputSchema": {"type": "object", "properties": {}, "required": []},
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
+                },
+            },
+            "required": [],
+        },
     },
     {
         "name": "get_note",
@@ -361,6 +468,10 @@ TOOLS = [
                 "title": {
                     "type": "string",
                     "description": "Note title for fuzzy matching - least reliable but convenient",
+                },
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
                 },
             },
             "required": [],
@@ -407,6 +518,10 @@ TOOLS = [
                     "description": ("Include full note content (default: true). Set false to get metadata only."),
                     "default": True,
                 },
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
+                },
             },
             "required": [],
         },
@@ -429,6 +544,10 @@ TOOLS = [
                     "type": "string",
                     "description": ("Separator between existing content and new content (default: '\\n\\n')"),
                     "default": "\n\n",
+                },
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
                 },
             },
             "required": ["entry_id", "content"],
@@ -461,6 +580,10 @@ TOOLS = [
                     "description": ("Include full content of related notes (default: false, returns snippets)"),
                     "default": False,
                 },
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
+                },
             },
             "required": ["entry_id"],
         },
@@ -471,7 +594,16 @@ TOOLS = [
             "Get statistics about the library: note counts by category, total notes, recent "
             "activity, and more. Useful for understanding what's available before diving in."
         ),
-        "inputSchema": {"type": "object", "properties": {}, "required": []},
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
+                },
+            },
+            "required": [],
+        },
     },
     {
         "name": "list_recent_notes",
@@ -487,6 +619,10 @@ TOOLS = [
                 "category": {
                     "type": "string",
                     "description": "Optional: filter to a specific category",
+                },
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
                 },
             },
             "required": [],
@@ -601,6 +737,10 @@ TOOLS = [
                     "type": "string",
                     "description": "New category for the note (optional)",
                 },
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
+                },
             },
             "required": ["entry_id"],
         },
@@ -622,6 +762,10 @@ TOOLS = [
                     "type": "string",
                     "description": "The target category to move the note to",
                 },
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
+                },
             },
             "required": ["entry_id", "new_category"],
         },
@@ -642,6 +786,10 @@ TOOLS = [
                     "type": "string",
                     "description": ("Name of the subfolder to create (e.g., 'projects', 'backlog', 'research')"),
                 },
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
+                },
             },
             "required": ["category", "subfolder_name"],
         },
@@ -651,7 +799,13 @@ TOOLS = [
         "description": "List all subfolders under a category.",
         "inputSchema": {
             "type": "object",
-            "properties": {"category": {"type": "string", "description": "The category to list subfolders for"}},
+            "properties": {
+                "category": {"type": "string", "description": "The category to list subfolders for"},
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
+                },
+            },
             "required": ["category"],
         },
     },
@@ -668,6 +822,10 @@ TOOLS = [
                 "subfolder": {
                     "type": ["string", "null"],
                     "description": ("The subfolder name, or null/empty to list notes at the category root"),
+                },
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
                 },
             },
             "required": ["category"],
@@ -687,6 +845,10 @@ TOOLS = [
                     "type": ["string", "null"],
                     "description": ("The target subfolder name, or null/empty to move to category root"),
                 },
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
+                },
             },
             "required": ["entry_id"],
         },
@@ -703,6 +865,10 @@ TOOLS = [
             "properties": {
                 "entry_id": {"type": "string", "description": "The entry ID of the note to rename"},
                 "new_title": {"type": "string", "description": "The new title for the note"},
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
+                },
             },
             "required": ["entry_id", "new_title"],
         },
@@ -725,6 +891,10 @@ TOOLS = [
                     "description": "Current name of the subfolder to rename",
                 },
                 "new_name": {"type": "string", "description": "New name for the subfolder"},
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
+                },
             },
             "required": ["category", "old_name", "new_name"],
         },
@@ -742,6 +912,10 @@ TOOLS = [
                 "confirm": {
                     "type": "boolean",
                     "description": "Must be true to confirm deletion. This is a safety check.",
+                },
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
                 },
             },
             "required": ["entry_id", "confirm"],
@@ -774,6 +948,10 @@ TOOLS = [
                     "description": "Maximum number of tasks to return (default: 50)",
                     "default": 50,
                 },
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
+                },
             },
             "required": [],
         },
@@ -802,6 +980,10 @@ TOOLS = [
                 "due_date": {
                     "type": "string",
                     "description": "Optional due date in ISO format (YYYY-MM-DD)",
+                },
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
                 },
             },
             "required": ["entry_id", "status"],
@@ -833,6 +1015,10 @@ TOOLS = [
                     "type": "string",
                     "description": "Optional description of the relationship",
                 },
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
+                },
             },
             "required": ["source_id", "target_id"],
         },
@@ -853,6 +1039,10 @@ TOOLS = [
                     "type": "integer",
                     "description": "Max semantic neighbors to include (default: 5)",
                     "default": 5,
+                },
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
                 },
             },
             "required": ["entry_id"],
@@ -966,6 +1156,10 @@ TOOLS = [
                     "description": ("If true, reports what would be repaired without making changes (default: false)"),
                     "default": False,
                 },
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
+                },
             },
             "required": [],
         },
@@ -988,6 +1182,10 @@ TOOLS = [
                     "description": "Maximum number of assets to return (default: 50)",
                     "default": 50,
                 },
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
+                },
             },
             "required": [],
         },
@@ -997,7 +1195,13 @@ TOOLS = [
         "description": "Get metadata for a specific asset including its markdown reference.",
         "inputSchema": {
             "type": "object",
-            "properties": {"asset_id": {"type": "string", "description": "The asset ID (e.g., 'asset-abc123')"}},
+            "properties": {
+                "asset_id": {"type": "string", "description": "The asset ID (e.g., 'asset-abc123')"},
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
+                },
+            },
             "required": ["asset_id"],
         },
     },
@@ -1009,6 +1213,10 @@ TOOLS = [
             "properties": {
                 "asset_id": {"type": "string", "description": "The asset ID to delete"},
                 "confirm": {"type": "boolean", "description": "Must be true to confirm deletion"},
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
+                },
             },
             "required": ["asset_id", "confirm"],
         },
@@ -1026,6 +1234,10 @@ TOOLS = [
                 "alt_text": {
                     "type": "string",
                     "description": "Optional alt text to use (overrides stored alt_text)",
+                },
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
                 },
             },
             "required": ["asset_id"],
@@ -1057,6 +1269,10 @@ TOOLS = [
                 "description": {
                     "type": "string",
                     "description": "Optional description of the asset",
+                },
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
                 },
             },
             "required": ["category", "filename", "content_base64"],
@@ -1102,6 +1318,10 @@ TOOLS = [
                     ),
                     "default": True,
                 },
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
+                },
             },
             "required": ["markdown_content"],
         },
@@ -1136,6 +1356,10 @@ TOOLS = [
                         "Optional hex color code for UI (e.g., '#10b981'). Defaults to indigo if not specified."
                     ),
                 },
+                "library_id": {
+                    "type": "string",
+                    "description": "Shared library ID. Omit for personal library.",
+                },
             },
             "required": ["name", "display_name"],
         },
@@ -1157,6 +1381,299 @@ TOOLS = [
                 },
             },
             "required": ["library_id"],
+        },
+    },
+    # ============ Draft & Merge Workflow Tools ============
+    {
+        "name": "create_draft",
+        "description": (
+            "Create a draft for a shared library. Collaborators use this to propose changes "
+            "without writing directly to the library. Three modes: 'new_note' (propose a new "
+            "note with title+content+category), 'edit' (propose changes to an existing note via "
+            "target_entry_id+content), 'delete' (propose deletion of an existing note via "
+            "target_entry_id). Only one active draft per author per target note is allowed."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "library_id": {
+                    "type": "string",
+                    "description": "UUID of the shared library to draft for",
+                },
+                "draft_type": {
+                    "type": "string",
+                    "enum": ["new_note", "edit", "delete"],
+                    "description": (
+                        "Type of draft: 'new_note' to propose a new note, 'edit' to propose "
+                        "changes to an existing note, 'delete' to propose deletion of a note"
+                    ),
+                },
+                "title": {
+                    "type": "string",
+                    "description": "Title for the new note (required for new_note drafts)",
+                },
+                "content": {
+                    "type": "string",
+                    "description": (
+                        "Content for the note in markdown format "
+                        "(required for new_note and edit drafts)"
+                    ),
+                },
+                "category": {
+                    "type": "string",
+                    "description": (
+                        "Category for the new note (required for new_note drafts, "
+                        "e.g., 'concept', 'epiphany')"
+                    ),
+                },
+                "subfolder": {
+                    "type": "string",
+                    "description": "Optional subfolder within the category (for new_note drafts)",
+                },
+                "target_entry_id": {
+                    "type": "string",
+                    "description": (
+                        "Entry ID of the note to edit or delete "
+                        "(required for edit and delete drafts)"
+                    ),
+                },
+            },
+            "required": ["library_id", "draft_type"],
+        },
+    },
+    {
+        "name": "submit_draft",
+        "description": (
+            "Submit a draft for owner review. Changes the draft status from 'draft' to "
+            "'submitted'. Only the draft's author can submit it."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "library_id": {
+                    "type": "string",
+                    "description": "UUID of the shared library",
+                },
+                "draft_id": {
+                    "type": "string",
+                    "description": "UUID of the draft to submit",
+                },
+            },
+            "required": ["library_id", "draft_id"],
+        },
+    },
+    {
+        "name": "list_drafts",
+        "description": (
+            "List drafts for a shared library. Library owners see all submitted drafts by "
+            "default. Collaborators see only their own drafts. Optional filters: status "
+            "('draft', 'submitted', 'merged', 'rejected') and author (GitHub login)."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "library_id": {
+                    "type": "string",
+                    "description": "UUID of the shared library",
+                },
+                "status": {
+                    "type": "string",
+                    "enum": ["draft", "submitted", "merged", "rejected"],
+                    "description": "Filter by draft status (omit to see all accessible drafts)",
+                },
+                "author": {
+                    "type": "string",
+                    "description": "Filter by author GitHub login",
+                },
+            },
+            "required": ["library_id"],
+        },
+    },
+    {
+        "name": "review_draft",
+        "description": (
+            "Review a specific draft. Shows the draft content, and for edit drafts shows "
+            "the original note content alongside for comparison. Accessible by the library "
+            "owner and the draft's author."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "library_id": {
+                    "type": "string",
+                    "description": "UUID of the shared library",
+                },
+                "draft_id": {
+                    "type": "string",
+                    "description": "UUID of the draft to review",
+                },
+            },
+            "required": ["library_id", "draft_id"],
+        },
+    },
+    {
+        "name": "merge_draft",
+        "description": (
+            "Merge a submitted draft into the shared library. OWNER ONLY. The draft must "
+            "have status 'submitted'. For 'new_note' drafts, creates the note on GitHub and "
+            "in the database. For 'edit' drafts, updates the existing note. For 'delete' "
+            "drafts, removes the note. Includes conflict detection: if the target note was "
+            "modified after the draft was created, returns a warning. Use force=true to "
+            "override the conflict check and merge anyway."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "library_id": {
+                    "type": "string",
+                    "description": "UUID of the shared library",
+                },
+                "draft_id": {
+                    "type": "string",
+                    "description": "UUID of the draft to merge",
+                },
+                "force": {
+                    "type": "boolean",
+                    "description": (
+                        "Override conflict check and merge even if the target note was "
+                        "modified after the draft was created (default: false)"
+                    ),
+                    "default": False,
+                },
+            },
+            "required": ["library_id", "draft_id"],
+        },
+    },
+    {
+        "name": "reject_draft",
+        "description": (
+            "Reject a draft with optional feedback. OWNER ONLY. Sets the draft status to "
+            "'rejected'. Provide feedback to explain why the draft was rejected so the "
+            "author can revise and resubmit."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "library_id": {
+                    "type": "string",
+                    "description": "UUID of the shared library",
+                },
+                "draft_id": {
+                    "type": "string",
+                    "description": "UUID of the draft to reject",
+                },
+                "feedback": {
+                    "type": "string",
+                    "description": "Optional feedback explaining why the draft was rejected",
+                },
+            },
+            "required": ["library_id", "draft_id"],
+        },
+    },
+    # ============ Library Management Tools ============
+    {
+        "name": "create_shared_library",
+        "description": (
+            "Create a new shared library that other collaborators can contribute to. "
+            "Requires a managed subscription tier. Provisions a private GitHub repo "
+            "at Legate.Library.{slug} and initializes the library database. "
+            "Returns the library_id needed to invite collaborators."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Human-readable library name (e.g., 'Team Research Notes')",
+                },
+                "slug": {
+                    "type": "string",
+                    "description": (
+                        "URL-safe slug for the library (e.g., 'team-research'). "
+                        "Auto-generated from name if not provided."
+                    ),
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Optional description of the library's purpose",
+                },
+            },
+            "required": ["name"],
+        },
+    },
+    {
+        "name": "list_libraries",
+        "description": (
+            "List all libraries you have access to: your personal library plus any shared "
+            "libraries where you are an active member. Returns library_id, name, slug, your "
+            "role (owner/collaborator), and member count for each shared library."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+        },
+    },
+    {
+        "name": "invite_collaborator",
+        "description": (
+            "Invite a GitHub user to collaborate on a shared library. "
+            "You must be the library owner. The invitee will appear as 'invited' until "
+            "they call accept_invitation. Also adds them as a GitHub repo collaborator."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "library_id": {
+                    "type": "string",
+                    "description": "UUID of the shared library",
+                },
+                "github_login": {
+                    "type": "string",
+                    "description": "GitHub username of the person to invite",
+                },
+            },
+            "required": ["library_id", "github_login"],
+        },
+    },
+    {
+        "name": "accept_invitation",
+        "description": (
+            "Accept a pending invitation to collaborate on a shared library. "
+            "After accepting, you can use library_id with all note tools to read and "
+            "submit drafts in the shared library."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "library_id": {
+                    "type": "string",
+                    "description": "UUID of the shared library you were invited to",
+                },
+            },
+            "required": ["library_id"],
+        },
+    },
+    {
+        "name": "remove_collaborator",
+        "description": (
+            "Remove a collaborator from a shared library. "
+            "You must be the library owner. Revokes access and removes them from the "
+            "GitHub repo. Their unsubmitted drafts are deleted."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "library_id": {
+                    "type": "string",
+                    "description": "UUID of the shared library",
+                },
+                "github_login": {
+                    "type": "string",
+                    "description": "GitHub username of the collaborator to remove",
+                },
+            },
+            "required": ["library_id", "github_login"],
         },
     },
 ]
@@ -1209,6 +1726,19 @@ def handle_tool_call(params: dict) -> dict:
         "upload_markdown_as_note": tool_upload_markdown_as_note,
         "create_category": tool_create_category,
         "sync_shared_library": tool_sync_shared_library,
+        # Draft & Merge workflow tools
+        "create_draft": tool_create_draft,
+        "submit_draft": tool_submit_draft,
+        "list_drafts": tool_list_drafts,
+        "review_draft": tool_review_draft,
+        "merge_draft": tool_merge_draft,
+        "reject_draft": tool_reject_draft,
+        # Library management tools
+        "create_shared_library": tool_create_shared_library,
+        "list_libraries": tool_list_libraries,
+        "invite_collaborator": tool_invite_collaborator,
+        "accept_invitation": tool_accept_invitation,
+        "remove_collaborator": tool_remove_collaborator,
     }
 
     handler = tool_handlers.get(name)
@@ -1236,6 +1766,11 @@ def tool_search_library(args: dict) -> dict:
 
     if not query:
         return {"error": "Query is required", "results": []}
+
+    try:
+        db, _role = get_library_db(args)
+    except ValueError as e:
+        return {"error": str(e)}
 
     service = get_embedding_service()
 
@@ -1294,7 +1829,6 @@ def tool_search_library(args: dict) -> dict:
 
     else:
         # Fallback to text search
-        db = get_db()
         sql = """
             SELECT entry_id, title, category, content
             FROM knowledge_entries
@@ -1428,8 +1962,14 @@ def tool_create_note(args: dict) -> dict:
     if task_status and task_status not in valid_statuses:
         return {"error": f"Invalid task_status. Must be one of: {', '.join(sorted(valid_statuses))}"}
 
+    # Get library db + check write permission
+    try:
+        db, role = get_library_db(args)
+        check_write_permission(args.get("library_id"), role)
+    except ValueError as e:
+        return {"error": str(e)}
+
     # Validate category - use user's custom categories, not just defaults
-    db = get_db()
     user_id = g.mcp_user.get("user_id") if hasattr(g, "mcp_user") else None
     categories = get_user_categories(db, user_id or "default")
     valid_categories = {c["name"] for c in categories}
@@ -1605,7 +2145,11 @@ def tool_list_categories(args: dict) -> dict:
     """List all available categories."""
     from .rag.database import get_user_categories
 
-    db = get_db()
+    try:
+        db, _role = get_library_db(args)
+    except ValueError as e:
+        return {"error": str(e)}
+
     user_id = g.mcp_user.get("user_id") if hasattr(g, "mcp_user") else None
     categories = get_user_categories(db, user_id or "default")
 
@@ -1639,7 +2183,11 @@ def tool_get_note(args: dict) -> dict:
     if not entry_id and not file_path and not title:
         return {"error": "At least one lookup parameter required: entry_id, file_path, or title"}
 
-    db = get_db()
+    try:
+        db, _role = get_library_db(args)
+    except ValueError as e:
+        return {"error": str(e)}
+
     entry = None
     lookup_method = None
 
@@ -1716,7 +2264,11 @@ def tool_get_notes(args: dict) -> dict:
     limit = min(args.get("limit", 50), 100)  # Cap at 100
     include_content = args.get("include_content", True)
 
-    db = get_db()
+    try:
+        db, _role = get_library_db(args)
+    except ValueError as e:
+        return {"error": str(e)}
+
     notes = []
 
     if entry_ids:
@@ -1847,7 +2399,11 @@ def tool_append_to_note(args: dict) -> dict:
     if not append_content:
         return {"error": "content is required"}
 
-    db = get_db()
+    try:
+        db, role = get_library_db(args)
+        check_write_permission(args.get("library_id"), role)
+    except ValueError as e:
+        return {"error": str(e)}
 
     # Get existing note
     entry = db.execute(
@@ -1928,7 +2484,10 @@ def tool_get_related_notes(args: dict) -> dict:
     if not entry_id:
         return {"error": "entry_id is required"}
 
-    db = get_db()
+    try:
+        db, _role = get_library_db(args)
+    except ValueError as e:
+        return {"error": str(e)}
 
     # Get the source note
     entry = db.execute(
@@ -2005,7 +2564,10 @@ def tool_get_related_notes(args: dict) -> dict:
 
 def tool_get_library_stats(args: dict) -> dict:
     """Get statistics about the library."""
-    db = get_db()
+    try:
+        db, _role = get_library_db(args)
+    except ValueError as e:
+        return {"error": str(e)}
 
     # Total notes
     total = db.execute("SELECT COUNT(*) as count FROM knowledge_entries").fetchone()["count"]
@@ -2095,7 +2657,10 @@ def tool_list_recent_notes(args: dict) -> dict:
     limit = min(args.get("limit", 20), 100)  # Cap at 100
     category = args.get("category")
 
-    db = get_db()
+    try:
+        db, _role = get_library_db(args)
+    except ValueError as e:
+        return {"error": str(e)}
 
     if category:
         notes = db.execute(
@@ -2980,7 +3545,11 @@ def tool_list_subfolders(args: dict) -> dict:
     if not category:
         return {"error": "category is required"}
 
-    db = get_db()
+    try:
+        db, _role = get_library_db(args)
+    except ValueError as e:
+        return {"error": str(e)}
+
     user_id = g.mcp_user.get("user_id") if hasattr(g, "mcp_user") else None
 
     # Validate category
@@ -3058,7 +3627,11 @@ def tool_list_subfolder_contents(args: dict) -> dict:
     if not category:
         return {"error": "category is required"}
 
-    db = get_db()
+    try:
+        db, _role = get_library_db(args)
+    except ValueError as e:
+        return {"error": str(e)}
+
     user_id = g.mcp_user.get("user_id") if hasattr(g, "mcp_user") else None
 
     # Validate category
@@ -3859,7 +4432,10 @@ def tool_list_tasks(args: dict) -> dict:
     category = args.get("category")
     limit = min(args.get("limit", 50), 100)
 
-    db = get_db()
+    try:
+        db, _role = get_library_db(args)
+    except ValueError as e:
+        return {"error": str(e)}
 
     # Build query dynamically
     sql = """
@@ -4069,7 +4645,10 @@ def tool_get_note_context(args: dict) -> dict:
     if not entry_id:
         return {"error": "entry_id is required"}
 
-    db = get_db()
+    try:
+        db, _role = get_library_db(args)
+    except ValueError as e:
+        return {"error": str(e)}
 
     # Get the main note
     entry = db.execute(
@@ -4768,7 +5347,10 @@ def tool_list_assets(args: dict) -> dict:
     category = args.get("category", "").strip().lower()
     limit = min(int(args.get("limit", 50)), 100)
 
-    db = get_db()
+    try:
+        db, _role = get_library_db(args)
+    except ValueError as e:
+        return {"error": str(e)}
 
     if category:
         rows = db.execute(
@@ -4814,7 +5396,10 @@ def tool_get_asset(args: dict) -> dict:
     if not asset_id:
         return {"error": "asset_id is required"}
 
-    db = get_db()
+    try:
+        db, _role = get_library_db(args)
+    except ValueError as e:
+        return {"error": str(e)}
 
     row = db.execute(
         """
@@ -4914,7 +5499,10 @@ def tool_get_asset_reference(args: dict) -> dict:
     if not asset_id:
         return {"error": "asset_id is required"}
 
-    db = get_db()
+    try:
+        db, _role = get_library_db(args)
+    except ValueError as e:
+        return {"error": str(e)}
 
     row = db.execute(
         """
@@ -5793,6 +6381,573 @@ def tool_download_notes_batch(args: dict) -> dict:
 
     if errors:
         result["errors"] = errors
+
+    return result
+
+
+# ============ Library Management Tools ============
+
+
+def tool_create_shared_library(args: dict) -> dict:
+    """Create a new shared library with a private GitHub repo and per-library SQLite DB.
+
+    Requires managed subscription tier. Provisions Legate.Library.{slug} on GitHub
+    under the owner's account, inserts into shared_libraries, and inserts owner membership.
+    """
+    import re
+    import uuid
+
+    import requests
+
+    from .auth import get_user_installation_token
+    from .rag.database import init_db as init_shared_meta_db
+    from .rag.database import init_shared_library_db
+
+    user_id = g.mcp_user.get("user_id") if hasattr(g, "mcp_user") and g.mcp_user else None
+    github_login = g.mcp_user.get("sub") if hasattr(g, "mcp_user") and g.mcp_user else None
+
+    if not user_id:
+        return {"error": "Authentication required"}
+
+    # Tier gate
+    try:
+        require_managed_tier(user_id)
+    except ValueError as e:
+        return {"error": str(e)}
+
+    name = (args.get("name") or "").strip()
+    if not name:
+        return {"error": "Library name is required"}
+    if len(name) > 100:
+        return {"error": "Library name must be 100 characters or less"}
+
+    # Generate slug from provided slug or name
+    raw_slug = (args.get("slug") or "").strip()
+    if raw_slug:
+        slug = re.sub(r"[^a-z0-9-]", "-", raw_slug.lower()).strip("-")
+        slug = re.sub(r"-+", "-", slug)
+    else:
+        slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+        slug = re.sub(r"-+", "-", slug)
+    slug = slug[:50]
+
+    if not slug or not re.match(r"^[a-z0-9][a-z0-9-]*$", slug):
+        return {"error": "Could not generate a valid slug. Use only letters, numbers, and hyphens."}
+
+    description = (args.get("description") or "").strip()
+
+    # Get owner's installation token to create the GitHub repo
+    token = get_user_installation_token(user_id, "library")
+    if not token:
+        return {"error": "GitHub authorization required. Please re-authenticate."}
+
+    shared_db = init_shared_meta_db()
+
+    # Check slug uniqueness for this owner
+    existing = shared_db.execute(
+        "SELECT id FROM shared_libraries WHERE owner_user_id = ? AND slug = ? AND status = 'active'",
+        (user_id, slug),
+    ).fetchone()
+    if existing:
+        return {"error": f"You already have a shared library with slug '{slug}'. Choose a different slug."}
+
+    library_id = str(uuid.uuid4())
+    repo_name = f"Legate.Library.{slug}"
+    repo_full_name = f"{github_login}/{repo_name}"
+
+    # Create GitHub repo (private, auto_init so it has a main branch)
+    try:
+        gh_resp = requests.post(
+            "https://api.github.com/user/repos",
+            json={
+                "name": repo_name,
+                "description": description or f"Legate shared library: {name}",
+                "private": True,
+                "auto_init": True,
+            },
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Accept": "application/vnd.github+json",
+            },
+            timeout=20,
+        )
+        if gh_resp.status_code == 422:
+            # Repo already exists
+            error_data = gh_resp.json()
+            errors = error_data.get("errors", [])
+            already_exists = any(e.get("message", "").startswith("name already exists") for e in errors)
+            if already_exists:
+                return {"error": f"GitHub repo '{repo_name}' already exists on your account. Choose a different slug."}
+        if not gh_resp.ok:
+            logger.error(f"GitHub repo creation failed: {gh_resp.status_code} {gh_resp.text[:500]}")
+            return {"error": f"Failed to create GitHub repo: {gh_resp.status_code}"}
+        repo_data = gh_resp.json()
+        repo_full_name = repo_data.get("full_name", repo_full_name)
+    except requests.RequestException as e:
+        logger.error(f"GitHub API error creating shared library repo: {e}")
+        return {"error": f"Failed to create GitHub repo: {str(e)}"}
+
+    # Insert shared_libraries row
+    try:
+        shared_db.execute(
+            """
+            INSERT INTO shared_libraries (id, name, slug, owner_user_id, repo_full_name, description, status)
+            VALUES (?, ?, ?, ?, ?, ?, 'active')
+            """,
+            (library_id, name, slug, user_id, repo_full_name, description or None),
+        )
+        # Insert owner membership
+        shared_db.execute(
+            """
+            INSERT INTO shared_library_members
+            (shared_library_id, user_id, role, status, accepted_at)
+            VALUES (?, ?, 'owner', 'active', CURRENT_TIMESTAMP)
+            """,
+            (library_id, user_id),
+        )
+        shared_db.commit()
+    except Exception as e:
+        logger.error(f"DB error inserting shared library: {e}", exc_info=True)
+        return {"error": f"Failed to save library to database: {str(e)}"}
+
+    # Initialize per-library SQLite DB
+    try:
+        init_shared_library_db(library_id)
+    except Exception as e:
+        logger.error(f"Failed to init shared library DB for {library_id}: {e}", exc_info=True)
+        # Non-fatal — the DB will be initialized on first access
+        logger.warning("Shared library DB init deferred — will init on first access")
+
+    logger.info(f"Created shared library '{name}' ({library_id}) for user {user_id}, repo {repo_full_name}")
+
+    return {
+        "success": True,
+        "library_id": library_id,
+        "name": name,
+        "slug": slug,
+        "repo_full_name": repo_full_name,
+        "description": description or None,
+        "message": (
+            f"Shared library '{name}' created. Use library_id='{library_id}' to invite collaborators "
+            f"and access the library with other tools."
+        ),
+    }
+
+
+def tool_list_libraries(args: dict) -> dict:
+    """List personal library plus all shared libraries where the user is an active member."""
+    from .rag.database import init_db as init_shared_meta_db
+
+    user_id = g.mcp_user.get("user_id") if hasattr(g, "mcp_user") and g.mcp_user else None
+    github_login = g.mcp_user.get("sub") if hasattr(g, "mcp_user") and g.mcp_user else None
+
+    if not user_id:
+        return {"error": "Authentication required"}
+
+    # Personal library entry (always present)
+    libraries = [
+        {
+            "library_id": None,
+            "name": "Personal Library",
+            "slug": None,
+            "role": "owner",
+            "type": "personal",
+            "member_count": 1,
+        }
+    ]
+
+    try:
+        shared_db = init_shared_meta_db()
+
+        # Fetch all shared libraries where user is an active member
+        rows = shared_db.execute(
+            """
+            SELECT
+                sl.id AS library_id,
+                sl.name,
+                sl.slug,
+                sl.repo_full_name,
+                sl.description,
+                sl.owner_user_id,
+                slm.role,
+                (
+                    SELECT COUNT(*)
+                    FROM shared_library_members m2
+                    WHERE m2.shared_library_id = sl.id AND m2.status = 'active'
+                ) AS member_count
+            FROM shared_libraries sl
+            JOIN shared_library_members slm
+                ON sl.id = slm.shared_library_id
+            WHERE slm.user_id = ? AND slm.status = 'active' AND sl.status = 'active'
+            ORDER BY sl.name
+            """,
+            (user_id,),
+        ).fetchall()
+
+        for row in rows:
+            libraries.append({
+                "library_id": row["library_id"],
+                "name": row["name"],
+                "slug": row["slug"],
+                "role": row["role"],
+                "type": "shared",
+                "repo_full_name": row["repo_full_name"],
+                "description": row["description"],
+                "member_count": row["member_count"],
+            })
+
+        # Also fetch pending invitations so the user can see what they can accept
+        pending_rows = shared_db.execute(
+            """
+            SELECT sl.id AS library_id, sl.name, sl.slug, sl.description
+            FROM shared_libraries sl
+            JOIN shared_library_members slm ON sl.id = slm.shared_library_id
+            WHERE slm.user_id = ? AND slm.status = 'invited' AND sl.status = 'active'
+            ORDER BY sl.name
+            """,
+            (user_id,),
+        ).fetchall()
+
+        pending_invitations = [
+            {
+                "library_id": row["library_id"],
+                "name": row["name"],
+                "slug": row["slug"],
+                "description": row["description"],
+            }
+            for row in pending_rows
+        ]
+
+    except Exception as e:
+        logger.error(f"list_libraries failed for {user_id}: {e}", exc_info=True)
+        return {"error": f"Failed to list libraries: {str(e)}"}
+
+    result = {
+        "libraries": libraries,
+        "total": len(libraries),
+    }
+    if pending_invitations:
+        result["pending_invitations"] = pending_invitations
+        result["invitation_hint"] = "Call accept_invitation(library_id) to join a pending library."
+
+    return result
+
+
+def tool_invite_collaborator(args: dict) -> dict:
+    """Invite a GitHub user to a shared library.
+
+    Verifies caller is owner, checks target user exists in legato.db, inserts
+    membership row (status='invited'), and adds them as a GitHub collaborator.
+    """
+    import requests
+
+    from .auth import get_user_installation_token
+    from .rag.database import init_db as init_shared_meta_db
+
+    user_id = g.mcp_user.get("user_id") if hasattr(g, "mcp_user") and g.mcp_user else None
+    if not user_id:
+        return {"error": "Authentication required"}
+
+    library_id = (args.get("library_id") or "").strip()
+    github_login = (args.get("github_login") or "").strip()
+
+    if not library_id:
+        return {"error": "library_id is required"}
+    if not github_login:
+        return {"error": "github_login is required"}
+
+    shared_db = init_shared_meta_db()
+
+    # Verify caller is owner
+    lib_row = shared_db.execute(
+        """
+        SELECT sl.repo_full_name, sl.name, sl.owner_user_id
+        FROM shared_libraries sl
+        JOIN shared_library_members slm ON sl.id = slm.shared_library_id
+        WHERE sl.id = ? AND slm.user_id = ? AND slm.role = 'owner' AND slm.status = 'active'
+        """,
+        (library_id, user_id),
+    ).fetchone()
+
+    if not lib_row:
+        return {"error": "Library not found or you are not the owner"}
+
+    repo_full_name = lib_row["repo_full_name"]
+    library_name = lib_row["name"]
+
+    # Verify target user exists in our system
+    target_user = shared_db.execute(
+        "SELECT user_id FROM users WHERE github_login = ?",
+        (github_login,),
+    ).fetchone()
+
+    if not target_user:
+        return {
+            "error": (
+                f"User '{github_login}' not found in Legate Studio. "
+                "They must sign up at legate.studio first."
+            )
+        }
+
+    target_user_id = target_user["user_id"]
+
+    # Check they're not already a member
+    existing = shared_db.execute(
+        "SELECT status FROM shared_library_members WHERE shared_library_id = ? AND user_id = ?",
+        (library_id, target_user_id),
+    ).fetchone()
+
+    if existing:
+        status = existing["status"]
+        if status == "active":
+            return {"error": f"'{github_login}' is already an active member of this library"}
+        if status == "invited":
+            return {"error": f"'{github_login}' already has a pending invitation to this library"}
+        # Revoked — allow re-invitation
+        shared_db.execute(
+            """
+            UPDATE shared_library_members
+            SET status = 'invited', invited_at = CURRENT_TIMESTAMP, accepted_at = NULL
+            WHERE shared_library_id = ? AND user_id = ?
+            """,
+            (library_id, target_user_id),
+        )
+    else:
+        shared_db.execute(
+            """
+            INSERT INTO shared_library_members (shared_library_id, user_id, role, status)
+            VALUES (?, ?, 'collaborator', 'invited')
+            """,
+            (library_id, target_user_id),
+        )
+
+    shared_db.commit()
+
+    # Add as GitHub collaborator (best-effort — don't fail if GitHub API errors)
+    github_error = None
+    try:
+        token = get_user_installation_token(user_id, "library")
+        if token and repo_full_name:
+            gh_resp = requests.put(
+                f"https://api.github.com/repos/{repo_full_name}/collaborators/{github_login}",
+                json={"permission": "push"},
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Accept": "application/vnd.github+json",
+                },
+                timeout=15,
+            )
+            if not gh_resp.ok and gh_resp.status_code != 201:
+                github_error = f"GitHub collaborator invite returned {gh_resp.status_code}"
+                logger.warning(f"invite_collaborator GitHub error: {github_error}")
+    except Exception as e:
+        github_error = str(e)
+        logger.warning(f"invite_collaborator GitHub API error: {e}")
+
+    result = {
+        "success": True,
+        "library_id": library_id,
+        "library_name": library_name,
+        "github_login": github_login,
+        "status": "invited",
+        "message": (
+            f"'{github_login}' has been invited to '{library_name}'. "
+            "They can accept with accept_invitation(library_id)."
+        ),
+    }
+    if github_error:
+        result["github_warning"] = f"DB updated but GitHub collaborator invite may have failed: {github_error}"
+
+    return result
+
+
+def tool_accept_invitation(args: dict) -> dict:
+    """Accept a pending shared library invitation.
+
+    Verifies current user has status='invited', then sets to 'active'.
+    """
+    from .rag.database import init_db as init_shared_meta_db
+
+    user_id = g.mcp_user.get("user_id") if hasattr(g, "mcp_user") and g.mcp_user else None
+    if not user_id:
+        return {"error": "Authentication required"}
+
+    library_id = (args.get("library_id") or "").strip()
+    if not library_id:
+        return {"error": "library_id is required"}
+
+    shared_db = init_shared_meta_db()
+
+    # Verify there's a pending invitation
+    row = shared_db.execute(
+        """
+        SELECT slm.id, sl.name, sl.slug
+        FROM shared_library_members slm
+        JOIN shared_libraries sl ON sl.id = slm.shared_library_id
+        WHERE slm.shared_library_id = ? AND slm.user_id = ? AND slm.status = 'invited'
+        """,
+        (library_id, user_id),
+    ).fetchone()
+
+    if not row:
+        # Check if already active
+        active = shared_db.execute(
+            "SELECT 1 FROM shared_library_members WHERE shared_library_id = ? AND user_id = ? AND status = 'active'",
+            (library_id, user_id),
+        ).fetchone()
+        if active:
+            return {"error": "You are already an active member of this library"}
+        return {"error": "No pending invitation found for this library"}
+
+    library_name = row["name"]
+    library_slug = row["slug"]
+
+    shared_db.execute(
+        """
+        UPDATE shared_library_members
+        SET status = 'active', accepted_at = CURRENT_TIMESTAMP
+        WHERE shared_library_id = ? AND user_id = ?
+        """,
+        (library_id, user_id),
+    )
+    shared_db.commit()
+
+    return {
+        "success": True,
+        "library_id": library_id,
+        "library_name": library_name,
+        "library_slug": library_slug,
+        "message": (
+            f"You are now an active collaborator in '{library_name}'. "
+            f"Use library_id='{library_id}' with other tools to access this library. "
+            "Create drafts with create_draft() — owners merge them into the library."
+        ),
+    }
+
+
+def tool_remove_collaborator(args: dict) -> dict:
+    """Remove a collaborator from a shared library.
+
+    Owner-only. Sets membership status to 'revoked', removes GitHub collaborator,
+    and deletes any unsubmitted drafts by the removed user.
+    """
+    import requests
+
+    from .auth import get_user_installation_token
+    from .rag.database import get_shared_library_db
+    from .rag.database import init_db as init_shared_meta_db
+
+    user_id = g.mcp_user.get("user_id") if hasattr(g, "mcp_user") and g.mcp_user else None
+    if not user_id:
+        return {"error": "Authentication required"}
+
+    library_id = (args.get("library_id") or "").strip()
+    github_login = (args.get("github_login") or "").strip()
+
+    if not library_id:
+        return {"error": "library_id is required"}
+    if not github_login:
+        return {"error": "github_login is required"}
+
+    shared_db = init_shared_meta_db()
+
+    # Verify caller is owner
+    lib_row = shared_db.execute(
+        """
+        SELECT sl.repo_full_name, sl.name
+        FROM shared_libraries sl
+        JOIN shared_library_members slm ON sl.id = slm.shared_library_id
+        WHERE sl.id = ? AND slm.user_id = ? AND slm.role = 'owner' AND slm.status = 'active'
+        """,
+        (library_id, user_id),
+    ).fetchone()
+
+    if not lib_row:
+        return {"error": "Library not found or you are not the owner"}
+
+    repo_full_name = lib_row["repo_full_name"]
+    library_name = lib_row["name"]
+
+    # Look up target user
+    target_user = shared_db.execute(
+        "SELECT user_id FROM users WHERE github_login = ?",
+        (github_login,),
+    ).fetchone()
+
+    if not target_user:
+        return {"error": f"User '{github_login}' not found in Legate Studio"}
+
+    target_user_id = target_user["user_id"]
+
+    # Cannot remove the owner
+    if target_user_id == user_id:
+        return {"error": "You cannot remove yourself as owner. Transfer ownership or archive the library instead."}
+
+    member_row = shared_db.execute(
+        "SELECT status, role FROM shared_library_members WHERE shared_library_id = ? AND user_id = ?",
+        (library_id, target_user_id),
+    ).fetchone()
+
+    if not member_row:
+        return {"error": f"'{github_login}' is not a member of this library"}
+
+    if member_row["status"] == "revoked":
+        return {"error": f"'{github_login}' has already been removed from this library"}
+
+    # Set status to revoked
+    shared_db.execute(
+        """
+        UPDATE shared_library_members
+        SET status = 'revoked'
+        WHERE shared_library_id = ? AND user_id = ?
+        """,
+        (library_id, target_user_id),
+    )
+    shared_db.commit()
+
+    # Delete pending (unsubmitted) drafts from the shared library DB
+    drafts_deleted = 0
+    try:
+        lib_db = get_shared_library_db(library_id)
+        cursor = lib_db.execute(
+            "DELETE FROM drafts WHERE author_user_id = ? AND status = 'draft'",
+            (target_user_id,),
+        )
+        drafts_deleted = cursor.rowcount
+        lib_db.commit()
+    except Exception as e:
+        logger.warning(f"remove_collaborator: failed to delete drafts for {target_user_id}: {e}")
+
+    # Remove GitHub collaborator (best-effort)
+    github_error = None
+    try:
+        token = get_user_installation_token(user_id, "library")
+        if token and repo_full_name:
+            gh_resp = requests.delete(
+                f"https://api.github.com/repos/{repo_full_name}/collaborators/{github_login}",
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Accept": "application/vnd.github+json",
+                },
+                timeout=15,
+            )
+            if not gh_resp.ok and gh_resp.status_code != 204:
+                github_error = f"GitHub collaborator removal returned {gh_resp.status_code}"
+                logger.warning(f"remove_collaborator GitHub error: {github_error}")
+    except Exception as e:
+        github_error = str(e)
+        logger.warning(f"remove_collaborator GitHub API error: {e}")
+
+    result = {
+        "success": True,
+        "library_id": library_id,
+        "library_name": library_name,
+        "github_login": github_login,
+        "drafts_deleted": drafts_deleted,
+        "message": f"'{github_login}' has been removed from '{library_name}'.",
+    }
+    if github_error:
+        result["github_warning"] = f"Membership revoked but GitHub removal may have failed: {github_error}"
 
     return result
 

@@ -955,6 +955,194 @@ def create_app():
         )
         return xml, 200, {"Content-Type": "application/rss+xml; charset=utf-8"}
 
+    # ============ Shared library public routes (no auth) ============
+    # IMPORTANT: 3-segment routes must be registered BEFORE 2-segment routes
+    # to avoid Flask matching /pub/<owner>/<lib_slug> as /pub/<username>/<slug>.
+
+    @app.route("/pub/<owner>/<lib_slug>/")
+    def pub_shared_library_profile(owner: str, lib_slug: str):
+        """Render a public landing page for a shared library. No authentication required."""
+        import sqlite3
+
+        from .rag.database import get_public_profile, get_shared_library_db_path, init_db
+
+        # Look up the owner user
+        profile = get_public_profile(owner)
+        if not profile:
+            return render_template("error.html", title="Not Found", message="User not found"), 404
+
+        owner_user_id = profile["user_id"]
+
+        # Find the shared library by owner + slug
+        shared_meta = init_db()
+        lib_row = shared_meta.execute(
+            """
+            SELECT id, name, slug, description, created_at
+            FROM shared_libraries
+            WHERE owner_user_id = ? AND slug = ? AND status = 'active'
+            """,
+            (owner_user_id, lib_slug),
+        ).fetchone()
+
+        if not lib_row:
+            return render_template("error.html", title="Not Found", message="Shared library not found"), 404
+
+        library_id = lib_row["id"]
+        library_name = lib_row["name"]
+        library_description = lib_row["description"]
+
+        # Open shared library DB and query published notes
+        lib_db_path = get_shared_library_db_path(library_id)
+        notes = []
+        if lib_db_path.exists():
+            try:
+                lconn = sqlite3.connect(str(lib_db_path))
+                lconn.row_factory = sqlite3.Row
+                note_rows = lconn.execute(
+                    """
+                    SELECT title, slug, published_at, category, content
+                    FROM knowledge_entries
+                    WHERE published = 1 AND slug IS NOT NULL
+                    ORDER BY published_at DESC
+                    """
+                ).fetchall()
+                lconn.close()
+                for row in note_rows:
+                    d = dict(row)
+                    content = d.get("content") or ""
+                    d["preview"] = content[:200].replace("\n", " ").strip()
+                    notes.append(d)
+            except Exception as e:
+                logger.error(f"pub_shared_library_profile: failed to query library DB {library_id}: {e}")
+
+        canonical_url = f"https://legate.studio/pub/{owner}/{lib_slug}/"
+        author_avatar = profile.get("avatar_url") or ""
+
+        return render_template(
+            "shared_library_profile.html",
+            owner=owner,
+            profile=profile,
+            library_id=library_id,
+            library_name=library_name,
+            library_slug=lib_slug,
+            library_description=library_description,
+            notes=notes,
+            canonical_url=canonical_url,
+            author_avatar=author_avatar,
+            og_title=f"{library_name} — Legate Studio",
+            og_description=(
+                library_description
+                or f"Shared library by {profile.get('display_name') or owner} on Legate Studio."
+            ),
+            og_url=canonical_url,
+        )
+
+    @app.route("/pub/<owner>/<lib_slug>/<note_slug>")
+    def pub_shared_library_note(owner: str, lib_slug: str, note_slug: str):
+        """Render a published note from a shared library. No authentication required."""
+        import json
+        import sqlite3
+
+        from .rag.database import get_public_profile, get_shared_library_db_path, init_db
+
+        # Look up the owner user
+        profile = get_public_profile(owner)
+        if not profile:
+            return render_template("error.html", title="Not Found", message="User not found"), 404
+
+        owner_user_id = profile["user_id"]
+
+        # Find the shared library
+        shared_meta = init_db()
+        lib_row = shared_meta.execute(
+            """
+            SELECT id, name, slug
+            FROM shared_libraries
+            WHERE owner_user_id = ? AND slug = ? AND status = 'active'
+            """,
+            (owner_user_id, lib_slug),
+        ).fetchone()
+
+        if not lib_row:
+            return render_template("error.html", title="Not Found", message="Shared library not found"), 404
+
+        library_id = lib_row["id"]
+        library_name = lib_row["name"]
+
+        # Open library DB and find the note
+        lib_db_path = get_shared_library_db_path(library_id)
+        if not lib_db_path.exists():
+            return render_template("error.html", title="Not Found", message="Note not found"), 404
+
+        try:
+            lconn = sqlite3.connect(str(lib_db_path))
+            lconn.row_factory = sqlite3.Row
+            note = lconn.execute(
+                "SELECT * FROM knowledge_entries WHERE slug = ? AND published = 1",
+                (note_slug,),
+            ).fetchone()
+            lconn.close()
+        except Exception as e:
+            logger.error(f"pub_shared_library_note: failed to query DB for {owner}/{lib_slug}/{note_slug}: {e}")
+            return render_template("error.html", title="Server Error", message="An error occurred"), 500
+
+        if not note:
+            return render_template("error.html", title="Not Found", message="Note not found or not published"), 404
+
+        note_dict = dict(note)
+
+        from .library import render_markdown
+        content_html = render_markdown(note_dict.get("content", ""))
+
+        domain_tags = []
+        if note_dict.get("domain_tags"):
+            try:
+                domain_tags = json.loads(note_dict["domain_tags"])
+            except (json.JSONDecodeError, TypeError):
+                domain_tags = []
+
+        key_phrases = []
+        if note_dict.get("key_phrases"):
+            try:
+                key_phrases = json.loads(note_dict["key_phrases"])
+            except (json.JSONDecodeError, TypeError):
+                key_phrases = []
+
+        canonical_url = f"https://legate.studio/pub/{owner}/{lib_slug}/{note_slug}"
+        published_at = note_dict.get("published_at") or note_dict.get("created_at", "")
+        updated_at = note_dict.get("updated_at") or published_at
+
+        accent_color = profile.get("accent_color") or "#a855f7"
+        author_display_name = profile.get("display_name") or owner
+        author_profile_url = f"/pub/{owner}/{lib_slug}/"
+        author_avatar = profile.get("avatar_url") or ""
+
+        return render_template(
+            "published_note.html",
+            note=note_dict,
+            content_html=content_html,
+            domain_tags=domain_tags,
+            key_phrases=key_phrases,
+            username=owner,
+            slug=note_slug,
+            canonical_url=canonical_url,
+            published_at=published_at,
+            updated_at=updated_at,
+            report_url=f"/pub/{owner}/{lib_slug}/{note_slug}/report",
+            # Author profile
+            accent_color=accent_color,
+            author_display_name=author_display_name,
+            author_profile_url=author_profile_url,
+            author_avatar=author_avatar,
+            # Library context
+            library_name=library_name,
+            library_url=f"/pub/{owner}/{lib_slug}/",
+            # OG / SEO
+            og_title=note_dict.get("title", "Note"),
+            og_description=(note_dict.get("content", "")[:160].replace("\n", " ") if note_dict.get("content") else ""),
+            og_url=canonical_url,
+        )
+
     # ============ Public profile routes (no auth) ============
 
     @app.route("/pub/<username>")
