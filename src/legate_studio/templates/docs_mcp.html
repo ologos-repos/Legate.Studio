@@ -510,6 +510,15 @@
 
             <p>That's it. No API key. No token. No environment variables.</p>
 
+            <div class="callout callout-warning">
+                <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <p><strong>You must restart your client after saving.</strong> MCP servers are loaded at startup. Close your current session and start a new one — the OAuth flow will trigger automatically on first connection.</p>
+            </div>
+
             <h3>What Happens Next</h3>
             <ol class="step-list">
                 <li class="step-item">
@@ -641,8 +650,8 @@ Expected response:
                     <li class="step-item">
                         <div class="step-num">2</div>
                         <div class="step-content">
-                            <strong>Start a Claude Code session</strong>
-                            <p>Claude Code will detect the MCP server and prompt you to authenticate.</p>
+                            <strong>Restart your Claude Code session</strong>
+                            <p>MCP servers are loaded at startup. Close your current session and start a new one — Claude Code will detect Legate and prompt you to authenticate.</p>
                         </div>
                     </li>
                     <li class="step-item">

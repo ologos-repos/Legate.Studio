@@ -694,6 +694,10 @@ Add the following to your `.mcp.json` file in the project root, or to
 
 That's it. No API key. No token. No registration flow.
 
+**IMPORTANT: After saving, you MUST restart your Claude Code client for the new
+MCP server to load.** Close the session and reopen it — the OAuth flow will
+trigger automatically on first connection.
+
 ### Claude Desktop (claude_desktop_config.json)
 
 Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
@@ -710,7 +714,8 @@ or `%APPDATA%\\Claude\\claude_desktop_config.json` (Windows):
 }
 ```
 
-Restart Claude Desktop after saving.
+**IMPORTANT: Restart Claude Desktop after saving.** The OAuth flow will trigger
+automatically on first connection.
 
 ---
 
@@ -861,8 +866,8 @@ Full documentation: https://legate.studio/docs/mcp
         }
         instructions_summary = (
             "1. Add config_example to .mcp.json or ~/.claude/mcp.json. "
-            "2. Start your MCP client — it will open a browser for GitHub OAuth. "
-            "3. Log in with your Legate Studio GitHub account. "
+            "2. RESTART your MCP client (close and reopen the session) — MCP servers are loaded at startup. "
+            "3. On restart, the client will open a browser for GitHub OAuth. Log in with your Legate Studio GitHub account. "
             "4. Call check_connection to verify. "
             "No API key required. OAuth 2.1 handles authentication automatically."
         )
@@ -874,6 +879,7 @@ Full documentation: https://legate.studio/docs/mcp
                 "auth_method": "oauth2.1",
                 "well_known_url": "https://legate.studio/.well-known/oauth-authorization-server",
                 "config_example": config_example,
+                "post_setup_action": "RESTART your MCP client after saving config. MCP servers are loaded at startup — the new server will not appear until the client is restarted.",
                 "verification_tool": "check_connection",
                 "instructions": instructions_summary,
                 "docs_url": "https://legate.studio/docs/mcp",
