@@ -5502,7 +5502,7 @@ def tool_delete_asset(args: dict) -> dict:
 
     from .core import get_user_library_repo
 
-    library_repo = get_user_library_repo()
+    library_repo = get_user_library_repo(user_id)
     if not library_repo:
         return {"error": "Library repo not configured"}
 
@@ -5636,7 +5636,7 @@ def tool_upload_asset(args: dict) -> dict:
     if not token:
         return {"error": "GitHub authorization required"}
 
-    library_repo = get_user_library_repo()
+    library_repo = get_user_library_repo(user_id)
     if not library_repo:
         return {"error": "Library repo not configured"}
 
