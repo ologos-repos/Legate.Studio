@@ -377,7 +377,7 @@ def api_transcribe_status():
     """
     Check if voice transcription is available.
 
-    Returns: {"available": true/false, "model": "gemini-2.0-flash"}
+    Returns: {"available": true/false, "model": "gemini-2.5-flash"}
     """
     from .core import get_api_key_for_user
     from .rag.whisper_service import get_transcription_service
