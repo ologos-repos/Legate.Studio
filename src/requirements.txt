@@ -18,9 +18,12 @@ Flask-Limiter==3.5.0
 Flask-WTF==1.2.1
 
 # AI/LLM APIs
-anthropic>=0.18.0
+# anthropic[vertex] adds google-auth so Claude can be served via Vertex AI (AnthropicVertex)
+anthropic[vertex]>=0.40.0
 openai>=1.12.0
 google-generativeai>=0.8.0
+# New Google GenAI SDK — used by motif processing and for Gemini-on-Vertex (vertexai=True)
+google-genai>=1.0.0
 
 # Storage (Tigris S3-compatible)
 boto3>=1.34.0

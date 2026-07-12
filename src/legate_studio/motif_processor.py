@@ -716,24 +716,43 @@ Generate the complete markdown artifact with frontmatter."""
             ),
         )
 
-    def _get_user_api_key(self) -> tuple[str, str]:
-        """Get user's AI provider API key and provider name.
+    def _get_user_api_key(self) -> tuple[str | None, str]:
+        """Resolve the inference backend + credential for this user.
 
-        Follows the user's preferred-provider setting (Settings → API Keys),
-        then the default priority order: anthropic → gemini → openai.
+        Resolution order (provider-agnostic; BYOK always wins):
+          1. The user's own stored key for any provider (their preferred one
+             first) — returned as (key, provider).
+          2. The platform Vertex backend, if enabled and the user is on a
+             managed tier — returned as (None, "vertex"); Vertex authenticates
+             with GCP credentials, not an API key.
+          3. A platform direct-provider key (managed tier, backend=direct).
 
         Returns:
-            Tuple of (api_key, provider_name)
+            Tuple of (api_key_or_None, provider_or_"vertex")
         """
-        from .core import get_any_api_key_for_user
+        from .core import get_api_key_with_source, get_effective_tier, get_provider_priority
+        from .rag.usage import is_managed_tier
+        from .vertex import vertex_enabled
 
-        api_key, provider = get_any_api_key_for_user(self.user_id)
-        if api_key:
-            return api_key, provider
+        # 1) User's own stored key takes precedence on any tier.
+        for provider in get_provider_priority(self.user_id):
+            key, source = get_api_key_with_source(self.user_id, provider)
+            if key and source == "user":
+                return key, provider
+
+        # 2) Platform Vertex backend for managed tiers (no per-provider API key).
+        if vertex_enabled() and is_managed_tier(get_effective_tier(self.user_id)):
+            return None, "vertex"
+
+        # 3) Platform direct-provider key (managed tier, backend=direct).
+        for provider in get_provider_priority(self.user_id):
+            key, source = get_api_key_with_source(self.user_id, provider)
+            if key:
+                return key, provider
 
         raise ValueError(
-            "No AI provider API key configured. "
-            "Please add an API key (Anthropic, Gemini, or OpenAI) in Settings."
+            "No AI provider configured. Add an API key (Anthropic, Gemini, or OpenAI) "
+            "in Settings, or configure the platform Vertex backend."
         )
 
     def _get_provider_name(self) -> str:
@@ -776,7 +795,12 @@ Generate the complete markdown artifact with frontmatter."""
         # api_key here is the raw key string; provider stored in self._current_provider
         provider = getattr(self, "_current_provider", "anthropic")
 
-        if provider == "gemini":
+        if provider == "vertex":
+            # Platform Vertex backend — model chosen by VERTEX_MODEL, auth via GCP creds.
+            from .vertex import generate as vertex_generate
+
+            return vertex_generate(system=system, user=user)
+        elif provider == "gemini":
             return self._call_gemini(system=system, user=user, api_key=api_key)
         elif provider == "openai":
             return self._call_openai(system=system, user=user, api_key=api_key)
