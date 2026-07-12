@@ -134,11 +134,18 @@
     </div>
     {% endif %}
 
-    <!-- API Keys (for BYOK/trial tier) - only show when configured -->
-    {% if is_configured and tier in ['trial', 'byok'] %}
+    <!-- API Keys - only show when configured -->
+    {% if is_configured %}
     <div class="setup-section">
         <h2>API Keys</h2>
-        <p>Provide your own API keys for LLM access.</p>
+        {% if tier in ('managed', 'managed_lite', 'managed_standard', 'managed_plus') %}
+        <p>Optional: bring your own keys. A key saved here is used instead of the
+           platform key for that provider, and usage on your own key does not count
+           against your monthly credits. Keys are encrypted before storage.
+           Remove a key to switch back to platform keys.</p>
+        {% else %}
+        <p>Provide your own API keys for LLM access. Keys are encrypted before storage.</p>
+        {% endif %}
 
         {% set anthropic_key = api_keys|selectattr('provider', 'equalto', 'anthropic')|first %}
         {% set openai_key = api_keys|selectattr('provider', 'equalto', 'openai')|first %}
@@ -155,6 +162,12 @@
                 </button>
             </div>
         </form>
+        {% if anthropic_key %}
+        <form method="post" action="{{ url_for('auth.delete_api_key') }}" class="api-key-form">
+            <input type="hidden" name="provider" value="anthropic">
+            <button type="submit" class="btn btn-outline btn-sm">Remove Anthropic Key</button>
+        </form>
+        {% endif %}
 
         <form method="post" action="{{ url_for('auth.setup_api_key') }}" class="api-key-form">
             <div class="form-group">
@@ -167,6 +180,12 @@
                 </button>
             </div>
         </form>
+        {% if openai_key %}
+        <form method="post" action="{{ url_for('auth.delete_api_key') }}" class="api-key-form">
+            <input type="hidden" name="provider" value="openai">
+            <button type="submit" class="btn btn-outline btn-sm">Remove OpenAI Key</button>
+        </form>
+        {% endif %}
 
         <form method="post" action="{{ url_for('auth.setup_api_key') }}" class="api-key-form">
             <div class="form-group">
@@ -179,6 +198,12 @@
                 </button>
             </div>
         </form>
+        {% if gemini_key %}
+        <form method="post" action="{{ url_for('auth.delete_api_key') }}" class="api-key-form">
+            <input type="hidden" name="provider" value="gemini">
+            <button type="submit" class="btn btn-outline btn-sm">Remove Gemini Key</button>
+        </form>
+        {% endif %}
     </div>
     {% endif %}
 

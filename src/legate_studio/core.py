@@ -1914,8 +1914,48 @@ def can_use_platform_keys(user_id: str) -> bool:
     return is_managed_tier(get_effective_tier(user_id))
 
 
-def get_api_key_for_user(user_id: str, provider: str) -> str:
-    """Get API key for user — platform key (managed tiers) or their own BYOK key.
+def get_api_key_with_source(user_id: str, provider: str) -> tuple[str | None, str | None]:
+    """Resolve an API key for a user, preferring their own stored key.
+
+    Resolution order:
+      1. The user's own securely stored key (BYOK) — any tier. A user who
+         brought their own key always uses it; callers should not meter
+         that usage against platform credits.
+      2. Platform key from environment — managed tiers only.
+
+    Args:
+        user_id: User's ID
+        provider: 'anthropic', 'openai', or 'gemini'
+
+    Returns:
+        Tuple of (api_key, source) where source is 'user' or 'platform',
+        or (None, None) when no key is available.
+    """
+    import os
+
+    from .auth import get_user_api_key
+    from .rag.usage import is_managed_tier
+
+    if user_id:
+        try:
+            user_key = get_user_api_key(user_id, provider)
+        except Exception as e:
+            # A corrupt/undecryptable stored key must not block platform-key fallback
+            logger.warning(f"Could not decrypt stored {provider} key for user {user_id}: {e}")
+            user_key = None
+        if user_key:
+            return user_key, "user"
+
+    if is_managed_tier(get_effective_tier(user_id)):
+        env_key = os.environ.get(f"{provider.upper()}_API_KEY")
+        if env_key:
+            return env_key, "platform"
+
+    return None, None
+
+
+def get_api_key_for_user(user_id: str, provider: str) -> str | None:
+    """Get API key for user — their own stored key first, else platform key (managed tiers).
 
     Args:
         user_id: User's ID
@@ -1924,20 +1964,7 @@ def get_api_key_for_user(user_id: str, provider: str) -> str:
     Returns:
         API key string or None if not available
     """
-    import os
-
-    from .auth import get_user_api_key
-    from .rag.usage import is_managed_tier
-
-    tier = get_effective_tier(user_id)
-
-    if is_managed_tier(tier):
-        # All managed tiers use platform keys from environment
-        env_key = f"{provider.upper()}_API_KEY"
-        return os.environ.get(env_key)
-    else:
-        # BYOK / trial — return user's own stored key (may be None)
-        return get_user_api_key(user_id, provider)
+    return get_api_key_with_source(user_id, provider)[0]
 
 
 def paid_required(f):

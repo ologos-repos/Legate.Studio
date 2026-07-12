@@ -38,25 +38,28 @@ def _get_user_id() -> str | None:
     return session.get("user", {}).get("user_id")
 
 
-def _resolve_api_key(chat_provider_value: str) -> tuple[str | None, str]:
-    """Resolve the API key and tier for the current user + provider.
+def _resolve_api_key(chat_provider_value: str) -> tuple[str | None, str, str | None]:
+    """Resolve the API key, tier, and key source for the current user + provider.
 
-    In single-tenant mode, always returns (None, 'single-tenant') — ChatService
-    will fall back to environment variables as before.
+    In single-tenant mode, always returns (None, 'single-tenant', None) —
+    ChatService will fall back to environment variables as before.
 
-    In multi-tenant mode, uses get_api_key_for_user() which handles BYOK vs Managed.
+    In multi-tenant mode, uses get_api_key_with_source(): the user's own
+    stored key takes precedence (any tier), with platform keys as the
+    fallback for managed tiers.
 
     Args:
         chat_provider_value: ChatProvider.value string ('claude', 'openai', 'gemini')
 
     Returns:
-        Tuple of (api_key: str | None, tier: str)
-        api_key is None in single-tenant mode (env var fallback)
+        Tuple of (api_key: str | None, tier: str, key_source: str | None)
+        api_key is None in single-tenant mode (env var fallback).
+        key_source is 'user' or 'platform', or None when no key resolved.
     """
     if not _is_multi_tenant():
-        return None, "single-tenant"
+        return None, "single-tenant", None
 
-    from .core import get_api_key_for_user, get_effective_tier
+    from .core import get_api_key_with_source, get_effective_tier
 
     user_id = _get_user_id()
     tier = get_effective_tier(user_id) if user_id else "trial"
@@ -65,8 +68,8 @@ def _resolve_api_key(chat_provider_value: str) -> tuple[str | None, str]:
     provider_map = {"claude": "anthropic", "openai": "openai", "gemini": "gemini"}
     key_provider = provider_map.get(chat_provider_value, "anthropic")
 
-    api_key = get_api_key_for_user(user_id, key_provider)
-    return api_key, tier
+    api_key, key_source = get_api_key_with_source(user_id, key_provider)
+    return api_key, tier, key_source
 
 
 def get_services():
@@ -253,25 +256,31 @@ def send_message():
         effective_model = requested_model or chat_service.model
 
         # ── Resolve API key & tier ────────────────────────────────────────────
-        api_key, tier = _resolve_api_key(effective_provider.value)
+        api_key, tier, key_source = _resolve_api_key(effective_provider.value)
 
-        # BYOK check: if multi-tenant and NOT a managed tier and NOT single-tenant, user must
-        # have their own key stored. Managed tiers use platform keys (already resolved above).
+        # Key check: in multi-tenant mode every tier needs a resolved key —
+        # the user's own stored key, or (managed tiers) the platform key.
         from .rag.usage import is_managed_tier as _is_managed_tier
-        if _is_multi_tenant() and tier != "single-tenant" and not _is_managed_tier(tier) and not api_key:
-            return jsonify({
-                "error": (
+        if _is_multi_tenant() and tier != "single-tenant" and not api_key:
+            if _is_managed_tier(tier):
+                error_msg = (
+                    f"No platform key is configured for {effective_provider.value}. "
+                    "You can add your own API key in Settings to use this provider."
+                )
+            else:
+                error_msg = (
                     f"No API key configured for {effective_provider.value}. "
                     "Add your key in Settings."
                 )
-            }), 400
+            return jsonify({"error": error_msg}), 400
 
         user_id = _get_user_id()
 
-        # ── Credit cap check (Managed tier only) ─────────────────────────────
+        # ── Credit cap check (Managed tier on platform keys only) ────────────
+        # Users on their own keys pay their provider directly — no cap.
         if _is_multi_tenant() and user_id:
             from .rag.usage import check_credit_cap, get_cap_for_tier, is_managed_tier
-            if is_managed_tier(tier):
+            if is_managed_tier(tier) and key_source == "platform":
                 allowed, remaining = check_credit_cap(user_id, tier=tier)
                 cap_dollars = get_cap_for_tier(tier) / 1_000_000
                 if not allowed:
@@ -318,9 +327,9 @@ def send_message():
         response_text = result["text"]
         usage = result["usage"]
 
-        # ── Token usage tracking (Managed tier only) ─────────────────────────
+        # ── Token usage tracking (Managed tier on platform keys only) ────────
         from .rag.usage import is_managed_tier as _is_managed
-        if _is_multi_tenant() and _is_managed(tier) and user_id:
+        if _is_multi_tenant() and _is_managed(tier) and user_id and key_source == "platform":
             from .rag.usage import estimate_cost, record_usage_event, update_usage_meter
             cost = estimate_cost(
                 effective_provider.value,
