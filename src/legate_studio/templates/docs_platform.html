@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="How Legate Studio works — the capture pipeline that turns voice and text into structured notes, GitHub-backed storage you own, semantic search, AI chat over your library, and MCP integration.">
+    <meta name="theme-color" content="#0d1117">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="How It Works | Legate Studio">
+    <meta property="og:description" content="How Legate Studio works — the capture pipeline, GitHub-backed storage, semantic search, AI chat, and MCP integration.">
+    <meta property="og:image" content="https://legate.studio/static/img/og-share.png">
+    <meta property="og:url" content="https://legate.studio/docs">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Legate Studio">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="How It Works | Legate Studio">
+    <meta name="twitter:description" content="How Legate Studio works — the capture pipeline, GitHub-backed storage, semantic search, AI chat, and MCP integration.">
+    <meta name="twitter:image" content="https://legate.studio/static/img/og-share.png">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://legate.studio/docs">
+
+    <title>How It Works | Legate Studio</title>
+
+    {% from "marketing_base.html" import marketing_page_styles, marketing_head_common %}
+    {{ marketing_page_styles() }}
+    {{ marketing_head_common() }}
+
+    <!-- BreadcrumbList JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://legate.studio/"},
+        {"@type": "ListItem", "position": 2, "name": "Docs", "item": "https://legate.studio/docs"}
+      ]
+    }
+    </script>
+</head>
+<body>
+
+{% from "marketing_base.html" import marketing_nav, marketing_footer, marketing_scripts %}
+{{ marketing_nav(active_page="docs") }}
+
+<main class="landing-main">
+
+    <!-- ===== Page Hero ===== -->
+    <div class="page-hero">
+        <div class="page-hero-label">Documentation</div>
+        <h1>How Legate Studio Works</h1>
+        <p class="page-hero-sub">
+            The complete picture: how your thoughts become structured notes, where your data actually lives, and how every piece of the platform fits together.
+        </p>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ===== The Big Picture ===== -->
+    <section>
+        <div class="section">
+            <div class="section-label">The Big Picture</div>
+            <h2 class="section-title">Your library is a GitHub repository you own</h2>
+            <div class="prose">
+                <p>
+                    Legate Studio is built around one architectural decision that shapes everything else: <strong>your knowledge library is a private GitHub repository in your own account.</strong> Every note is a markdown file with YAML frontmatter, committed to your repo. Legate Studio is the interface and the AI pipeline on top of it — not the owner of your data.
+                </p>
+                <p>
+                    Alongside your repo, each user gets a private per-user SQLite database on our infrastructure. It acts as the index: note metadata, categories, embeddings for semantic search, graph relationships, and task state. The repo is the source of truth; the database makes it fast and searchable. Sync tooling keeps the two consistent, and you can download your database or clone your repo at any time.
+                </p>
+            </div>
+
+            <div class="info-grid" style="margin-top:2rem">
+                <div class="info-card">
+                    <div class="info-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+                        </svg>
+                    </div>
+                    <div class="info-card-title">GitHub repo = source of truth</div>
+                    <p class="info-card-desc">Markdown files with frontmatter, in a private repo under your GitHub account. Clone it, grep it, take it anywhere.</p>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                        </svg>
+                    </div>
+                    <div class="info-card-title">Per-user SQLite index</div>
+                    <p class="info-card-desc">Your own database file holds embeddings, graph edges, and metadata — isolated from every other user, downloadable anytime.</p>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+                            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+                            <line x1="6" y1="6" x2="6.01" y2="6"/>
+                            <line x1="6" y1="18" x2="6.01" y2="18"/>
+                        </svg>
+                    </div>
+                    <div class="info-card-title">Studio = interface + pipeline</div>
+                    <p class="info-card-desc">Capture, search, chat, graph, and MCP access — all operating on data that remains yours.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== The Motif Pipeline ===== -->
+    <section>
+        <div class="section">
+            <div class="section-label">Capture</div>
+            <h2 class="section-title">The Motif pipeline: from raw thought to structured note</h2>
+            <div class="prose">
+                <p>
+                    A <strong>Motif</strong> is any raw capture — a voice memo, a rambling text dump, a meeting transcript. The pipeline turns it into clean, categorized library entries:
+                </p>
+                <ol>
+                    <li><strong>Transcribe</strong> — audio is converted to text with a multimodal AI model. Audio is processed and discarded; it is not retained after transcription.</li>
+                    <li><strong>Parse</strong> — the transcript is split into distinct threads of thought, so one recording can yield several notes.</li>
+                    <li><strong>Classify</strong> — each thread is categorized (concept, epiphany, reflection, glimmer, reminder, worklog — or your own custom categories) and tagged with domains and key phrases. Threads describing something to <em>build</em> are flagged for the Chords workflow.</li>
+                    <li><strong>Correlate</strong> — each thread is checked against your existing notes. Near-duplicates are skipped, close matches are appended to the existing note, and genuinely new material is created fresh.</li>
+                    <li><strong>Extract</strong> — a complete markdown artifact is generated: frontmatter, structured prose, key points, and context.</li>
+                    <li><strong>Write</strong> — the note is committed to your GitHub library and indexed in your database.</li>
+                    <li><strong>Embed</strong> — embeddings are generated so the new note is immediately searchable and appears in your knowledge graph.</li>
+                </ol>
+                <p>
+                    Short captures process synchronously; longer ones are queued to a background worker with live progress tracking. You can watch each stage complete.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== Library & Organization ===== -->
+    <section>
+        <div class="section">
+            <div class="section-label">Organize</div>
+            <h2 class="section-title">Library, graph, and search</h2>
+            <div class="prose">
+                <p>
+                    Notes live in typed categories with optional nested subfolders. Any note can carry task state (pending, in progress, blocked, done) with due dates. Notes link to each other with typed relationships — <em>related, depends on, blocks, implements, references, contradicts, supports</em> — forming a knowledge graph you can explore visually in 2D or 3D.
+                </p>
+                <p>
+                    Search is hybrid: semantic similarity over embeddings combined with keyword matching, bucketed by confidence. Ask for an idea, not just a string — notes about "oracle machines" surface when you search for "AI intuition."
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== Chat / RAG ===== -->
+    <section>
+        <div class="section">
+            <div class="section-label">Chat</div>
+            <h2 class="section-title">AI chat grounded in your own notes</h2>
+            <div class="prose">
+                <p>
+                    Chat runs retrieval-augmented generation over your library: your question is embedded, the most relevant notes are retrieved from <em>your</em> database, and the model answers with that context. Anthropic Claude, OpenAI, and Google Gemini are all supported — pick a provider and model per conversation.
+                </p>
+                <p>
+                    Only the notes retrieved for a given question are sent to the AI provider, and your content is never used to train models. See the <a href="/security" style="color:var(--text-secondary);text-decoration:underline">Security page</a> for the full data-handling picture.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== MCP ===== -->
+    <section>
+        <div class="section">
+            <div class="section-label">MCP</div>
+            <h2 class="section-title">Your library as a first-class AI tool</h2>
+            <div class="prose">
+                <p>
+                    Legate Studio exposes a full <strong>Model Context Protocol (MCP)</strong> server at <code>https://legate.studio/mcp</code>. Connect Claude Desktop, Claude Code, or any MCP client and your assistant can read, search, create, and organize notes directly — with no API key to manage. Authentication uses OAuth 2.1 with PKCE backed by your GitHub sign-in, so each connection is scoped to your account only.
+                </p>
+                <p>
+                    This makes your library a persistent memory layer for AI assistants: capture during the day, and every tool you use can draw on the same knowledge. Full setup instructions are in the <a href="/docs/mcp" style="color:var(--text-secondary);text-decoration:underline">MCP documentation</a>.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== Shared Libraries ===== -->
+    <section>
+        <div class="section">
+            <div class="section-label">Collaborate</div>
+            <h2 class="section-title">Shared libraries with a draft &amp; merge workflow</h2>
+            <div class="prose">
+                <p>
+                    Teams can create shared libraries backed by private GitHub repos. Owners write directly; collaborators propose changes — new notes, edits, deletions — as <strong>drafts</strong> that owners review, merge, or reject with feedback. Invitations work by GitHub username, and every merge is a real commit with real history.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== Keys & Tiers ===== -->
+    <section>
+        <div class="section">
+            <div class="section-label">AI Providers</div>
+            <h2 class="section-title">Bring your own keys, or let us manage them</h2>
+            <div class="prose">
+                <p>
+                    All AI features need a model provider. You have two ways to supply one:
+                </p>
+                <ul>
+                    <li><strong>Bring Your Own Key (BYOK)</strong> — add your Anthropic, Gemini, or OpenAI API key in Settings. Keys are encrypted with a per-user key before storage, and usage is billed by your provider directly to you, with no platform markup.</li>
+                    <li><strong>Managed</strong> — we supply platform keys and meter usage against a monthly credit allowance included in your subscription. Nothing to configure.</li>
+                </ul>
+                <p>
+                    Your own stored keys always take precedence over platform keys, and usage on your own keys never counts against managed credits. See <a href="/pricing" style="color:var(--text-secondary);text-decoration:underline">Pricing</a> for tier details.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== Chords ===== -->
+    <section>
+        <div class="section">
+            <div class="section-label">Build</div>
+            <h2 class="section-title">Chords: from idea to implementation</h2>
+            <div class="prose">
+                <p>
+                    When a captured thought describes something to <em>build</em>, the pipeline flags it. Approved ideas are queued as <strong>Chords</strong> — projects handed to a GitHub coding agent that opens real pull requests in your repos. Every Chord requires your explicit approval before any agent runs; nothing is built behind your back.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ===== Further Reading ===== -->
+    <section>
+        <div class="section">
+            <div class="section-label">Go Deeper</div>
+            <h2 class="section-title">Further reading</h2>
+            <div class="prose">
+                <ul>
+                    <li><a href="/docs/mcp" style="color:var(--text-secondary);text-decoration:underline">MCP setup documentation</a> — connect Claude Desktop, Claude Code, and other MCP clients</li>
+                    <li><a href="/security" style="color:var(--text-secondary);text-decoration:underline">Security</a> — storage architecture, encryption, authentication, and data handling</li>
+                    <li><a href="/features" style="color:var(--text-secondary);text-decoration:underline">Features</a> — the full feature tour</li>
+                    <li><a href="/faq" style="color:var(--text-secondary);text-decoration:underline">FAQ</a> — common questions answered</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+{{ marketing_footer() }}
+{{ marketing_scripts() }}
+
+</body>
+</html>
