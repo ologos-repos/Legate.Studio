@@ -5593,6 +5593,11 @@ def tool_upload_asset(args: dict) -> dict:
     # Validation
     if not category:
         return {"error": "category is required"}
+    # Validate category as a plain slug before it is used to build a repo path;
+    # .lower()/.strip() leave "/" and "." intact, so an unvalidated value could
+    # path-manipulate the GitHub write. Matches the other MCP tools' validation.
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", category):
+        return {"error": "Invalid category name"}
     if not filename:
         return {"error": "filename is required"}
     if not content_base64:
