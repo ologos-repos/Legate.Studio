@@ -800,12 +800,18 @@ Generate the complete markdown artifact with frontmatter."""
 
     def _call_gemini(self, system: str, user: str, api_key: str) -> str:
         """Make a call to Gemini API (using google-genai SDK)."""
+        import os
+
         from google import genai
         from google.genai import types
 
+        # Overridable via env so a model change is a config flip, not a code deploy
+        # (a wrong/retired Gemini id 404s the whole pipeline — see gemini-2.0-flash).
+        model = os.environ.get("GEMINI_PROCESSING_MODEL", "gemini-3.5-flash")
+
         client = genai.Client(api_key=api_key)
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model=model,
             contents=user,
             config=types.GenerateContentConfig(
                 system_instruction=system,
