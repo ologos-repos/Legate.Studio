@@ -614,9 +614,8 @@ def github_app_callback():
         refresh_token = token_data.get("refresh_token")
 
         logger.info(
-            f"Token exchange result: access_token_len={len(access_token) if access_token else 0}, "
-            f"refresh_token_present={bool(refresh_token)}, "
-            f"access_token_prefix={access_token[:10] if access_token and len(access_token) > 10 else 'N/A'}..."
+            f"Token exchange result: access_token_present={bool(access_token)}, "
+            f"refresh_token_present={bool(refresh_token)}"
         )
 
         if not access_token:

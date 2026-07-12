@@ -157,6 +157,13 @@ def upload_asset():
     if not category:
         return jsonify({"error": "category is required"}), 400
 
+    # Validate category as a plain slug before using it to build a repo path.
+    # .lower()/.strip() do not remove "/" or ".", so an unvalidated value like
+    # "../../x" would path-manipulate the GitHub write. Every other route that
+    # builds category paths validates; keep this one consistent.
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", category):
+        return jsonify({"error": "Invalid category name"}), 400
+
     alt_text = request.form.get("alt_text", "").strip()
     description = request.form.get("description", "").strip()
 
@@ -429,10 +436,21 @@ def get_asset_raw(asset_id: str):
         if content is None:
             return jsonify({"error": "Asset file not found in repository"}), 404
 
+        # SVGs can carry <script>; served inline from our origin they would
+        # execute as same-origin script. Force a download for SVG and always
+        # send nosniff so browsers don't reinterpret the type.
+        mime_type = row["mime_type"]
+        disposition = "inline"
+        if mime_type == "image/svg+xml":
+            disposition = "attachment"
         return Response(
             content,
-            mimetype=row["mime_type"],
-            headers={"Content-Disposition": f'inline; filename="{row["filename"]}"'},
+            mimetype=mime_type,
+            headers={
+                "Content-Disposition": f'{disposition}; filename="{row["filename"]}"',
+                "X-Content-Type-Options": "nosniff",
+                "Content-Security-Policy": "default-src 'none'; sandbox",
+            },
         )
 
     except Exception as e:
