@@ -644,7 +644,11 @@ def create_app():
     def terms():
         return render_template("terms.html")
 
-    # ============ MCP Documentation ============
+    # ============ Documentation ============
+
+    @app.route("/docs")
+    def docs_platform():
+        return render_template("docs_platform.html")
 
     @app.route("/docs/mcp")
     def docs_mcp():
@@ -947,6 +951,7 @@ Full documentation: https://legate.studio/docs/mcp
             "Allow: /contact\n"
             "Allow: /privacy\n"
             "Allow: /terms\n"
+            "Allow: /docs\n"
             "Allow: /docs/mcp\n"
             "Allow: /mcp-first-pkm\n"
             "Allow: /personal-knowledge-base-for-ai\n"
@@ -988,6 +993,7 @@ Full documentation: https://legate.studio/docs/mcp
             ("https://legate.studio/contact",   today, "monthly", "0.4"),
             ("https://legate.studio/privacy",   today, "yearly",  "0.3"),
             ("https://legate.studio/terms",     today, "yearly",  "0.3"),
+            ("https://legate.studio/docs",      today, "monthly", "0.9"),
             ("https://legate.studio/docs/mcp",  today, "monthly", "0.9"),
             # Solution / category landing pages
             ("https://legate.studio/mcp-first-pkm",                      today, "monthly", "0.8"),
