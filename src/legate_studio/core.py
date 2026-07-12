@@ -173,10 +173,48 @@ def create_app():
         LEGATO_ORG=os.getenv("LEGATO_ORG", "bobbyhiddn"),
         CONDUCT_REPO=os.getenv("CONDUCT_REPO", "Legato.Conduct"),
         SYSTEM_PAT=os.getenv("SYSTEM_PAT"),  # Only needed for single-tenant
+        # Admin access. These were previously read from config by admin.py but never
+        # loaded here, so the documented ADMIN_USERS override silently did nothing and
+        # the bootstrap username/password path was dead. Accept either ADMIN_USERS or
+        # the legacy LEGATO_ADMINS name so both admin.py and auth.py share one source.
+        ADMIN_USERS=os.getenv("ADMIN_USERS") or os.getenv("LEGATO_ADMINS", ""),
+        ADMIN_USERNAME=os.getenv("ADMIN_USERNAME"),
+        ADMIN_PASSWORD=os.getenv("ADMIN_PASSWORD"),
         # App metadata
         APP_NAME="Legate Studio",
         APP_DESCRIPTION="Dashboard & Motif for Legate Studio",
     )
+
+    # Security response headers. These are all safe to apply globally:
+    # nosniff/frame/referrer/permissions never break normal page loads, and HSTS
+    # is only meaningful (and only sent) over HTTPS in production. The CSP is sent
+    # in Report-Only mode so it observes violations WITHOUT blocking anything —
+    # the app relies on inline scripts/styles and a few external hosts, so this
+    # can be tightened to an enforcing policy later once reports are reviewed.
+    _csp_report_only = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://plausible.io https://js.stripe.com https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "img-src 'self' data: https:; "
+        "font-src 'self' data: https://cdn.jsdelivr.net; "
+        "connect-src 'self' https://plausible.io; "
+        "frame-src https://js.stripe.com; "
+        "frame-ancestors 'self'; "
+        "base-uri 'self'"
+    )
+
+    @app.after_request
+    def _set_security_headers(response):
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+        response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        response.headers.setdefault("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
+        response.headers.setdefault("Content-Security-Policy-Report-Only", _csp_report_only)
+        if is_production:
+            response.headers.setdefault(
+                "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
+            )
+        return response
 
     # Rate limiting — binds the module-level limiter to this app.
     # Default limits apply to all non-MCP routes.
