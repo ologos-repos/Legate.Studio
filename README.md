@@ -171,6 +171,24 @@ OPENAI_API_KEY=sk-...
 GEMINI_API_KEY=AIzaSy...
 ```
 
+### Platform backend: Vertex AI (optional)
+
+Instead of direct provider keys, the managed/platform tier can serve inference
+through Google Vertex AI — letting you serve any Vertex-hosted model (Claude via
+`AnthropicVertex`, Gemini via `google-genai`) behind one GCP billing + auth
+surface. The model family is inferred from the `VERTEX_MODEL` prefix, so the
+pipeline stays provider-agnostic. BYOK users keep using their own direct provider
+keys unchanged. Inert unless both `LEGATE_PLATFORM_BACKEND=vertex` and
+`VERTEX_PROJECT` are set.
+
+```bash
+LEGATE_PLATFORM_BACKEND=vertex          # default 'direct'
+VERTEX_PROJECT=your-gcp-project-id
+VERTEX_LOCATION=us-central1             # Claude also accepts global/us/eu
+VERTEX_MODEL=gemini-2.5-flash           # or e.g. claude-sonnet-4-5@20250929
+GOOGLE_SERVICE_ACCOUNT_JSON={...}       # inline SA JSON; omit to use ambient ADC
+```
+
 ### Optional
 
 ```bash
