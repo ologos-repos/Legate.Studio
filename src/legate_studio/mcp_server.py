@@ -5005,20 +5005,25 @@ def tool_check_connection(args: dict) -> dict:
             result["database"]["user_exists"] = False
             result["recommendations"].append("User record not found in database - this is unexpected")
 
-    # Check for Anthropic API key (needed for process_motif)
-    from .auth import get_user_api_key
+    # Check for any usable AI provider key (needed for process_motif).
+    # process_motif works with Anthropic, Gemini, or OpenAI — via the user's own
+    # stored key or a platform key on managed tiers — so report whether ANY
+    # provider resolves, not just Anthropic BYOK.
+    from .core import get_any_api_key_for_user
 
     try:
-        api_key = get_user_api_key(user_id, "anthropic")
+        api_key, provider = get_any_api_key_for_user(user_id)
         if api_key:
-            result["database"]["anthropic_api_key_set"] = True
+            result["database"]["ai_provider_configured"] = True
+            result["database"]["ai_provider"] = provider
         else:
-            result["database"]["anthropic_api_key_set"] = False
+            result["database"]["ai_provider_configured"] = False
             result["recommendations"].append(
-                "Anthropic API key not configured. Add it in Legate Studio Settings to enableprocess_motif."
+                "No AI provider key available. Add an Anthropic, Gemini, or OpenAI key in "
+                "Legate Studio Settings (or use a managed tier) to enable process_motif."
             )
     except Exception as e:
-        result["database"]["anthropic_api_key_set"] = False
+        result["database"]["ai_provider_configured"] = False
         result["database"]["api_key_error"] = str(e)
 
     # Count notes in library
