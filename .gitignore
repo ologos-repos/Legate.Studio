@@ -6,4 +6,7 @@
 venv/
 *.log
 *.pem
-data/src/legate_studio.egg-info/
+*.egg-info/
+# Runtime SQLite databases created by the app/test suite
+# (data/legato.db is already tracked and stays tracked despite this pattern)
+data/*.db

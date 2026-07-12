@@ -318,7 +318,9 @@ def index():
     user = session.get("user", {})
     user_id = user.get("user_id")
 
-    # Check if user has API key (platform key for managed tier, or BYOK)
-    has_api_key = get_api_key_for_user(user_id, "anthropic") is not None
+    # Check if user has any AI provider key (own stored key, or platform key for managed tier)
+    has_api_key = any(
+        get_api_key_for_user(user_id, provider) is not None for provider in ("anthropic", "gemini", "openai")
+    )
 
     return render_template("motif.html", title="Motif", has_api_key=has_api_key)

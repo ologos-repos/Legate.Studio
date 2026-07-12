@@ -1228,6 +1228,49 @@ def setup_api_key():
     return redirect(url_for("auth.setup"))
 
 
+@auth_bp.route("/setup/apikey/delete", methods=["POST"])
+def delete_api_key():
+    """Remove a stored API key.
+
+    Stored keys take precedence over platform keys, so managed-tier users
+    need a way to remove their own key to return to platform-provided keys.
+
+    POST params:
+    - provider: 'anthropic', 'openai', or 'gemini'
+    """
+    if "user" not in session:
+        return redirect(url_for("auth.login"))
+
+    user = session["user"]
+    user_id = user.get("user_id")
+
+    provider = request.form.get("provider")
+
+    if provider not in ("anthropic", "openai", "gemini"):
+        flash("Invalid API provider.", "error")
+        return redirect(url_for("auth.setup"))
+
+    try:
+        db = _get_db()
+        cursor = db.execute(
+            "DELETE FROM user_api_keys WHERE user_id = ? AND provider = ?",
+            (user_id, provider),
+        )
+        db.commit()
+
+        if cursor.rowcount:
+            _log_audit(user_id, "delete", "api_key", provider, None)
+            flash(f"Removed {provider.title()} API key.", "success")
+        else:
+            flash(f"No {provider.title()} API key was stored.", "warning")
+
+    except Exception as e:
+        logger.error(f"Failed to delete API key: {e}")
+        flash("Failed to remove API key.", "error")
+
+    return redirect(url_for("auth.setup"))
+
+
 @auth_bp.route("/setup/sync-installations", methods=["POST"])
 def setup_sync_installations():
     """Re-sync GitHub App installations from GitHub.
