@@ -74,15 +74,34 @@ def _get_master_key() -> str:
         logger.info("Master encryption key loaded from LEGATE_MASTER_KEY environment variable")
         return _master_key
 
-    # Fall back to DB — load or generate
-    logger.warning(
-        "⚠️  SECURITY WARNING: LEGATE_MASTER_KEY environment variable is not set. "
-        "The master encryption key is being loaded from (or stored in) the database. "
-        "This means the key and the data it protects are in the SAME database — "
-        "a database dump exposes all encrypted user data. "
-        "Set LEGATE_MASTER_KEY in your environment for production deployments. "
-        "Generate a key with: python -m legate_studio.crypto"
-    )
+    # Fall back to DB — load or generate.
+    # In multi-tenant (hosted) mode the master key must not share a file with the
+    # data it protects. Refuse to GENERATE a new db-stored key for a fresh hosted
+    # deployment — but if a previous version already stored one, keep using it
+    # (refusing would lock the deployment out of its own encrypted data) while
+    # logging a critical to migrate.
+    if os.environ.get("LEGATO_MODE") == "multi-tenant":
+        if not _db_master_key_exists():
+            raise RuntimeError(
+                "LEGATE_MASTER_KEY is not set. Refusing to generate a database-stored "
+                "master key in multi-tenant mode — the key and the encrypted data it "
+                "protects would live in the same file. Set LEGATE_MASTER_KEY in the "
+                "environment. Generate one with: python -m legate_studio.crypto"
+            )
+        logger.critical(
+            "LEGATE_MASTER_KEY not set — using the master key stored in legato.db. "
+            "Migrate it to the LEGATE_MASTER_KEY environment variable: the key currently "
+            "shares a database file with the encrypted data it protects."
+        )
+    else:
+        logger.warning(
+            "⚠️  SECURITY WARNING: LEGATE_MASTER_KEY environment variable is not set. "
+            "The master encryption key is being loaded from (or stored in) the database. "
+            "This means the key and the data it protects are in the SAME database — "
+            "a database dump exposes all encrypted user data. "
+            "Set LEGATE_MASTER_KEY in your environment for production deployments. "
+            "Generate a key with: python -m legate_studio.crypto"
+        )
     _master_key = _load_or_create_master_key()
     _master_key_from_env = False
     return _master_key
@@ -96,6 +115,37 @@ def is_master_key_from_env() -> bool:
     """
     _get_master_key()  # ensure loaded
     return _master_key_from_env
+
+
+def _db_master_key_exists() -> bool:
+    """Return True if a master key is already stored in legato.db (read-only check).
+
+    Used to distinguish a fresh hosted deployment (no key yet — refuse to create
+    an insecure db-stored one) from an existing one (already has a db-stored key
+    that we must keep using to stay able to decrypt existing data).
+    """
+    import sqlite3
+    from pathlib import Path
+
+    db_dir = Path(os.environ.get("LEGATO_DB_DIR", "/data"))
+    if not db_dir.exists():
+        db_dir = Path("./data")
+    db_path = db_dir / "legato.db"
+
+    if not db_path.exists():
+        return False
+
+    conn = sqlite3.connect(str(db_path))
+    try:
+        row = conn.execute(
+            "SELECT 1 FROM system_config WHERE key = 'master_encryption_key' LIMIT 1"
+        ).fetchone()
+        return row is not None
+    except sqlite3.OperationalError:
+        # system_config table doesn't exist yet → no key stored
+        return False
+    finally:
+        conn.close()
 
 
 def _load_or_create_master_key() -> str:

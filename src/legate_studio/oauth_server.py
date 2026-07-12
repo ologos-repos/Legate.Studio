@@ -34,6 +34,24 @@ GITHUB_AUTHORIZE_URL = "https://github.com/login/oauth/authorize"
 GITHUB_TOKEN_URL = "https://github.com/login/oauth/access_token"
 GITHUB_USER_URL = "https://api.github.com/user"
 
+# Access-token lifetime. Kept in one place so the JWT `exp` and the advertised
+# `expires_in` cannot drift apart (they previously did: exp was 24h while every
+# token response advertised 3600s, leaving tokens valid long after clients
+# believed they had expired).
+ACCESS_TOKEN_TTL_SECONDS = 3600
+
+
+def _hash_refresh_token(token: str) -> str:
+    """Hash a refresh token for storage.
+
+    Refresh tokens were previously stored in plaintext, so a database dump
+    yielded 30 days of usable account access for every session. We store only
+    the SHA-256 hash and hash-on-lookup; the plaintext is returned to the
+    client once and never persisted. (A plain unsalted hash is appropriate
+    here — the token is a high-entropy 256-bit random value, not a password.)
+    """
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
 
 def get_db():
     """Get shared database for OAuth tables.
@@ -521,7 +539,7 @@ def handle_mcp_github_callback():
 
     github_token = token_json.get("access_token")
     if not github_token:
-        logger.warning(f"MCP OAuth: No access token from GitHub: {token_json}")
+        logger.warning(f"MCP OAuth: No access token from GitHub (error={token_json.get('error')})")
         callback = f"{oauth_request['redirect_uri']}?error=server_error&error_description=No+access+token"
         if oauth_request.get("state"):
             callback += f"&state={oauth_request['state']}"
@@ -642,7 +660,7 @@ def token():
     {
         "access_token": "eyJ...",
         "token_type": "Bearer",
-        "expires_in": 3600,
+        "expires_in": ACCESS_TOKEN_TTL_SECONDS,
         "refresh_token": "..."
     }
     """
@@ -756,7 +774,7 @@ def _handle_authorization_code_grant():
         user_id=user_id,
     )
 
-    # Generate refresh token
+    # Generate refresh token (store only its hash; return plaintext to the client)
     refresh_token = secrets.token_urlsafe(32)
     refresh_expires = datetime.utcnow() + timedelta(days=30)
 
@@ -769,7 +787,7 @@ def _handle_authorization_code_grant():
             auth_code["client_id"],
             auth_code["github_user_id"],
             auth_code["github_login"],
-            refresh_token,
+            _hash_refresh_token(refresh_token),
             refresh_expires.isoformat(),
         ),
     )
@@ -781,7 +799,7 @@ def _handle_authorization_code_grant():
         {
             "access_token": access_token,
             "token_type": "Bearer",
-            "expires_in": 3600,
+            "expires_in": ACCESS_TOKEN_TTL_SECONDS,
             "refresh_token": refresh_token,
             "scope": auth_code["scope"],
         }
@@ -796,9 +814,10 @@ def _handle_refresh_token_grant():
         logger.warning("Token request missing refresh_token parameter")
         return jsonify({"error": "invalid_request", "error_description": "refresh_token required"}), 400
 
-    # Look up refresh token
+    # Look up refresh token by hash (tokens are stored hashed, not in plaintext)
     db = get_db()
-    session_row = db.execute("SELECT * FROM oauth_sessions WHERE refresh_token = ?", (refresh_token,)).fetchone()
+    token_hash = _hash_refresh_token(refresh_token)
+    session_row = db.execute("SELECT * FROM oauth_sessions WHERE refresh_token = ?", (token_hash,)).fetchone()
 
     if not session_row:
         return jsonify({"error": "invalid_grant", "error_description": "Invalid refresh token"}), 400
@@ -806,7 +825,7 @@ def _handle_refresh_token_grant():
     # Check expiration
     expires_at = datetime.fromisoformat(session_row["expires_at"])
     if datetime.utcnow() > expires_at:
-        db.execute("DELETE FROM oauth_sessions WHERE refresh_token = ?", (refresh_token,))
+        db.execute("DELETE FROM oauth_sessions WHERE refresh_token = ?", (token_hash,))
         db.commit()
         return jsonify({"error": "invalid_grant", "error_description": "Refresh token expired"}), 400
 
@@ -822,7 +841,7 @@ def _handle_refresh_token_grant():
         user_id=user_id,
     )
 
-    # Rotate refresh token
+    # Rotate refresh token (store the new hash; return the new plaintext once)
     new_refresh_token = secrets.token_urlsafe(32)
     new_expires = datetime.utcnow() + timedelta(days=30)
 
@@ -832,7 +851,7 @@ def _handle_refresh_token_grant():
         SET refresh_token = ?, expires_at = ?, updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
     """,
-        (new_refresh_token, new_expires.isoformat(), session_row["id"]),
+        (_hash_refresh_token(new_refresh_token), new_expires.isoformat(), session_row["id"]),
     )
     db.commit()
 
@@ -842,7 +861,7 @@ def _handle_refresh_token_grant():
         {
             "access_token": access_token,
             "token_type": "Bearer",
-            "expires_in": 3600,
+            "expires_in": ACCESS_TOKEN_TTL_SECONDS,
             "refresh_token": new_refresh_token,
         }
     )
@@ -869,7 +888,7 @@ def _create_access_token(github_login: str, github_user_id: int, client_id: str,
         "client_id": client_id,
         "scope": scope,
         "iat": now,
-        "exp": now + timedelta(hours=24),
+        "exp": now + timedelta(seconds=ACCESS_TOKEN_TTL_SECONDS),
         "iss": "legate-studio",
     }
 
@@ -897,9 +916,7 @@ def require_mcp_auth(f):
         auth_header = request.headers.get("Authorization", "")
 
         if not auth_header.startswith("Bearer "):
-            logger.warning(
-                f"MCP request missing Bearer token. Auth header: {auth_header[:50] if auth_header else 'empty'}"
-            )
+            logger.warning("MCP request missing Bearer token")
             return (
                 jsonify(
                     {
@@ -915,7 +932,7 @@ def require_mcp_auth(f):
         claims = verify_access_token(token)
 
         if not claims:
-            logger.warning(f"MCP request with invalid token: {token[:20]}...")
+            logger.warning("MCP request with invalid or expired token")
             base = get_base_url()
             return (
                 jsonify(

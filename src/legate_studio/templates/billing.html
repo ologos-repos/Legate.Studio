@@ -380,6 +380,7 @@
             <button class="plan-button secondary" disabled>Beta Access Active</button>
             {% else %}
             <form action="{{ url_for('billing.checkout') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="tier" value="byok">
                 <button type="submit" class="plan-button secondary">Subscribe</button>
             </form>
@@ -405,6 +406,7 @@
             <button class="plan-button primary" disabled>Beta Access Active</button>
             {% else %}
             <form action="{{ url_for('billing.checkout') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="tier" value="managed">
                 <button type="submit" class="plan-button primary">Subscribe</button>
             </form>
@@ -418,6 +420,7 @@
         <strong>Subscription Cancelling</strong>
         <p>Your subscription is scheduled to cancel at the end of the current billing period{% if period_end_date %} ({{ period_end_date }}){% endif %}. You'll retain access until then.</p>
         <form action="{{ url_for('billing.reactivate') }}" method="POST" style="margin-top: 0.5rem;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="plan-button btn-success" style="width: auto; padding: 0.5rem 1.5rem;">
                 Keep My Subscription
             </button>
@@ -434,6 +437,7 @@
         <div class="manage-actions">
             {% if tier == 'managed' %}
             <form action="{{ url_for('billing.switch') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="tier" value="byok">
                 <button type="submit" class="plan-button secondary" style="width: auto; padding: 0.5rem 1.5rem;">
                     Switch to BYOK ($0.99/mo)
@@ -441,6 +445,7 @@
             </form>
             {% elif tier == 'byok' %}
             <form action="{{ url_for('billing.switch') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="tier" value="managed">
                 <button type="submit" class="plan-button primary" style="width: auto; padding: 0.5rem 1.5rem;">
                     Upgrade to Managed ($2.99/mo)
@@ -449,12 +454,14 @@
             {% endif %}
 
             <form action="{{ url_for('billing.portal') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="plan-button secondary" style="width: auto; padding: 0.5rem 1.5rem;">
                     Update Payment Method
                 </button>
             </form>
 
             <form action="{{ url_for('billing.cancel') }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel? You will retain access until the end of your billing period.');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="plan-button btn-danger" style="width: auto; padding: 0.5rem 1.5rem;">
                     Cancel Subscription
                 </button>

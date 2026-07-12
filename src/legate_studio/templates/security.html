@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="How Legate Studio protects your knowledge — per-user SQLite storage on Fly.io volumes, GitHub OAuth authentication, no-tracking analytics via Plausible, and a strict no-training policy.">
     <meta name="theme-color" content="#0d1117">
 
@@ -66,13 +66,13 @@
             <h2 class="section-title">Per-user databases, not shared tables</h2>
             <div class="prose">
                 <p>
-                    Each Legate Studio user gets their own SQLite database file, stored on a persistent Fly.io volume. Your data does not share a database with other users — there is no shared table that contains rows from multiple accounts.
+                    Your notes are stored as markdown in your own private GitHub repository, and indexed in a per-user SQLite database file on a persistent Fly.io volume. That per-user database — holding your notes' metadata, categories, embeddings, and graph data — is a separate file per account; your knowledge is not stored in a table shared with other users.
                 </p>
                 <p>
-                    This is an intentional architectural decision. Shared multi-tenant databases are efficient for the platform but create a class of risk: a query bug, a misconfigured permission, or an injection vulnerability in one account can affect others. Per-user databases eliminate that class of problem entirely.
+                    This is an intentional architectural decision. Shared multi-tenant databases are efficient for the platform but create a class of risk: a query bug, a misconfigured permission, or an injection vulnerability in one account can affect others. Keeping each user's knowledge in its own database file removes that class of problem. Just as important, the database you read and write is chosen from your authenticated session identity — never from an ID supplied in the request — so one account cannot address another account's data.
                 </p>
                 <p>
-                    A small shared database contains user account metadata (GitHub login, subscription status, profile settings). Your actual knowledge — notes, categories, embeddings, graph data — lives only in your per-user database.
+                    A shared database holds account and operational records: your GitHub login, subscription status, profile settings, the transcript-processing job queue, usage metering, and an audit log. These are scoped to your user ID. Your knowledge content lives in your per-user database and your GitHub repository.
                 </p>
             </div>
 
@@ -123,13 +123,13 @@
             <h2 class="section-title">GitHub OAuth — no passwords to breach</h2>
             <div class="prose">
                 <p>
-                    Legate Studio uses GitHub OAuth for authentication. When you log in, you're redirected to GitHub, authenticate there, and GitHub tells us who you are. We never see your GitHub password — it never touches our servers.
+                    Legate Studio uses GitHub for authentication. When you log in, you're redirected to GitHub, authenticate there, and GitHub tells us who you are. We never see your GitHub password — it never touches our servers.
                 </p>
                 <p>
-                    We request the minimum OAuth scopes needed to identify you: your public profile (username, name, avatar). We do not request access to your repositories, emails (unless public), or any other GitHub resources.
+                    Because your notes are stored as markdown in a GitHub repository, Legate Studio uses a GitHub App that you install and grant access to only the specific repositories you choose — your Library repo, plus any repositories you explicitly tag for the Chords workflow. It cannot see your other repositories. Within the repos you select, the App reads and writes your notes on your behalf. You can review or revoke this access from your GitHub settings at any time.
                 </p>
                 <p>
-                    Sessions are managed using server-side session cookies with a randomly generated secret. Sessions expire and are invalidated on sign-out.
+                    Your login is kept in a session cookie that is cryptographically signed with a secret only our server holds, so it cannot be forged or tampered with. The cookie is marked HTTP-only (JavaScript cannot read it) and, in production, Secure (sent only over HTTPS). Sensitive tokens are never placed in the cookie — they are encrypted and stored server-side. Sessions expire and are cleared on sign-out.
                 </p>
             </div>
 
@@ -140,8 +140,8 @@
                             <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
                         </svg>
                     </div>
-                    <div class="info-card-title">GitHub OAuth only</div>
-                    <p class="info-card-desc">No passwords stored on our servers. Authentication happens at GitHub — we receive an identity confirmation, nothing more.</p>
+                    <div class="info-card-title">GitHub authentication</div>
+                    <p class="info-card-desc">No passwords stored on our servers. Authentication happens at GitHub — your password never touches our infrastructure.</p>
                 </div>
 
                 <div class="info-card">
@@ -151,8 +151,8 @@
                             <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                         </svg>
                     </div>
-                    <div class="info-card-title">Minimal OAuth scopes</div>
-                    <p class="info-card-desc">We request only your public GitHub profile. No repo access, no email access, no write permissions of any kind.</p>
+                    <div class="info-card-title">Repos you choose, only</div>
+                    <p class="info-card-desc">The GitHub App can access only the repositories you select when you install it — your Library and any repos you tag. Never your other repositories.</p>
                 </div>
 
                 <div class="info-card">
@@ -161,8 +161,8 @@
                             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                         </svg>
                     </div>
-                    <div class="info-card-title">Secure session cookies</div>
-                    <p class="info-card-desc">Sessions are server-side with a randomly generated secret key. Cookies are HTTP-only and expire on sign-out.</p>
+                    <div class="info-card-title">Signed session cookies</div>
+                    <p class="info-card-desc">Login cookies are cryptographically signed, HTTP-only, and Secure in production. Sensitive tokens are encrypted and stored server-side, never in the cookie.</p>
                 </div>
             </div>
         </div>
@@ -177,31 +177,33 @@
             <h2 class="section-title">What we do and don't do with your notes</h2>
             <div class="prose">
                 <p>
-                    Your notes are processed through AI models to generate transcriptions, categorizations, and embeddings. That processing requires sending content to an AI API — either Google Gemini via your own key (BYOK) or via our managed account.
+                    Your notes are processed through AI models to generate transcriptions, categorizations, and embeddings. That processing requires sending content to an AI provider — Anthropic, OpenAI, or Google Gemini — either under your own key (BYOK) or under our managed account.
                 </p>
                 <p>
                     <strong>We do not use your notes to train models.</strong> We do not retain copies of your content beyond what's needed to run the app. We do not read your notes for any purpose other than running the AI pipeline on your behalf.
                 </p>
                 <p>
-                    If you use the BYOK plan, your content goes directly from Legate to Google's Gemini API under your API key — under Google's terms of service, not ours. Review <a href="https://ai.google.dev/terms" target="_blank" rel="noopener" style="color:var(--text-secondary);text-decoration:underline">Google's AI terms</a> if you need to understand exactly how they handle API inputs.
-                </p>
-                <p>
-                    If you use the Managed plan, your content goes to Google's Gemini API under our account. We choose Google specifically because they offer data processing agreements and clear data handling policies for API users.
+                    On the BYOK plan, your content goes directly from Legate to your chosen provider under your own API key — under that provider's terms of service, not ours. On the Managed plan, it goes to the provider under our account. We select providers that offer data processing agreements and commit to not training on API inputs by default.
                 </p>
 
                 <h3>What we store</h3>
                 <ul>
                     <li>Your GitHub profile information (username, name, avatar URL) — for your account</li>
                     <li>Your subscription status and billing ID — for payments via Stripe</li>
-                    <li>Your notes, categories, embeddings, and graph data — in your per-user database</li>
+                    <li>Your notes, categories, embeddings, and graph data — in your per-user database and your GitHub repository</li>
                     <li>Your profile settings (display name, bio, accent color) — for your public profile</li>
+                    <li>Any AI provider API keys you add — encrypted at rest with a per-user key (see below)</li>
                 </ul>
+
+                <h3>How we handle your API keys</h3>
+                <p>
+                    If you bring your own API key, it is encrypted before it is written to the database, using a key derived per-user from a master secret. It is decrypted only in memory, at the moment we make a request to your provider on your behalf, and never logged or exposed. If you remove a key, the stored ciphertext is deleted.
+                </p>
 
                 <h3>What we don't store</h3>
                 <ul>
                     <li>Your GitHub password (we never see it)</li>
                     <li>Your credit card details (handled entirely by Stripe)</li>
-                    <li>Your Gemini API key in recoverable form on BYOK plans</li>
                     <li>Audio files after transcription is complete (audio is processed and discarded)</li>
                 </ul>
             </div>

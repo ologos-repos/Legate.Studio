@@ -41,6 +41,7 @@
                     </a>
                     <p class="help-text" style="margin-top: 0.75rem;">
                         Already installed? <form method="post" action="{{ url_for('auth.setup_sync_installations') }}" style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-outline btn-sm">Sync Installations</button>
                         </form>
                     </p>
@@ -50,6 +51,7 @@
             <div class="setup-step-done">
                 <p>Already created your Library?</p>
                 <form method="post" action="{{ url_for('auth.setup_library') }}" class="library-manual-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="text" name="repo_name"
                            placeholder="Legate.Library.{{ session.user.username }}"
                            value="Legate.Library.{{ session.user.username }}"
@@ -100,6 +102,7 @@
                 Manage App Access
             </a>
             <form method="post" action="{{ url_for('auth.setup_sync_installations') }}" style="display: inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-outline btn-sm">Sync Installations</button>
             </form>
         </div>
@@ -147,11 +150,31 @@
         <p>Provide your own API keys for LLM access. Keys are encrypted before storage.</p>
         {% endif %}
 
+        <form method="post" action="{{ url_for('auth.setup_preferred_provider') }}" class="api-key-form">
+            <div class="form-group">
+                <label for="preferred_provider">Preferred Provider</label>
+                <select name="provider" id="preferred_provider">
+                    <option value="auto" {% if not preferred_provider %}selected{% endif %}>
+                        Auto (Anthropic &rarr; Gemini &rarr; OpenAI)
+                    </option>
+                    <option value="anthropic" {% if preferred_provider == 'anthropic' %}selected{% endif %}>Anthropic</option>
+                    <option value="gemini" {% if preferred_provider == 'gemini' %}selected{% endif %}>Google Gemini</option>
+                    <option value="openai" {% if preferred_provider == 'openai' %}selected{% endif %}>OpenAI</option>
+                </select>
+                <button type="submit" class="btn btn-secondary btn-sm">Save</button>
+            </div>
+        </form>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">
+            This provider is tried first for motif processing and used as your default
+            chat provider. If it has no available key, the others are tried in order.
+        </p>
+
         {% set anthropic_key = api_keys|selectattr('provider', 'equalto', 'anthropic')|first %}
         {% set openai_key = api_keys|selectattr('provider', 'equalto', 'openai')|first %}
         {% set gemini_key = api_keys|selectattr('provider', 'equalto', 'gemini')|first %}
 
         <form method="post" action="{{ url_for('auth.setup_api_key') }}" class="api-key-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label for="anthropic_key">Anthropic API Key</label>
                 <input type="hidden" name="provider" value="anthropic">
@@ -164,12 +187,14 @@
         </form>
         {% if anthropic_key %}
         <form method="post" action="{{ url_for('auth.delete_api_key') }}" class="api-key-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="provider" value="anthropic">
             <button type="submit" class="btn btn-outline btn-sm">Remove Anthropic Key</button>
         </form>
         {% endif %}
 
         <form method="post" action="{{ url_for('auth.setup_api_key') }}" class="api-key-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label for="openai_key">OpenAI API Key</label>
                 <input type="hidden" name="provider" value="openai">
@@ -182,12 +207,14 @@
         </form>
         {% if openai_key %}
         <form method="post" action="{{ url_for('auth.delete_api_key') }}" class="api-key-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="provider" value="openai">
             <button type="submit" class="btn btn-outline btn-sm">Remove OpenAI Key</button>
         </form>
         {% endif %}
 
         <form method="post" action="{{ url_for('auth.setup_api_key') }}" class="api-key-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label for="gemini_key">Google Gemini API Key</label>
                 <input type="hidden" name="provider" value="gemini">
@@ -200,6 +227,7 @@
         </form>
         {% if gemini_key %}
         <form method="post" action="{{ url_for('auth.delete_api_key') }}" class="api-key-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="provider" value="gemini">
             <button type="submit" class="btn btn-outline btn-sm">Remove Gemini Key</button>
         </form>
@@ -221,10 +249,12 @@
         <div style="margin-top: 0.75rem;">
             {% if user.has_copilot %}
             <form method="post" action="{{ url_for('auth.setup_disable_copilot') }}" style="display: inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-outline btn-sm">Disable</button>
             </form>
             {% else %}
             <form method="post" action="{{ url_for('auth.setup_enable_copilot') }}" style="display: inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-primary btn-sm">Enable</button>
             </form>
             {% endif %}
@@ -240,6 +270,7 @@
     <details class="setup-section">
         <summary>Advanced: Manual Library Configuration</summary>
         <form method="post" action="{{ url_for('auth.setup_repo') }}" class="repo-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label for="library_repo_input">Library Repository</label>
                 <input type="hidden" name="repo_type" value="library">

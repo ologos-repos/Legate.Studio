@@ -173,10 +173,48 @@ def create_app():
         LEGATO_ORG=os.getenv("LEGATO_ORG", "bobbyhiddn"),
         CONDUCT_REPO=os.getenv("CONDUCT_REPO", "Legato.Conduct"),
         SYSTEM_PAT=os.getenv("SYSTEM_PAT"),  # Only needed for single-tenant
+        # Admin access. These were previously read from config by admin.py but never
+        # loaded here, so the documented ADMIN_USERS override silently did nothing and
+        # the bootstrap username/password path was dead. Accept either ADMIN_USERS or
+        # the legacy LEGATO_ADMINS name so both admin.py and auth.py share one source.
+        ADMIN_USERS=os.getenv("ADMIN_USERS") or os.getenv("LEGATO_ADMINS", ""),
+        ADMIN_USERNAME=os.getenv("ADMIN_USERNAME"),
+        ADMIN_PASSWORD=os.getenv("ADMIN_PASSWORD"),
         # App metadata
         APP_NAME="Legate Studio",
         APP_DESCRIPTION="Dashboard & Motif for Legate Studio",
     )
+
+    # Security response headers. These are all safe to apply globally:
+    # nosniff/frame/referrer/permissions never break normal page loads, and HSTS
+    # is only meaningful (and only sent) over HTTPS in production. The CSP is sent
+    # in Report-Only mode so it observes violations WITHOUT blocking anything —
+    # the app relies on inline scripts/styles and a few external hosts, so this
+    # can be tightened to an enforcing policy later once reports are reviewed.
+    _csp_report_only = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://plausible.io https://js.stripe.com https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "img-src 'self' data: https:; "
+        "font-src 'self' data: https://cdn.jsdelivr.net; "
+        "connect-src 'self' https://plausible.io; "
+        "frame-src https://js.stripe.com; "
+        "frame-ancestors 'self'; "
+        "base-uri 'self'"
+    )
+
+    @app.after_request
+    def _set_security_headers(response):
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+        response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        response.headers.setdefault("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
+        response.headers.setdefault("Content-Security-Policy-Report-Only", _csp_report_only)
+        if is_production:
+            response.headers.setdefault(
+                "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
+            )
+        return response
 
     # Rate limiting — binds the module-level limiter to this app.
     # Default limits apply to all non-MCP routes.
@@ -219,6 +257,28 @@ def create_app():
     app.register_blueprint(billing_bp)  # Stripe billing
     app.register_blueprint(import_api_bp)  # Markdown ZIP import
     app.register_blueprint(assets_bp)  # Library asset management
+
+    # ── CSRF protection ────────────────────────────────────────────────────
+    # Protects all cookie-session state-changing requests (form POSTs and
+    # same-origin fetch()/XHR). Browser requests carry the token via a hidden
+    # form field (server-rendered forms) or the X-CSRFToken header (injected by
+    # a global fetch shim in base.html).
+    #
+    # Machine-to-machine endpoints are exempt because they authenticate with
+    # bearer tokens or signatures, never the browser session, and therefore have
+    # no CSRF token to present:
+    #   - oauth_bp:      OAuth 2.1 AS (DCR/authorize/token) for MCP clients
+    #   - mcp_bp:        MCP protocol (Bearer access tokens)
+    #   - memory_api_bp: machine-to-machine memory API (Bearer tokens)
+    #   - billing.webhook: Stripe webhook (verified by Stripe signature)
+    from flask_wtf.csrf import CSRFProtect
+
+    csrf = CSRFProtect(app)
+    csrf.exempt(oauth_bp)
+    csrf.exempt(mcp_bp)
+    csrf.exempt(memory_api_bp)
+    if "billing.webhook" in app.view_functions:
+        csrf.exempt(app.view_functions["billing.webhook"])
 
     # Debug-only route to verify Sentry is wired up correctly.
     # Only reachable when app.debug=True (never in production).
@@ -644,7 +704,11 @@ def create_app():
     def terms():
         return render_template("terms.html")
 
-    # ============ MCP Documentation ============
+    # ============ Documentation ============
+
+    @app.route("/docs")
+    def docs_platform():
+        return render_template("docs_platform.html")
 
     @app.route("/docs/mcp")
     def docs_mcp():
@@ -947,6 +1011,7 @@ Full documentation: https://legate.studio/docs/mcp
             "Allow: /contact\n"
             "Allow: /privacy\n"
             "Allow: /terms\n"
+            "Allow: /docs\n"
             "Allow: /docs/mcp\n"
             "Allow: /mcp-first-pkm\n"
             "Allow: /personal-knowledge-base-for-ai\n"
@@ -975,27 +1040,48 @@ Full documentation: https://legate.studio/docs/mcp
     # SEO: sitemap.xml
     @app.route("/sitemap.xml")
     def sitemap_xml():
+        from pathlib import Path
+
         from .rag.database import get_user_db_path, init_db
 
         today = datetime.now().strftime("%Y-%m-%d")
-        urls = [
-            ("https://legate.studio/",         today, "weekly", "1.0"),
-            ("https://legate.studio/features",  today, "monthly", "0.9"),
-            ("https://legate.studio/pricing",   today, "monthly", "0.9"),
-            ("https://legate.studio/faq",       today, "monthly", "0.8"),
-            ("https://legate.studio/about",     today, "monthly", "0.6"),
-            ("https://legate.studio/security",  today, "monthly", "0.5"),
-            ("https://legate.studio/contact",   today, "monthly", "0.4"),
-            ("https://legate.studio/privacy",   today, "yearly",  "0.3"),
-            ("https://legate.studio/terms",     today, "yearly",  "0.3"),
-            ("https://legate.studio/docs/mcp",  today, "monthly", "0.9"),
+
+        # Real <lastmod> from each page's template mtime. An always-"today" lastmod
+        # trains crawlers to ignore the field (and erodes trust in the accurate
+        # per-note dates below), so fall back to today only if the file is missing.
+        template_dir = Path(app.root_path) / "templates"
+
+        def lastmod(template_name: str) -> str:
+            try:
+                ts = (template_dir / template_name).stat().st_mtime
+                return datetime.fromtimestamp(ts).strftime("%Y-%m-%d")
+            except OSError:
+                return today
+
+        # (path, template, changefreq, priority) — lastmod resolved from template mtime below.
+        static_pages = [
+            ("/", "landing.html", "weekly", "1.0"),
+            ("/features", "features.html", "monthly", "0.9"),
+            ("/pricing", "pricing.html", "monthly", "0.9"),
+            ("/faq", "faq.html", "monthly", "0.8"),
+            ("/about", "about.html", "monthly", "0.6"),
+            ("/security", "security.html", "monthly", "0.5"),
+            ("/contact", "contact.html", "monthly", "0.4"),
+            ("/privacy", "privacy.html", "yearly", "0.3"),
+            ("/terms", "terms.html", "yearly", "0.3"),
+            ("/docs", "docs_platform.html", "monthly", "0.9"),
+            ("/docs/mcp", "docs_mcp.html", "monthly", "0.9"),
             # Solution / category landing pages
-            ("https://legate.studio/mcp-first-pkm",                      today, "monthly", "0.8"),
-            ("https://legate.studio/personal-knowledge-base-for-ai",     today, "monthly", "0.8"),
-            ("https://legate.studio/memory-layer-for-ai",                today, "monthly", "0.8"),
-            ("https://legate.studio/voice-notes-to-knowledge-base",      today, "monthly", "0.8"),
-            ("https://legate.studio/knowledge-graph-notes",              today, "monthly", "0.8"),
-            ("https://legate.studio/persistent-memory-for-ai-assistants",today, "monthly", "0.8"),
+            ("/mcp-first-pkm", "mcp_first_pkm.html", "monthly", "0.8"),
+            ("/personal-knowledge-base-for-ai", "pkb_for_ai.html", "monthly", "0.8"),
+            ("/memory-layer-for-ai", "memory_layer_for_ai.html", "monthly", "0.8"),
+            ("/voice-notes-to-knowledge-base", "voice_notes_to_kb.html", "monthly", "0.8"),
+            ("/knowledge-graph-notes", "knowledge_graph_notes.html", "monthly", "0.8"),
+            ("/persistent-memory-for-ai-assistants", "persistent_memory_for_ai.html", "monthly", "0.8"),
+        ]
+        urls = [
+            (f"https://legate.studio{path}", lastmod(template), freq, prio)
+            for path, template, freq, prio in static_pages
         ]
 
         # Include published notes and profile pages from all user DBs
@@ -1732,9 +1818,9 @@ Full documentation: https://legate.studio/docs/mcp
         )
 
     # Error handlers
-    @app.errorhandler(404)
-    def not_found_error(error):
-        return render_template("error.html", title="Not Found", message="Page not found"), 404
+    # Note: the 404 handler is registered once above (renders the branded, noindexed
+    # 404.html). Do NOT register a second @app.errorhandler(404) here — Flask keys
+    # handlers by exception class, so a duplicate silently overrides the branded page.
 
     @app.errorhandler(500)
     def internal_error(error):
@@ -1965,6 +2051,51 @@ def get_api_key_for_user(user_id: str, provider: str) -> str | None:
         API key string or None if not available
     """
     return get_api_key_with_source(user_id, provider)[0]
+
+
+# Default provider resolution order when the user has no preference set
+AI_PROVIDERS: tuple[str, ...] = ("anthropic", "gemini", "openai")
+
+
+def get_preferred_provider(user_id: str) -> str | None:
+    """Get the user's preferred AI provider, or None for automatic priority.
+
+    Set via Settings → API Keys → Preferred Provider.
+    """
+    from .rag.database import init_db
+
+    if not user_id:
+        return None
+
+    db = init_db()
+    row = db.execute(
+        "SELECT preferred_provider FROM users WHERE user_id = ?", (user_id,)
+    ).fetchone()
+
+    preferred = row["preferred_provider"] if row else None
+    return preferred if preferred in AI_PROVIDERS else None
+
+
+def get_provider_priority(user_id: str) -> tuple[str, ...]:
+    """Provider resolution order for a user: their preferred provider first,
+    then the remaining providers in default order."""
+    preferred = get_preferred_provider(user_id)
+    if not preferred:
+        return AI_PROVIDERS
+    return (preferred, *(p for p in AI_PROVIDERS if p != preferred))
+
+
+def get_any_api_key_for_user(user_id: str) -> tuple[str | None, str | None]:
+    """Resolve the first available AI key following the user's provider priority.
+
+    Returns:
+        Tuple of (api_key, provider), or (None, None) when no provider has a key.
+    """
+    for provider in get_provider_priority(user_id):
+        api_key = get_api_key_for_user(user_id, provider)
+        if api_key:
+            return api_key, provider
+    return None, None
 
 
 def paid_required(f):

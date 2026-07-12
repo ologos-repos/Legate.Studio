@@ -7,9 +7,34 @@
     <meta name="theme-color" content="#0d1117">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% block title %}{{ title|default(app_name) }}{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     {% block head %}{% endblock %}
+    <!-- CSRF: attach the token to all same-origin state-changing fetch() calls so
+         existing AJAX keeps working without per-call changes. Runs before app scripts. -->
+    <script>
+        (function() {
+            var meta = document.querySelector('meta[name="csrf-token"]');
+            var token = meta ? meta.getAttribute('content') : '';
+            if (!token || !window.fetch) return;
+            var SAFE = /^(GET|HEAD|OPTIONS|TRACE)$/i;
+            var origFetch = window.fetch;
+            window.fetch = function(input, init) {
+                init = init || {};
+                var method = (init.method || (typeof input !== 'string' && input && input.method) || 'GET');
+                // Only add for same-origin, unsafe methods.
+                var url = (typeof input === 'string') ? input : (input && input.url) || '';
+                var sameOrigin = !/^https?:\/\//i.test(url) || url.indexOf(window.location.origin) === 0;
+                if (!SAFE.test(method) && sameOrigin) {
+                    var headers = new Headers(init.headers || (typeof input !== 'string' && input && input.headers) || {});
+                    if (!headers.has('X-CSRFToken')) headers.set('X-CSRFToken', token);
+                    init.headers = headers;
+                }
+                return origFetch(input, init);
+            };
+        })();
+    </script>
     <!-- Theme init: run before paint to avoid flash -->
     <script>
         (function() {

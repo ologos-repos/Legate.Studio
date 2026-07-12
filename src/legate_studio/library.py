@@ -1260,6 +1260,13 @@ def api_sync():
         sync = LibrarySync(db, embedding_service)
 
         if source == "filesystem":
+            # Filesystem sync ingests every .md file under a caller-supplied path
+            # into the caller's library. That is a local single-tenant dev
+            # convenience only — in multi-tenant (hosted) mode it would let any
+            # authenticated user read arbitrary server-side markdown files
+            # (e.g. path="/"), so it is refused there.
+            if current_app.config.get("LEGATO_MODE") == "multi-tenant":
+                return jsonify({"error": "Filesystem sync is not available in hosted mode"}), 403
             path = data.get("path", "/mnt/d/Code/Legato/Legate.Library")
             stats = sync.sync_from_filesystem(path)
         else:

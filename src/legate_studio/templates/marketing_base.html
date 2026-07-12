@@ -26,6 +26,8 @@
     <div class="nav-links">
         <a href="/features" {% if active_page == "features" %}style="color:var(--text-primary)"{% endif %}>Features</a>
         <a href="/pricing" {% if active_page == "pricing" %}style="color:var(--text-primary)"{% endif %}>Pricing</a>
+        <a href="/docs" {% if active_page == "docs" %}style="color:var(--text-primary)"{% endif %}>Docs</a>
+        <a href="/security" {% if active_page == "security" %}style="color:var(--text-primary)"{% endif %}>Security</a>
         <a href="/faq" {% if active_page == "faq" %}style="color:var(--text-primary)"{% endif %}>FAQ</a>
         <a href="/about" {% if active_page == "about" %}style="color:var(--text-primary)"{% endif %}>About</a>
     </div>
@@ -49,6 +51,8 @@
 <div class="mobile-nav-drawer" id="mobileNavDrawer">
     <a href="/features">Features</a>
     <a href="/pricing">Pricing</a>
+    <a href="/docs">Docs</a>
+    <a href="/security">Security</a>
     <a href="/faq">FAQ</a>
     <a href="/about">About</a>
     <a href="{{ url_for('auth.login') }}" style="margin-top:0.5rem;font-weight:500;color:var(--text-primary)">Sign In</a>
@@ -72,10 +76,22 @@
         <div class="footer-links">
             <a href="/features">Features</a>
             <a href="/pricing">Pricing</a>
+            <a href="/docs">Docs</a>
             <a href="/faq">FAQ</a>
             <a href="/about">About</a>
             <a href="/security">Security</a>
             <a href="/contact">Contact</a>
+        </div>
+
+        <div class="footer-links">
+            <a href="/docs">How It Works</a>
+            <a href="/docs/mcp">MCP Docs</a>
+            <a href="/mcp-first-pkm">MCP-First PKM</a>
+            <a href="/memory-layer-for-ai">Memory Layer for AI</a>
+            <a href="/personal-knowledge-base-for-ai">PKB for AI</a>
+            <a href="/knowledge-graph-notes">Knowledge Graph Notes</a>
+            <a href="/voice-notes-to-knowledge-base">Voice Notes to KB</a>
+            <a href="/persistent-memory-for-ai-assistants">Persistent AI Memory</a>
         </div>
 
         <div class="footer-links">

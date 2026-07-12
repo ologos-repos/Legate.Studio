@@ -14,6 +14,9 @@ requests==2.31.0
 # Rate limiting
 Flask-Limiter==3.5.0
 
+# CSRF protection for browser (cookie-session) form and fetch POSTs
+Flask-WTF==1.2.1
+
 # AI/LLM APIs
 anthropic>=0.18.0
 openai>=1.12.0

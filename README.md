@@ -12,7 +12,7 @@ A personal knowledge platform with AI-powered capture, search, and chat. Your se
 - **Encryption**: Fernet per-user encryption for stored API keys (via `crypto.py`)
 - **Rate limiting**: Flask-Limiter (in-memory by default, Redis optional)
 - **Embeddings**: Gemini `text-embedding-004` (768-dim, default), OpenAI `text-embedding-ada-002` (1536-dim), or Ollama (local)
-- **Transcription**: Gemini Flash 2.0 multimodal (replaces Whisper)
+- **Transcription**: Gemini Flash multimodal (replaces Whisper)
 - **AI Chat**: Anthropic Claude, OpenAI, and Google Gemini (provider abstraction layer)
 - **MCP**: OAuth 2.1 Authorization Server with Dynamic Client Registration (protocol version `2025-06-18`)
 - **Deployment**: Fly.io (persistent `/data` volume for SQLite + secrets) or Docker
@@ -395,7 +395,7 @@ src/
     │   ├── gemini_provider.py       # Gemini text-embedding-004 (768-dim, default)
     │   ├── openai_provider.py       # OpenAI text-embedding-ada-002 (1536-dim)
     │   ├── ollama_provider.py       # Ollama local embeddings
-    │   ├── whisper_service.py       # Gemini Flash 2.0 multimodal transcription
+    │   ├── whisper_service.py       # Gemini Flash multimodal transcription
     │   ├── github_service.py        # GitHub API abstraction for library sync
     │   ├── library_sync.py          # GitHub <-> local DB sync
     │   └── context_builder.py       # RAG context assembly for chat
