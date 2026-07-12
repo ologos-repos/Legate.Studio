@@ -980,28 +980,43 @@ Full documentation: https://legate.studio/docs/mcp
     # SEO: sitemap.xml
     @app.route("/sitemap.xml")
     def sitemap_xml():
+        from pathlib import Path
+
         from .rag.database import get_user_db_path, init_db
 
         today = datetime.now().strftime("%Y-%m-%d")
+
+        # Real <lastmod> from each page's template mtime. An always-"today" lastmod
+        # trains crawlers to ignore the field (and erodes trust in the accurate
+        # per-note dates below), so fall back to today only if the file is missing.
+        template_dir = Path(app.root_path) / "templates"
+
+        def lastmod(template_name: str) -> str:
+            try:
+                ts = (template_dir / template_name).stat().st_mtime
+                return datetime.fromtimestamp(ts).strftime("%Y-%m-%d")
+            except OSError:
+                return today
+
         urls = [
-            ("https://legate.studio/",         today, "weekly", "1.0"),
-            ("https://legate.studio/features",  today, "monthly", "0.9"),
-            ("https://legate.studio/pricing",   today, "monthly", "0.9"),
-            ("https://legate.studio/faq",       today, "monthly", "0.8"),
-            ("https://legate.studio/about",     today, "monthly", "0.6"),
-            ("https://legate.studio/security",  today, "monthly", "0.5"),
-            ("https://legate.studio/contact",   today, "monthly", "0.4"),
-            ("https://legate.studio/privacy",   today, "yearly",  "0.3"),
-            ("https://legate.studio/terms",     today, "yearly",  "0.3"),
-            ("https://legate.studio/docs",      today, "monthly", "0.9"),
-            ("https://legate.studio/docs/mcp",  today, "monthly", "0.9"),
+            ("https://legate.studio/",         lastmod("landing.html"),   "weekly", "1.0"),
+            ("https://legate.studio/features",  lastmod("features.html"),  "monthly", "0.9"),
+            ("https://legate.studio/pricing",   lastmod("pricing.html"),   "monthly", "0.9"),
+            ("https://legate.studio/faq",       lastmod("faq.html"),       "monthly", "0.8"),
+            ("https://legate.studio/about",     lastmod("about.html"),     "monthly", "0.6"),
+            ("https://legate.studio/security",  lastmod("security.html"),  "monthly", "0.5"),
+            ("https://legate.studio/contact",   lastmod("contact.html"),   "monthly", "0.4"),
+            ("https://legate.studio/privacy",   lastmod("privacy.html"),   "yearly",  "0.3"),
+            ("https://legate.studio/terms",     lastmod("terms.html"),     "yearly",  "0.3"),
+            ("https://legate.studio/docs",      lastmod("docs_platform.html"), "monthly", "0.9"),
+            ("https://legate.studio/docs/mcp",  lastmod("docs_mcp.html"),  "monthly", "0.9"),
             # Solution / category landing pages
-            ("https://legate.studio/mcp-first-pkm",                      today, "monthly", "0.8"),
-            ("https://legate.studio/personal-knowledge-base-for-ai",     today, "monthly", "0.8"),
-            ("https://legate.studio/memory-layer-for-ai",                today, "monthly", "0.8"),
-            ("https://legate.studio/voice-notes-to-knowledge-base",      today, "monthly", "0.8"),
-            ("https://legate.studio/knowledge-graph-notes",              today, "monthly", "0.8"),
-            ("https://legate.studio/persistent-memory-for-ai-assistants",today, "monthly", "0.8"),
+            ("https://legate.studio/mcp-first-pkm",                      lastmod("mcp_first_pkm.html"),        "monthly", "0.8"),
+            ("https://legate.studio/personal-knowledge-base-for-ai",     lastmod("pkb_for_ai.html"),           "monthly", "0.8"),
+            ("https://legate.studio/memory-layer-for-ai",                lastmod("memory_layer_for_ai.html"),  "monthly", "0.8"),
+            ("https://legate.studio/voice-notes-to-knowledge-base",      lastmod("voice_notes_to_kb.html"),    "monthly", "0.8"),
+            ("https://legate.studio/knowledge-graph-notes",              lastmod("knowledge_graph_notes.html"),"monthly", "0.8"),
+            ("https://legate.studio/persistent-memory-for-ai-assistants",lastmod("persistent_memory_for_ai.html"),"monthly", "0.8"),
         ]
 
         # Include published notes and profile pages from all user DBs
@@ -1738,9 +1753,9 @@ Full documentation: https://legate.studio/docs/mcp
         )
 
     # Error handlers
-    @app.errorhandler(404)
-    def not_found_error(error):
-        return render_template("error.html", title="Not Found", message="Page not found"), 404
+    # Note: the 404 handler is registered once above (renders the branded, noindexed
+    # 404.html). Do NOT register a second @app.errorhandler(404) here — Flask keys
+    # handlers by exception class, so a duplicate silently overrides the branded page.
 
     @app.errorhandler(500)
     def internal_error(error):

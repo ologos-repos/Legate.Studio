@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Capture voice and text, structure it into searchable memory, and connect your knowledge to AI workflows with an MCP-first personal knowledge base.">
     <meta name="theme-color" content="#0d1117">
 
@@ -10,7 +10,7 @@
     <meta property="og:title" content="Legate Studio | MCP-First Personal Knowledge Base for AI">
     <meta property="og:description" content="Capture voice and text, structure it into searchable memory, and connect your knowledge to AI workflows with an MCP-first personal knowledge base.">
     <meta property="og:image" content="https://legate.studio/static/img/og-share.png">
-    <meta property="og:url" content="https://legate.studio">
+    <meta property="og:url" content="https://legate.studio/">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Legate Studio">
 
@@ -1070,87 +1070,31 @@
         }
     </style>
 
-    <!-- Structured Data: SoftwareApplication + FAQPage -->
+    <!-- Structured Data: SoftwareApplication (FAQPage schema lives on /faq to avoid duplicate markup) -->
     <script type="application/ld+json">
-    [
-      {
-        "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": "Legate Studio",
-        "applicationCategory": "ProductivityApplication",
-        "operatingSystem": "Web",
-        "description": "MCP-first personal knowledge base for AI. Capture voice and text, structure it into searchable memory, and connect your knowledge to AI workflows.",
-        "url": "https://legate.studio",
-        "offers": [
-          {
-            "@type": "Offer",
-            "name": "BYOK",
-            "price": "0.99",
-            "priceCurrency": "USD"
-          },
-          {
-            "@type": "Offer",
-            "name": "Managed",
-            "price": "9.99",
-            "priceCurrency": "USD"
-          }
-        ]
-      },
-      {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        "mainEntity": [
-          {
-            "@type": "Question",
-            "name": "What does MCP-first mean?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "MCP (Model Context Protocol) is the open standard for connecting AI tools to external data and services. MCP-first means Legate Studio was designed from the ground up to expose your personal knowledge base to AI assistants — not as an afterthought integration, but as the primary way the system is used. Your notes and knowledge graph are queryable, searchable, and writable directly from Claude Desktop and any other MCP-compatible AI client."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "How does Legate Studio connect to AI workflows?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Legate Studio runs an MCP server that you connect to Claude Desktop (or any MCP-compatible client) by adding a simple config entry. Once connected, your AI assistant can search your knowledge base, retrieve specific notes, create new entries, and query your knowledge graph — all without leaving your AI tool. You're not copying and pasting context; you're giving the AI a direct read/write interface to your personal knowledge."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Is my knowledge private?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Your knowledge lives in your own GitHub repository. We don't store your notes, read your content for training purposes, or have access to your data beyond what's technically required to run the application. The GitHub repo is yours — private or public, it's your call."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "How do voice notes become structured knowledge?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "When you submit a voice memo or audio file as a Motif, Legate transcribes it, categorizes it, and extracts structured notes using AI. The result is a titled, categorized entry in your Library that also gets added to your knowledge graph — showing how it connects to everything else you've captured. The whole process takes seconds."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "What is a Motif?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "A Motif is the input primitive in Legate Studio — a voice memo, text dump, or audio file that you feed in to be processed. Upload an audio recording from your phone, paste in text, or type directly. Legate's AI transcribes it, categorizes it, and extracts structured knowledge. The result appears in your Library and gets added to your knowledge graph automatically."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "What's the difference between BYOK and Managed?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "BYOK (Bring Your Own Key) means you add your own Gemini API key from Google. You pay Google directly at their rates — we charge $0.99/month for the platform. No markup, no middlemen. Managed means we provide the AI: Gemini Flash is included, nothing to configure, and it works out of the box for $9.99/month."
-            }
-          }
-        ]
-      }
-    ]
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Legate Studio",
+      "applicationCategory": "ProductivityApplication",
+      "operatingSystem": "Web",
+      "description": "MCP-first personal knowledge base for AI. Capture voice and text, structure it into searchable memory, and connect your knowledge to AI workflows.",
+      "url": "https://legate.studio/",
+      "offers": [
+        {
+          "@type": "Offer",
+          "name": "BYOK",
+          "price": "0.99",
+          "priceCurrency": "USD"
+        },
+        {
+          "@type": "Offer",
+          "name": "Managed",
+          "price": "9.99",
+          "priceCurrency": "USD"
+        }
+      ]
+    }
     </script>
 
     <!-- JSON-LD: Organization schema -->
@@ -1159,10 +1103,9 @@
       "@context": "https://schema.org",
       "@type": "Organization",
       "name": "Legate Studio",
-      "url": "https://legate.studio",
-      "logo": "https://legate.studio/static/img/og-share.png",
-      "description": "Legate Studio is an MCP-first personal knowledge base for AI. Capture voice and text, structure it into searchable memory, and connect your knowledge to AI workflows.",
-      "sameAs": []
+      "url": "https://legate.studio/",
+      "logo": "https://legate.studio/static/img/logo.png",
+      "description": "Legate Studio is an MCP-first personal knowledge base for AI. Capture voice and text, structure it into searchable memory, and connect your knowledge to AI workflows."
     }
     </script>
 
@@ -1606,7 +1549,7 @@
                         <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                     </button>
                     <div class="faq-answer">
-                        Your knowledge lives in your own GitHub repository. We don't store your notes, read your content for training, or have access beyond what's needed to run the app. The repo is yours &mdash; private or public, your call. You can clone or delete it anytime.
+                        Your notes are stored in your own private GitHub repository and indexed in a per-user database on our infrastructure so search and the knowledge graph stay fast. We never use your content to train models. The repo is yours &mdash; clone, export, or delete it anytime. See our <a href="/security">Security page</a> for the full picture.
                     </div>
                 </div>
 
@@ -1681,6 +1624,8 @@
                 <a href="/memory-layer-for-ai">Memory Layer for AI</a>
                 <a href="/personal-knowledge-base-for-ai">PKB for AI</a>
                 <a href="/knowledge-graph-notes">Knowledge Graph Notes</a>
+                <a href="/voice-notes-to-knowledge-base">Voice Notes to KB</a>
+                <a href="/persistent-memory-for-ai-assistants">Persistent AI Memory</a>
                 <a href="/privacy">Privacy Policy</a>
                 <a href="/terms">Terms of Service</a>
             </div>
