@@ -41,6 +41,18 @@ GITHUB_USER_URL = "https://api.github.com/user"
 ACCESS_TOKEN_TTL_SECONDS = 3600
 
 
+def _hash_refresh_token(token: str) -> str:
+    """Hash a refresh token for storage.
+
+    Refresh tokens were previously stored in plaintext, so a database dump
+    yielded 30 days of usable account access for every session. We store only
+    the SHA-256 hash and hash-on-lookup; the plaintext is returned to the
+    client once and never persisted. (A plain unsalted hash is appropriate
+    here — the token is a high-entropy 256-bit random value, not a password.)
+    """
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
 def get_db():
     """Get shared database for OAuth tables.
 
@@ -762,7 +774,7 @@ def _handle_authorization_code_grant():
         user_id=user_id,
     )
 
-    # Generate refresh token
+    # Generate refresh token (store only its hash; return plaintext to the client)
     refresh_token = secrets.token_urlsafe(32)
     refresh_expires = datetime.utcnow() + timedelta(days=30)
 
@@ -775,7 +787,7 @@ def _handle_authorization_code_grant():
             auth_code["client_id"],
             auth_code["github_user_id"],
             auth_code["github_login"],
-            refresh_token,
+            _hash_refresh_token(refresh_token),
             refresh_expires.isoformat(),
         ),
     )
@@ -802,9 +814,10 @@ def _handle_refresh_token_grant():
         logger.warning("Token request missing refresh_token parameter")
         return jsonify({"error": "invalid_request", "error_description": "refresh_token required"}), 400
 
-    # Look up refresh token
+    # Look up refresh token by hash (tokens are stored hashed, not in plaintext)
     db = get_db()
-    session_row = db.execute("SELECT * FROM oauth_sessions WHERE refresh_token = ?", (refresh_token,)).fetchone()
+    token_hash = _hash_refresh_token(refresh_token)
+    session_row = db.execute("SELECT * FROM oauth_sessions WHERE refresh_token = ?", (token_hash,)).fetchone()
 
     if not session_row:
         return jsonify({"error": "invalid_grant", "error_description": "Invalid refresh token"}), 400
@@ -812,7 +825,7 @@ def _handle_refresh_token_grant():
     # Check expiration
     expires_at = datetime.fromisoformat(session_row["expires_at"])
     if datetime.utcnow() > expires_at:
-        db.execute("DELETE FROM oauth_sessions WHERE refresh_token = ?", (refresh_token,))
+        db.execute("DELETE FROM oauth_sessions WHERE refresh_token = ?", (token_hash,))
         db.commit()
         return jsonify({"error": "invalid_grant", "error_description": "Refresh token expired"}), 400
 
@@ -828,7 +841,7 @@ def _handle_refresh_token_grant():
         user_id=user_id,
     )
 
-    # Rotate refresh token
+    # Rotate refresh token (store the new hash; return the new plaintext once)
     new_refresh_token = secrets.token_urlsafe(32)
     new_expires = datetime.utcnow() + timedelta(days=30)
 
@@ -838,7 +851,7 @@ def _handle_refresh_token_grant():
         SET refresh_token = ?, expires_at = ?, updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
     """,
-        (new_refresh_token, new_expires.isoformat(), session_row["id"]),
+        (_hash_refresh_token(new_refresh_token), new_expires.isoformat(), session_row["id"]),
     )
     db.commit()
 

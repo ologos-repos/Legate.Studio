@@ -173,10 +173,48 @@ def create_app():
         LEGATO_ORG=os.getenv("LEGATO_ORG", "bobbyhiddn"),
         CONDUCT_REPO=os.getenv("CONDUCT_REPO", "Legato.Conduct"),
         SYSTEM_PAT=os.getenv("SYSTEM_PAT"),  # Only needed for single-tenant
+        # Admin access. These were previously read from config by admin.py but never
+        # loaded here, so the documented ADMIN_USERS override silently did nothing and
+        # the bootstrap username/password path was dead. Accept either ADMIN_USERS or
+        # the legacy LEGATO_ADMINS name so both admin.py and auth.py share one source.
+        ADMIN_USERS=os.getenv("ADMIN_USERS") or os.getenv("LEGATO_ADMINS", ""),
+        ADMIN_USERNAME=os.getenv("ADMIN_USERNAME"),
+        ADMIN_PASSWORD=os.getenv("ADMIN_PASSWORD"),
         # App metadata
         APP_NAME="Legate Studio",
         APP_DESCRIPTION="Dashboard & Motif for Legate Studio",
     )
+
+    # Security response headers. These are all safe to apply globally:
+    # nosniff/frame/referrer/permissions never break normal page loads, and HSTS
+    # is only meaningful (and only sent) over HTTPS in production. The CSP is sent
+    # in Report-Only mode so it observes violations WITHOUT blocking anything —
+    # the app relies on inline scripts/styles and a few external hosts, so this
+    # can be tightened to an enforcing policy later once reports are reviewed.
+    _csp_report_only = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://plausible.io https://js.stripe.com https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "img-src 'self' data: https:; "
+        "font-src 'self' data: https://cdn.jsdelivr.net; "
+        "connect-src 'self' https://plausible.io; "
+        "frame-src https://js.stripe.com; "
+        "frame-ancestors 'self'; "
+        "base-uri 'self'"
+    )
+
+    @app.after_request
+    def _set_security_headers(response):
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+        response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        response.headers.setdefault("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
+        response.headers.setdefault("Content-Security-Policy-Report-Only", _csp_report_only)
+        if is_production:
+            response.headers.setdefault(
+                "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
+            )
+        return response
 
     # Rate limiting — binds the module-level limiter to this app.
     # Default limits apply to all non-MCP routes.
@@ -219,6 +257,28 @@ def create_app():
     app.register_blueprint(billing_bp)  # Stripe billing
     app.register_blueprint(import_api_bp)  # Markdown ZIP import
     app.register_blueprint(assets_bp)  # Library asset management
+
+    # ── CSRF protection ────────────────────────────────────────────────────
+    # Protects all cookie-session state-changing requests (form POSTs and
+    # same-origin fetch()/XHR). Browser requests carry the token via a hidden
+    # form field (server-rendered forms) or the X-CSRFToken header (injected by
+    # a global fetch shim in base.html).
+    #
+    # Machine-to-machine endpoints are exempt because they authenticate with
+    # bearer tokens or signatures, never the browser session, and therefore have
+    # no CSRF token to present:
+    #   - oauth_bp:      OAuth 2.1 AS (DCR/authorize/token) for MCP clients
+    #   - mcp_bp:        MCP protocol (Bearer access tokens)
+    #   - memory_api_bp: machine-to-machine memory API (Bearer tokens)
+    #   - billing.webhook: Stripe webhook (verified by Stripe signature)
+    from flask_wtf.csrf import CSRFProtect
+
+    csrf = CSRFProtect(app)
+    csrf.exempt(oauth_bp)
+    csrf.exempt(mcp_bp)
+    csrf.exempt(memory_api_bp)
+    if "billing.webhook" in app.view_functions:
+        csrf.exempt(app.view_functions["billing.webhook"])
 
     # Debug-only route to verify Sentry is wired up correctly.
     # Only reachable when app.debug=True (never in production).
