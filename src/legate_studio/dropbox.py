@@ -180,17 +180,18 @@ def index():
 @login_required
 def upload():
     """Handle transcript upload using Pit-native motif processing."""
-    from .auth import get_user_api_key
+    from .core import get_any_api_key_for_user
     from .motif_processor import process_motif_sync
 
     user = session.get("user", {})
     user_id = user.get("user_id")
 
-    # Check if user has API key configured (required for motif processing)
-    api_key = get_user_api_key(user_id, "anthropic") if user_id else None
+    # Check if user has any AI provider key (own key or platform key for managed tier)
+    api_key, _provider = get_any_api_key_for_user(user_id) if user_id else (None, None)
     if not api_key:
         flash(
-            "Motif processing requires an Anthropic API key. Please add your API key in Settings.",
+            "Motif processing requires an AI provider API key (Anthropic, Gemini, or OpenAI). "
+            "Please add one in Settings.",
             "warning",
         )
         return redirect(url_for("dropbox.index"))

@@ -5,6 +5,7 @@ Creates a minimal Flask test client that works without any external services
 (no OPENAI_API_KEY, STRIPE_SECRET_KEY, SYSTEM_PAT, etc.).
 """
 import os
+
 import pytest
 
 # Set all required env vars BEFORE importing the app to prevent startup errors.

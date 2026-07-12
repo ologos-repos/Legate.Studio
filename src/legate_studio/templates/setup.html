@@ -147,6 +147,25 @@
         <p>Provide your own API keys for LLM access. Keys are encrypted before storage.</p>
         {% endif %}
 
+        <form method="post" action="{{ url_for('auth.setup_preferred_provider') }}" class="api-key-form">
+            <div class="form-group">
+                <label for="preferred_provider">Preferred Provider</label>
+                <select name="provider" id="preferred_provider">
+                    <option value="auto" {% if not preferred_provider %}selected{% endif %}>
+                        Auto (Anthropic &rarr; Gemini &rarr; OpenAI)
+                    </option>
+                    <option value="anthropic" {% if preferred_provider == 'anthropic' %}selected{% endif %}>Anthropic</option>
+                    <option value="gemini" {% if preferred_provider == 'gemini' %}selected{% endif %}>Google Gemini</option>
+                    <option value="openai" {% if preferred_provider == 'openai' %}selected{% endif %}>OpenAI</option>
+                </select>
+                <button type="submit" class="btn btn-secondary btn-sm">Save</button>
+            </div>
+        </form>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">
+            This provider is tried first for motif processing and used as your default
+            chat provider. If it has no available key, the others are tried in order.
+        </p>
+
         {% set anthropic_key = api_keys|selectattr('provider', 'equalto', 'anthropic')|first %}
         {% set openai_key = api_keys|selectattr('provider', 'equalto', 'openai')|first %}
         {% set gemini_key = api_keys|selectattr('provider', 'equalto', 'gemini')|first %}

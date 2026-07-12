@@ -903,8 +903,10 @@ def setup():
         (user_id,),
     ).fetchall()
 
-    # Get full user record for tier info
-    user_record = db.execute("SELECT tier FROM users WHERE user_id = ?", (user_id,)).fetchone()
+    # Get full user record for tier info and provider preference
+    user_record = db.execute(
+        "SELECT tier, preferred_provider FROM users WHERE user_id = ?", (user_id,)
+    ).fetchone()
 
     # Auto-detect Library repo if not configured but installations exist
     repos_list = [dict(r) for r in repos]
@@ -923,6 +925,7 @@ def setup():
         "setup.html",
         user=user,
         tier=user_record["tier"] if user_record else "free",
+        preferred_provider=user_record["preferred_provider"] if user_record else None,
         installations=[dict(i) for i in installations],
         repos=repos_list,
         api_keys=[dict(k) for k in api_keys],
@@ -1267,6 +1270,48 @@ def delete_api_key():
     except Exception as e:
         logger.error(f"Failed to delete API key: {e}")
         flash("Failed to remove API key.", "error")
+
+    return redirect(url_for("auth.setup"))
+
+
+@auth_bp.route("/setup/preferred-provider", methods=["POST"])
+def setup_preferred_provider():
+    """Set which AI provider is tried first when resolving API keys.
+
+    POST params:
+    - provider: 'auto', 'anthropic', 'gemini', or 'openai'
+      ('auto' clears the preference — default priority order applies)
+    """
+    if "user" not in session:
+        return redirect(url_for("auth.login"))
+
+    user = session["user"]
+    user_id = user.get("user_id")
+
+    provider = request.form.get("provider", "auto")
+
+    if provider not in ("auto", "anthropic", "gemini", "openai"):
+        flash("Invalid API provider.", "error")
+        return redirect(url_for("auth.setup"))
+
+    try:
+        db = _get_db()
+        db.execute(
+            "UPDATE users SET preferred_provider = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?",
+            (None if provider == "auto" else provider, user_id),
+        )
+        db.commit()
+
+        _log_audit(user_id, "configure", "preferred_provider", provider, None)
+
+        if provider == "auto":
+            flash("Preferred AI provider cleared — using automatic priority.", "success")
+        else:
+            flash(f"Preferred AI provider set to {provider.title()}.", "success")
+
+    except Exception as e:
+        logger.error(f"Failed to set preferred provider: {e}")
+        flash("Failed to set preferred provider.", "error")
 
     return redirect(url_for("auth.setup"))
 

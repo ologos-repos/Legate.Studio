@@ -109,3 +109,55 @@ def test_wrapper_returns_key_only(monkeypatch, _clean_env):
     _set_user_key(monkeypatch, "my-own-key")
 
     assert core.get_api_key_for_user("user-1", "anthropic") == "my-own-key"
+
+
+# ── Provider priority (preferred provider setting) ──────────────────────────
+
+
+def _set_preferred(monkeypatch, preferred):
+    monkeypatch.setattr(core, "get_preferred_provider", lambda user_id: preferred)
+
+
+def test_default_provider_priority(monkeypatch):
+    _set_preferred(monkeypatch, None)
+    assert core.get_provider_priority("user-1") == ("anthropic", "gemini", "openai")
+
+
+def test_preferred_provider_moves_to_front(monkeypatch):
+    _set_preferred(monkeypatch, "gemini")
+    assert core.get_provider_priority("user-1") == ("gemini", "anthropic", "openai")
+
+    _set_preferred(monkeypatch, "openai")
+    assert core.get_provider_priority("user-1") == ("openai", "anthropic", "gemini")
+
+
+def test_any_key_follows_priority(monkeypatch, _clean_env):
+    """With keys for two providers, the preferred one wins."""
+    _set_preferred(monkeypatch, "gemini")
+
+    keys = {"anthropic": "ant-key", "gemini": "gem-key"}
+    monkeypatch.setattr(
+        core, "get_api_key_for_user", lambda user_id, provider: keys.get(provider)
+    )
+
+    key, provider = core.get_any_api_key_for_user("user-1")
+    assert (key, provider) == ("gem-key", "gemini")
+
+
+def test_any_key_falls_back_when_preferred_has_no_key(monkeypatch, _clean_env):
+    _set_preferred(monkeypatch, "openai")
+
+    keys = {"gemini": "gem-key"}
+    monkeypatch.setattr(
+        core, "get_api_key_for_user", lambda user_id, provider: keys.get(provider)
+    )
+
+    key, provider = core.get_any_api_key_for_user("user-1")
+    assert (key, provider) == ("gem-key", "gemini")
+
+
+def test_any_key_none_when_nothing_configured(monkeypatch, _clean_env):
+    _set_preferred(monkeypatch, None)
+    monkeypatch.setattr(core, "get_api_key_for_user", lambda user_id, provider: None)
+
+    assert core.get_any_api_key_for_user("user-1") == (None, None)

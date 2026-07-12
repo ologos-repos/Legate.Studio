@@ -616,6 +616,12 @@ def init_db(db_path: Path | None = None, user_id: str | None = None) -> sqlite3.
     except sqlite3.OperationalError:
         pass  # Column already exists
 
+    # Migration: add preferred AI provider (NULL = automatic priority order)
+    try:
+        cursor.execute("ALTER TABLE users ADD COLUMN preferred_provider TEXT")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+
     # GitHub App installations (per-user scoped tokens)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS github_app_installations (
