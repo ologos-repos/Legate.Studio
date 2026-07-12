@@ -384,6 +384,7 @@
     </header>
 
     <form action="{{ url_for('dropbox.upload') }}" method="POST" enctype="multipart/form-data" class="upload-form" id="uploadForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="form-section">
             <label class="form-label">Input Method</label>
 

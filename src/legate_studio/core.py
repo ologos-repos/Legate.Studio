@@ -258,6 +258,28 @@ def create_app():
     app.register_blueprint(import_api_bp)  # Markdown ZIP import
     app.register_blueprint(assets_bp)  # Library asset management
 
+    # ── CSRF protection ────────────────────────────────────────────────────
+    # Protects all cookie-session state-changing requests (form POSTs and
+    # same-origin fetch()/XHR). Browser requests carry the token via a hidden
+    # form field (server-rendered forms) or the X-CSRFToken header (injected by
+    # a global fetch shim in base.html).
+    #
+    # Machine-to-machine endpoints are exempt because they authenticate with
+    # bearer tokens or signatures, never the browser session, and therefore have
+    # no CSRF token to present:
+    #   - oauth_bp:      OAuth 2.1 AS (DCR/authorize/token) for MCP clients
+    #   - mcp_bp:        MCP protocol (Bearer access tokens)
+    #   - memory_api_bp: machine-to-machine memory API (Bearer tokens)
+    #   - billing.webhook: Stripe webhook (verified by Stripe signature)
+    from flask_wtf.csrf import CSRFProtect
+
+    csrf = CSRFProtect(app)
+    csrf.exempt(oauth_bp)
+    csrf.exempt(mcp_bp)
+    csrf.exempt(memory_api_bp)
+    if "billing.webhook" in app.view_functions:
+        csrf.exempt(app.view_functions["billing.webhook"])
+
     # Debug-only route to verify Sentry is wired up correctly.
     # Only reachable when app.debug=True (never in production).
     from flask import abort as flask_abort
