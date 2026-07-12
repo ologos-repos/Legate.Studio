@@ -998,25 +998,30 @@ Full documentation: https://legate.studio/docs/mcp
             except OSError:
                 return today
 
-        urls = [
-            ("https://legate.studio/",         lastmod("landing.html"),   "weekly", "1.0"),
-            ("https://legate.studio/features",  lastmod("features.html"),  "monthly", "0.9"),
-            ("https://legate.studio/pricing",   lastmod("pricing.html"),   "monthly", "0.9"),
-            ("https://legate.studio/faq",       lastmod("faq.html"),       "monthly", "0.8"),
-            ("https://legate.studio/about",     lastmod("about.html"),     "monthly", "0.6"),
-            ("https://legate.studio/security",  lastmod("security.html"),  "monthly", "0.5"),
-            ("https://legate.studio/contact",   lastmod("contact.html"),   "monthly", "0.4"),
-            ("https://legate.studio/privacy",   lastmod("privacy.html"),   "yearly",  "0.3"),
-            ("https://legate.studio/terms",     lastmod("terms.html"),     "yearly",  "0.3"),
-            ("https://legate.studio/docs",      lastmod("docs_platform.html"), "monthly", "0.9"),
-            ("https://legate.studio/docs/mcp",  lastmod("docs_mcp.html"),  "monthly", "0.9"),
+        # (path, template, changefreq, priority) — lastmod resolved from template mtime below.
+        static_pages = [
+            ("/", "landing.html", "weekly", "1.0"),
+            ("/features", "features.html", "monthly", "0.9"),
+            ("/pricing", "pricing.html", "monthly", "0.9"),
+            ("/faq", "faq.html", "monthly", "0.8"),
+            ("/about", "about.html", "monthly", "0.6"),
+            ("/security", "security.html", "monthly", "0.5"),
+            ("/contact", "contact.html", "monthly", "0.4"),
+            ("/privacy", "privacy.html", "yearly", "0.3"),
+            ("/terms", "terms.html", "yearly", "0.3"),
+            ("/docs", "docs_platform.html", "monthly", "0.9"),
+            ("/docs/mcp", "docs_mcp.html", "monthly", "0.9"),
             # Solution / category landing pages
-            ("https://legate.studio/mcp-first-pkm",                      lastmod("mcp_first_pkm.html"),        "monthly", "0.8"),
-            ("https://legate.studio/personal-knowledge-base-for-ai",     lastmod("pkb_for_ai.html"),           "monthly", "0.8"),
-            ("https://legate.studio/memory-layer-for-ai",                lastmod("memory_layer_for_ai.html"),  "monthly", "0.8"),
-            ("https://legate.studio/voice-notes-to-knowledge-base",      lastmod("voice_notes_to_kb.html"),    "monthly", "0.8"),
-            ("https://legate.studio/knowledge-graph-notes",              lastmod("knowledge_graph_notes.html"),"monthly", "0.8"),
-            ("https://legate.studio/persistent-memory-for-ai-assistants",lastmod("persistent_memory_for_ai.html"),"monthly", "0.8"),
+            ("/mcp-first-pkm", "mcp_first_pkm.html", "monthly", "0.8"),
+            ("/personal-knowledge-base-for-ai", "pkb_for_ai.html", "monthly", "0.8"),
+            ("/memory-layer-for-ai", "memory_layer_for_ai.html", "monthly", "0.8"),
+            ("/voice-notes-to-knowledge-base", "voice_notes_to_kb.html", "monthly", "0.8"),
+            ("/knowledge-graph-notes", "knowledge_graph_notes.html", "monthly", "0.8"),
+            ("/persistent-memory-for-ai-assistants", "persistent_memory_for_ai.html", "monthly", "0.8"),
+        ]
+        urls = [
+            (f"https://legate.studio{path}", lastmod(template), freq, prio)
+            for path, template, freq, prio in static_pages
         ]
 
         # Include published notes and profile pages from all user DBs
