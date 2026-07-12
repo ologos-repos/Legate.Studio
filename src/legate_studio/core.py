@@ -1967,6 +1967,51 @@ def get_api_key_for_user(user_id: str, provider: str) -> str | None:
     return get_api_key_with_source(user_id, provider)[0]
 
 
+# Default provider resolution order when the user has no preference set
+AI_PROVIDERS: tuple[str, ...] = ("anthropic", "gemini", "openai")
+
+
+def get_preferred_provider(user_id: str) -> str | None:
+    """Get the user's preferred AI provider, or None for automatic priority.
+
+    Set via Settings → API Keys → Preferred Provider.
+    """
+    from .rag.database import init_db
+
+    if not user_id:
+        return None
+
+    db = init_db()
+    row = db.execute(
+        "SELECT preferred_provider FROM users WHERE user_id = ?", (user_id,)
+    ).fetchone()
+
+    preferred = row["preferred_provider"] if row else None
+    return preferred if preferred in AI_PROVIDERS else None
+
+
+def get_provider_priority(user_id: str) -> tuple[str, ...]:
+    """Provider resolution order for a user: their preferred provider first,
+    then the remaining providers in default order."""
+    preferred = get_preferred_provider(user_id)
+    if not preferred:
+        return AI_PROVIDERS
+    return (preferred, *(p for p in AI_PROVIDERS if p != preferred))
+
+
+def get_any_api_key_for_user(user_id: str) -> tuple[str | None, str | None]:
+    """Resolve the first available AI key following the user's provider priority.
+
+    Returns:
+        Tuple of (api_key, provider), or (None, None) when no provider has a key.
+    """
+    for provider in get_provider_priority(user_id):
+        api_key = get_api_key_for_user(user_id, provider)
+        if api_key:
+            return api_key, provider
+    return None, None
+
+
 def paid_required(f):
     """Decorator to require a paid subscription tier in multi-tenant mode."""
 

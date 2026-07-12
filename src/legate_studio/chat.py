@@ -713,18 +713,40 @@ def delete_session(session_id):
 @paid_required
 @beta_gate("chat")
 def get_config():
-    """Get current chat configuration."""
+    """Get current chat configuration.
+
+    The default provider honors the user's preferred-provider setting
+    (Settings → API Keys) when set, falling back to the CHAT_PROVIDER env default.
+    """
+    from .core import get_preferred_provider
     from .rag.chat_service import ChatProvider, ChatService
 
     services = get_services()
 
+    provider_value = services["chat"].provider.value
+    model_value = services["chat"].model
+
+    user_id = _get_user_id()
+    preferred = get_preferred_provider(user_id) if user_id else None
+    if preferred:
+        # Map API-key provider name → chat provider value
+        preferred_value = {"anthropic": "claude"}.get(preferred, preferred)
+        if preferred_value != provider_value:
+            provider_value = preferred_value
+            model_value = {
+                "claude": ChatService.DEFAULT_CLAUDE_MODEL,
+                "openai": ChatService.DEFAULT_OPENAI_MODEL,
+                "gemini": ChatService.DEFAULT_GEMINI_MODEL,
+            }[preferred_value]
+
     return jsonify(
         {
-            "provider": services["chat"].provider.value,
-            "model": services["chat"].model,
+            "provider": provider_value,
+            "model": model_value,
             "available_models": {
                 "claude": ChatService.get_available_models(ChatProvider.CLAUDE),
                 "openai": ChatService.get_available_models(ChatProvider.OPENAI),
+                "gemini": ChatService.get_available_models(ChatProvider.GEMINI),
             },
         }
     )

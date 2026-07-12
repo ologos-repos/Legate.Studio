@@ -719,17 +719,17 @@ Generate the complete markdown artifact with frontmatter."""
     def _get_user_api_key(self) -> tuple[str, str]:
         """Get user's AI provider API key and provider name.
 
-        Priority order: anthropic → gemini → openai (or follows CHAT_PROVIDER env var for managed tier)
+        Follows the user's preferred-provider setting (Settings → API Keys),
+        then the default priority order: anthropic → gemini → openai.
+
         Returns:
             Tuple of (api_key, provider_name)
         """
-        from .core import get_api_key_for_user
+        from .core import get_any_api_key_for_user
 
-        # Try each provider in priority order
-        for provider in ("anthropic", "gemini", "openai"):
-            api_key = get_api_key_for_user(self.user_id, provider)
-            if api_key:
-                return api_key, provider
+        api_key, provider = get_any_api_key_for_user(self.user_id)
+        if api_key:
+            return api_key, provider
 
         raise ValueError(
             "No AI provider API key configured. "

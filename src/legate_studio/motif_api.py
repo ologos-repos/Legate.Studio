@@ -48,7 +48,7 @@ def submit_job():
         "entry_ids": ["..."]  // Only if sync=true and completed
     }
     """
-    from .core import get_api_key_for_user
+    from .core import get_any_api_key_for_user
     from .rag.database import init_db
 
     user = session.get("user", {})
@@ -57,12 +57,8 @@ def submit_job():
     if not user_id:
         return jsonify({"error": "User not authenticated"}), 401
 
-    # Check if user has any AI provider key configured (platform key for managed tier, or BYOK)
-    api_key = (
-        get_api_key_for_user(user_id, "anthropic")
-        or get_api_key_for_user(user_id, "gemini")
-        or get_api_key_for_user(user_id, "openai")
-    )
+    # Check if user has any AI provider key configured (own key or platform key)
+    api_key, _provider = get_any_api_key_for_user(user_id)
     if not api_key:
         return jsonify(
             {
@@ -313,14 +309,12 @@ def index():
     """Motif processing page with job submission and status tracking."""
     from flask import render_template
 
-    from .core import get_api_key_for_user
+    from .core import get_any_api_key_for_user
 
     user = session.get("user", {})
     user_id = user.get("user_id")
 
     # Check if user has any AI provider key (own stored key, or platform key for managed tier)
-    has_api_key = any(
-        get_api_key_for_user(user_id, provider) is not None for provider in ("anthropic", "gemini", "openai")
-    )
+    has_api_key = get_any_api_key_for_user(user_id)[0] is not None
 
     return render_template("motif.html", title="Motif", has_api_key=has_api_key)
