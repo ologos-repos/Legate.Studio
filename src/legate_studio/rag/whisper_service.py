@@ -1,7 +1,7 @@
 """
 Gemini Flash Multimodal Transcription Service
 
-Uses Google Gemini Flash 2.0 to transcribe audio files via multimodal input.
+Uses Google Gemini Flash to transcribe audio files via multimodal input.
 Replaces the previous OpenAI Whisper implementation.
 
 The original WhisperService (OpenAI) is preserved below as a commented-out
@@ -34,13 +34,15 @@ _MIME_TYPES = {
 
 class GeminiTranscriptionService:
     """
-    Transcription service backed by Gemini Flash 2.0 multimodal input.
+    Transcription service backed by Gemini Flash multimodal input.
 
     Public interface is identical to the old WhisperService so call sites
     need only update their import / instantiation.
     """
 
-    DEFAULT_MODEL = "gemini-2.0-flash"
+    # Override with GEMINI_TRANSCRIBE_MODEL so a model retirement can be
+    # handled with a config change instead of a code deploy.
+    DEFAULT_MODEL = os.environ.get("GEMINI_TRANSCRIBE_MODEL", "gemini-2.5-flash")
     MAX_FILE_SIZE = 25 * 1024 * 1024  # 25 MB — keep parity with Whisper limit
 
     def __init__(self, api_key: str | None = None, model: str = DEFAULT_MODEL):

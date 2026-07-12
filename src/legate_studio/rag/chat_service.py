@@ -24,7 +24,7 @@ class ChatService:
     # Default models
     DEFAULT_CLAUDE_MODEL = "claude-sonnet-4-20250514"
     DEFAULT_OPENAI_MODEL = "gpt-4o-mini"
-    DEFAULT_GEMINI_MODEL = "gemini-2.0-flash"
+    DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"
 
     def __init__(
         self,
@@ -306,10 +306,9 @@ class ChatService:
 
     # Fallback Gemini models if API fetch fails
     GEMINI_MODELS_FALLBACK = [
-        {"id": "gemini-2.0-flash", "name": "Gemini 2.0 Flash"},
-        {"id": "gemini-2.5-flash-preview-05-20", "name": "Gemini 2.5 Flash"},
-        {"id": "gemini-2.5-pro-preview-05-06", "name": "Gemini 2.5 Pro"},
-        {"id": "gemini-1.5-pro", "name": "Gemini 1.5 Pro"},
+        {"id": "gemini-2.5-flash", "name": "Gemini 2.5 Flash"},
+        {"id": "gemini-2.5-pro", "name": "Gemini 2.5 Pro"},
+        {"id": "gemini-2.5-flash-lite", "name": "Gemini 2.5 Flash Lite"},
     ]
 
     @classmethod
