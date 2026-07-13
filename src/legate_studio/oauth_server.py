@@ -241,6 +241,7 @@ TRUSTED_MCP_DOMAINS = [
     "claude.ai",
     "chatgpt.com",
     "openai.com",
+    "hermetic.fly.dev",
 ]
 
 
